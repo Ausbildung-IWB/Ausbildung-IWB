@@ -1,0 +1,1776 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stahllager &ndash; Bestandsverwaltung</title>
+<style>
+:root{
+  --blau:#0F4C81; --blau-dunkel:#0A3760; --blau-hell:#E8F0F7;
+  --gruen:#5A9E2F; --rot:#B3261E; --gelb:#B8860B;
+  --grau-bg:#F2F4F6; --grau-linie:#D8DDE2; --text:#1E2A33; --text-hell:#5B6B78;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;font-family:"Open Sans","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+     color:var(--text);background:var(--grau-bg);font-size:15px;line-height:1.5}
+.topbar{background:var(--blau-dunkel);color:#cfe0ee;font-size:12.5px;padding:5px 20px;
+        display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+header{background:#fff;border-bottom:3px solid var(--blau);padding:10px 20px;
+       display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:10px;padding-left:2px;
+  border-left:5px solid var(--blau);padding:2px 0 2px 12px}
+.logo .txt strong{display:block;font-size:16px}
+.logo .txt span{font-size:11.5px;color:var(--text-hell);text-transform:uppercase;letter-spacing:1.3px}
+nav{margin-left:auto;display:flex;gap:2px;flex-wrap:wrap}
+.firmenlogo{height:40px;width:auto;margin-left:22px;flex-shrink:0}
+@media(max-width:900px){.firmenlogo{height:30px;margin-left:12px}}
+nav button{background:none;border:none;font:inherit;font-size:13px;text-transform:uppercase;
+  letter-spacing:.8px;color:var(--text-hell);padding:9px 13px;cursor:pointer;border-bottom:3px solid transparent}
+nav button:hover{color:var(--blau)}
+nav button.aktiv{color:var(--blau);border-bottom-color:var(--blau);font-weight:600}
+main{padding:14px 20px 40px;max-width:1900px;margin:0 auto}
+h1{font-size:20px;font-weight:600;margin:0 0 3px}
+h2{font-size:16px;font-weight:600;margin:22px 0 9px;color:var(--blau-dunkel)}
+.sub{color:var(--text-hell);font-size:13px;margin:0 0 14px}
+.karte{background:#fff;border:1px solid var(--grau-linie);border-radius:3px;padding:16px;margin-bottom:16px}
+.kennzahlen{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.kz{background:#fff;border:1px solid var(--grau-linie);border-top:3px solid var(--blau);
+    padding:8px 14px;min-width:112px;border-radius:2px}
+.kz b{display:block;font-size:20px;font-weight:700;color:var(--blau-dunkel);line-height:1.2}
+.kz span{font-size:11px;text-transform:uppercase;letter-spacing:.9px;color:var(--text-hell)}
+.kz.warn{border-top-color:var(--rot)} .kz.warn b{color:var(--rot)}
+button.btn{background:var(--blau);color:#fff;border:none;padding:9px 16px;font:inherit;
+  font-size:13.5px;border-radius:2px;cursor:pointer}
+button.btn:hover{background:var(--blau-dunkel)}
+button.btn.sek{background:#fff;color:var(--blau);border:1px solid var(--blau)}
+button.btn.sek:hover{background:var(--blau-hell)}
+button.btn.gruen{background:var(--gruen)} button.btn.gruen:hover{background:#4a8526}
+button.btn.rot{background:#fff;color:var(--rot);border:1px solid var(--rot)}
+.werkzeuge{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+input[type=text],input[type=number],select,textarea{font:inherit;padding:7px 9px;border:1px solid var(--grau-linie);
+  border-radius:2px;background:#fff}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--blau);outline-offset:-1px}
+/* ---- Lagerplan, bildschirmfüllend ---- */
+.planbox{background:#fff;border:1px solid var(--grau-linie);border-radius:3px;padding:10px;overflow:hidden}
+#rasterSkala{transform-origin:top left}
+table.raster{border-collapse:collapse;font-size:12.5px}
+table.raster th{background:var(--blau-dunkel);color:#fff;font-weight:600;font-size:10px;
+  text-transform:uppercase;letter-spacing:.5px;padding:5px 3px;white-space:nowrap}
+table.raster td{border:1px solid var(--grau-linie);padding:0;vertical-align:top}
+td.reihe{background:var(--blau-dunkel);color:#fff;text-align:center;font-weight:700;font-size:15px;width:24px}
+td.gruppe{color:#fff;font-size:9.5px;font-weight:700;text-align:center;padding:3px;width:70px;line-height:1.2}
+th.luecke,td.luecke{border:none;background:var(--grau-bg);width:14px;padding:0}
+.fach{width:88px;height:66px;background:#fff;cursor:pointer;position:relative;
+      padding:4px 3px 11px;display:flex;flex-direction:column;justify-content:center;align-items:center}
+.fach:hover{background:var(--blau-hell);box-shadow:inset 0 0 0 2px var(--blau)}
+.fach .nr{position:absolute;left:3px;bottom:1px;font-size:8.5px;color:#9aa5ad}
+.fach .wst{position:absolute;right:3px;bottom:1px;font-size:8px;color:#b3bcc4}
+.fach .mass{font-weight:700;font-size:13px}
+.fach .zeile{display:flex;align-items:baseline;gap:4px;line-height:1.25}
+.fach .anz{font-size:10.5px;color:var(--text-hell);font-variant-numeric:tabular-nums}
+.fach.mehrfach{background:#FFF8E6}.fach.mehrfach:hover{background:#FDEFCB}
+.fach.frei{background:#F0F2F4;color:#9aa5ad;font-style:italic}
+.fach.kritisch{box-shadow:inset 0 0 0 2px var(--rot)}
+.fach.leer0{background:#FBEEED}
+.balken{position:absolute;left:0;top:0;bottom:0;width:4px}
+/* ---- Tabellen ---- */
+table.liste{width:100%;border-collapse:collapse;font-size:13px}
+table.liste th{background:var(--blau-dunkel);color:#fff;text-align:left;padding:7px 9px;
+  font-size:11px;text-transform:uppercase;letter-spacing:.5px;position:sticky;top:0;z-index:2}
+table.liste td{border-bottom:1px solid var(--grau-linie);padding:5px 9px}
+table.liste tr:hover td{background:var(--blau-hell)}
+table.liste td.num{text-align:right;font-variant-numeric:tabular-nums}
+.pill{display:inline-block;padding:1px 8px;border-radius:10px;font-size:11px;font-weight:600}
+.pill.ok{background:#E6F2DC;color:#3C6B1E}
+.pill.warn{background:#FBEDD3;color:#8A6207}
+.pill.krit{background:#F8E0DE;color:var(--rot)}
+.pill.neu{background:#E1ECF7;color:var(--blau)}
+.mini{background:#fff;border:1px solid var(--grau-linie);width:25px;height:25px;
+  font-size:14px;line-height:1;cursor:pointer;border-radius:2px;color:var(--blau)}
+.mini:hover{background:var(--blau);color:#fff}
+input.menge{width:56px;text-align:right;padding:3px 5px}
+/* ---- Dialog ---- */
+.overlay{position:fixed;inset:0;background:rgba(10,30,50,.45);display:flex;align-items:center;
+  justify-content:center;z-index:50;padding:20px}
+.dialog{background:#fff;border-radius:3px;max-width:760px;width:100%;max-height:88vh;overflow:auto}
+.dialog .kopf{background:var(--blau-dunkel);color:#fff;padding:12px 18px;display:flex;
+  justify-content:space-between;align-items:center}
+.dialog .kopf b{font-size:16px} .dialog .kopf span{font-size:12.5px;color:#b9d0e4}
+.dialog .rumpf{padding:18px}
+.dialog .fuss{padding:14px 18px;border-top:1px solid var(--grau-linie);display:flex;gap:9px;
+  justify-content:flex-end;flex-wrap:wrap;background:#FAFBFC}
+.zu{background:none;border:none;color:#fff;font-size:24px;cursor:pointer;line-height:1}
+table.edit{width:100%;border-collapse:collapse;font-size:13px}
+table.edit th{text-align:left;font-size:11px;text-transform:uppercase;color:var(--text-hell);
+  padding:4px 6px;border-bottom:2px solid var(--grau-linie)}
+table.edit td{padding:4px 6px;border-bottom:1px solid var(--grau-linie)}
+table.edit input{width:100%}
+.hinweis{background:var(--blau-hell);border-left:4px solid var(--blau);padding:11px 15px;
+  font-size:13px;margin-bottom:14px}
+.hinweis.rot{background:#FBEEED;border-left-color:var(--rot)}
+.hinweis.gruen{background:#EDF5E5;border-left-color:var(--gruen)}
+.hinweis.gelb{background:#FDF6E3;border-left-color:var(--gelb)}
+.protokoll{font-size:12.5px;color:var(--text-hell);max-height:280px;overflow:auto}
+.protokoll div{padding:3px 0;border-bottom:1px solid var(--grau-linie)}
+footer{background:var(--blau-dunkel);color:#a8c3da;font-size:12px;padding:14px 20px;text-align:center}
+.verstecke{display:none}
+.diagramm{width:100%;overflow-x:auto}
+svg.chart{display:block;max-width:100%;height:auto}
+svg.chart text{font-family:inherit}
+.legende{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--text-hell);margin-top:8px}
+.legende i{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.zeitwahl{display:flex;gap:0;border:1px solid var(--blau);border-radius:2px;overflow:hidden}
+.zeitwahl button{background:#fff;color:var(--blau);border:none;padding:8px 16px;font:inherit;
+  font-size:13.5px;cursor:pointer;border-right:1px solid var(--blau)}
+.zeitwahl button:last-child{border-right:none}
+.zeitwahl button.aktiv{background:var(--blau);color:#fff}
+.analyse{font-size:13.5px;line-height:1.65}
+.analyse b{color:var(--blau-dunkel)}
+.demo{background:#FDF6E3;border:1px dashed var(--gelb);color:#7a5c00;padding:8px 14px;
+  font-size:12.5px;border-radius:2px;display:inline-block;margin-bottom:12px}
+code{background:#eef1f4;padding:1px 5px;border-radius:2px;font-size:12.5px}
+#druck{display:none}
+.loginhuelle{position:fixed;inset:0;background:#0A3760;display:flex;align-items:center;
+  justify-content:center;z-index:200;padding:20px}
+.loginkarte{background:#fff;border-radius:3px;width:100%;max-width:400px;padding:30px}
+.loginkarte img{height:34px;margin-bottom:18px}
+.loginkarte h2{margin:0 0 4px;font-size:19px;color:var(--blau-dunkel)}
+.loginkarte p{margin:0 0 18px;font-size:13px;color:var(--text-hell)}
+.loginkarte label{display:block;font-size:11.5px;text-transform:uppercase;letter-spacing:.8px;
+  color:var(--text-hell);margin:12px 0 4px}
+.loginkarte input{width:100%;padding:10px}
+.loginkarte button{width:100%;margin-top:20px;padding:11px}
+.loginfehler{background:#FBEEED;color:var(--rot);padding:9px 12px;font-size:13px;margin-top:14px}
+#cloudStatus{font-variant-numeric:tabular-nums}
+@media print{
+  @page{ size: A4 landscape; margin: 8mm; }
+  html,body{background:#fff;margin:0}
+  .topbar,header,main,footer,#dialogBox{display:none !important}
+  #druck{display:block}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .dseite{page-break-after:always}
+  .dseite:last-child{page-break-after:auto}
+  .dkopf{display:flex;justify-content:space-between;align-items:flex-end;
+    border-bottom:2px solid #0F4C81;padding-bottom:4px;margin-bottom:7px}
+  .dkopf img.dlogo{height:10mm;width:auto;margin-bottom:2px}
+  .dkopf .rechtsblock{display:flex;align-items:flex-end;gap:6mm}
+  .dkopf h2{font-size:14pt;margin:0;color:#0F4C81;font-weight:700}
+  .dkopf .zeile{font-size:7.5pt;color:#444;margin-top:2px}
+  .dkopf .rechts{font-size:7.5pt;color:#444;text-align:right}
+  table.draster{width:100%;border-collapse:collapse;table-layout:fixed}
+  table.draster th{background:#0A3760;color:#fff;font-size:6pt;padding:2px 1px;
+    text-transform:uppercase;letter-spacing:.3px;font-weight:600}
+  table.draster td{border:.4pt solid #9aa5ad;padding:0;vertical-align:middle;height:15mm}
+  table.draster td.dgruppe{color:#fff;font-size:5.6pt;font-weight:700;text-align:center;width:15mm;line-height:1.15}
+  table.draster td.dreihe{color:#fff;font-size:11pt;font-weight:700;text-align:center;width:6mm}
+  table.draster td.dluecke{border:none;width:3mm}
+  .dfach{text-align:center;position:relative;padding:1mm 0}
+  .dfach .dm{font-size:8pt;font-weight:700;line-height:1.25;display:block}
+  .dfach .dq{font-size:6pt;color:#555;font-weight:400}
+  .dfach .dnr{position:absolute;left:1mm;bottom:.4mm;font-size:4.6pt;color:#98a2aa}
+  .dfach.dfrei{background:#F0F2F4;color:#98a2aa;font-style:italic;font-size:7pt}
+  .dfach.dmehr{background:#FFF8E6}
+  .dspalten{display:flex;gap:6mm;align-items:flex-start}
+  table.dliste{border-collapse:collapse;flex:1;font-size:7.2pt}
+  table.dliste th{background:#0A3760;color:#fff;text-align:left;padding:1.6px 3px;font-size:6pt;
+    text-transform:uppercase;letter-spacing:.3px}
+  table.dliste td{border-bottom:.3pt solid #cfd6dc;padding:1.4px 3px}
+  table.dliste td.n{text-align:right}
+  table.dliste tr.grp td{background:#E8F0F7;font-weight:700;color:#0A3760;font-size:6.4pt}
+  .dfuss{margin-top:5px;font-size:6.5pt;color:#666;display:flex;justify-content:space-between}
+  .dseite.hoch{page-break-after:always}
+  .bkopf{display:flex;justify-content:space-between;align-items:flex-start;
+    border-bottom:2.5pt solid #0F4C81;padding-bottom:5px;margin-bottom:10px}
+  .bkopf .titel{font-size:17pt;font-weight:700;color:#0F4C81;letter-spacing:.5px;margin:0}
+  .bkopf .unter{font-size:8pt;color:#555;margin-top:1px}
+  .bkopf img.dlogo{height:15mm;width:auto;display:block;margin-left:auto}
+  table.bkopfdaten{width:100%;border-collapse:collapse;font-size:8.4pt;margin-bottom:9px}
+  table.bkopfdaten td{padding:2.5px 4px;border-bottom:.3pt solid #dfe4e9;vertical-align:top}
+  table.bkopfdaten td.l{color:#5B6B78;width:29mm;font-size:7.4pt;text-transform:uppercase;letter-spacing:.3px}
+  table.bpos{width:100%;border-collapse:collapse;font-size:8.6pt}
+  table.bpos th{background:#0A3760;color:#fff;text-align:left;padding:3.5px 4px;font-size:7pt;
+    text-transform:uppercase;letter-spacing:.4px}
+  table.bpos td{border-bottom:.4pt solid #c8d0d7;padding:3.5px 4px}
+  table.bpos td.n{text-align:right}
+  table.bpos tr.summe td{border-top:1pt solid #0A3760;border-bottom:none;font-weight:700;padding-top:5px}
+  .bbem{margin-top:9px;font-size:8.2pt;border:.4pt solid #c8d0d7;padding:5px 7px;min-height:11mm}
+  .bbem .l{font-size:7pt;color:#5B6B78;text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:2px}
+  .bunterschrift{display:flex;gap:14mm;margin-top:14mm;font-size:7.6pt;color:#5B6B78}
+  .bunterschrift div{flex:1;border-top:.5pt solid #808b95;padding-top:2px}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span>Stahllager &ndash; interne Bestandsverwaltung</span>
+  <span id="cloudStatus">&ndash;</span>
+  <span>Angemeldet als <input type="text" id="benutzer" placeholder="Name eintragen"
+     style="background:#123f66;border:1px solid #2b5b85;color:#fff;padding:2px 7px;
+     font:inherit;font-size:12.5px;width:130px;border-radius:2px"> &nbsp;
+   <span id="standInfo">Stand: &ndash;</span></span>
+</div>
+
+<header>
+  <div class="logo">
+    <div class="txt"><strong>Stahllager</strong><span>Bestand &amp; Materialpr&uuml;fung</span></div>
+  </div>
+  <nav>
+    <button data-ansicht="plan" class="aktiv">Lagerplan</button>
+    <button data-ansicht="bestand">Bestandsliste</button>
+    <button data-ansicht="stueck">St&uuml;ckliste pr&uuml;fen</button>
+    <button data-ansicht="zaehlen">Inventur</button>
+    <button data-ansicht="banf">BANF</button>
+    <button data-ansicht="verbrauch">Verbrauch</button>
+    <button data-ansicht="archiv">Archiv</button>
+    <button data-ansicht="daten">Daten</button>
+  </nav>
+  <img id="kopfLogo" class="firmenlogo" alt="Industriepark Werk Bobingen">
+</header>
+
+<main>
+
+<section id="v-plan">
+  <div class="kennzahlen" id="kennzahlen"></div>
+  <div class="werkzeuge">
+    <label>Mindestbestand <input type="number" id="mindest" value="3" min="0" style="width:64px"></label>
+    <label>Ansicht <select id="zoomModus">
+      <option value="auto">an Bildschirm anpassen</option>
+      <option value="100">100 %</option><option value="90">90 %</option>
+      <option value="80">80 %</option><option value="70">70 %</option>
+    </select></label>
+    <button class="btn sek" onclick="drucken()">Drucken</button>
+    <span class="sub" style="margin:0">Fach anklicken zum Bearbeiten &middot; rot = auf oder unter Mindestbestand</span>
+  </div>
+  <div class="planbox"><div id="rasterSkala"><div id="raster"></div></div></div>
+</section>
+
+<section id="v-bestand" class="verstecke">
+  <h1>Bestandsliste</h1>
+  <p class="sub">Entnahme und Zugang direkt eintragen. Jede &Auml;nderung landet im Protokoll.</p>
+  <div class="werkzeuge">
+    <input type="text" id="suche" placeholder="Suchen, z. B. 40x12 oder 60" style="width:220px">
+    <select id="sortierung">
+      <option value="pos">Nach Fach sortieren</option>
+      <option value="mass">Nach Ma&szlig; sortieren</option>
+      <option value="anz">Nach Bestand sortieren</option>
+    </select>
+    <label><input type="checkbox" id="nurKnapp"> nur knappe Best&auml;nde</label>
+    <button class="btn sek" onclick="werkstoffGlobal()">Werkstoff f&uuml;r alle &auml;ndern</button>
+  </div>
+  <div class="karte" style="padding:0;overflow:auto;max-height:70vh">
+    <table class="liste"><thead><tr>
+      <th>Ma&szlig;</th><th>Werkstoff</th><th>R</th><th>Fach</th><th>Lager</th>
+      <th style="text-align:right">Stangen</th><th>&Auml;ndern</th>
+      <th style="text-align:right">Meter</th><th style="text-align:right">Rest</th><th>Status</th>
+    </tr></thead><tbody id="bestandBody"></tbody></table>
+  </div>
+</section>
+
+<section id="v-stueck" class="verstecke">
+  <h1>St&uuml;ckliste pr&uuml;fen</h1>
+  <p class="sub">Rohma&szlig;e eintragen &ndash; mit L&auml;nge rechnet die Pr&uuml;fung aus, wie viele Stangen n&ouml;tig sind.</p>
+  <div class="karte">
+    <table class="edit"><thead><tr>
+      <th style="width:140px">Rohma&szlig; (B x D)</th><th style="width:120px">L&auml;nge mm</th>
+      <th style="width:90px">St&uuml;ck</th><th>Bezeichnung / Teil</th><th style="width:36px"></th>
+    </tr></thead><tbody id="stkBody"></tbody></table>
+    <div class="werkzeuge" style="margin-top:12px">
+      <button class="btn sek" onclick="zeileHinzu()">+ Zeile</button>
+      <button class="btn" onclick="pruefen()">St&uuml;ckliste pr&uuml;fen</button>
+      <button class="btn sek" onclick="stkLeeren()">Leeren</button>
+    </div>
+    <details>
+      <summary style="cursor:pointer;color:var(--blau);font-size:13px">Mehrere Zeilen auf einmal einf&uuml;gen</summary>
+      <p class="sub" style="margin:8px 0">Eine Position je Zeile, z. B. <code>40x12; 320; 6; Konsole</code> oder <code>40x12 x 6</code></p>
+      <textarea id="paste" rows="5" style="width:100%;font-family:monospace;font-size:12.5px"></textarea>
+      <div style="margin-top:8px"><button class="btn sek" onclick="pasteImport()">&Uuml;bernehmen</button></div>
+    </details>
+  </div>
+  <div id="stkErgebnis"></div>
+</section>
+
+<section id="v-zaehlen" class="verstecke">
+  <h1>Inventur</h1>
+  <p class="sub">Z&auml;hlliste als CSV herunterladen, ausf&uuml;llen lassen, wieder hochladen.</p>
+  <div class="karte">
+    <h2 style="margin-top:0">1. Z&auml;hlliste erzeugen</h2>
+    <p class="sub">Die Liste enth&auml;lt immer den aktuellen Stand. Spalte <code>Gezaehlt</code> bleibt leer und wird ausgef&uuml;llt.</p>
+    <div class="werkzeuge">
+      <button class="btn" onclick="zaehllisteCsv()">Z&auml;hlliste herunterladen (.csv)</button>
+      <label><input type="checkbox" id="ohneSoll"> ohne Soll-Bestand (Blindz&auml;hlung)</label>
+    </div>
+    <div class="hinweis gelb" style="margin-bottom:0">Bei Blindz&auml;hlung sieht der Z&auml;hlende den Systemwert nicht &ndash;
+      das verhindert, dass einfach abgeschrieben wird.</div>
+  </div>
+  <div class="karte">
+    <h2 style="margin-top:0">2. Ausgef&uuml;llte Liste hochladen</h2>
+    <div class="werkzeuge">
+      <label>Gez&auml;hlt von <input type="text" id="zaehlerName" placeholder="Name des Z&auml;hlenden"
+        style="width:190px"></label>
+      <label class="btn" style="display:inline-block">CSV ausw&auml;hlen
+        <input type="file" id="csvDatei" accept=".csv,.txt" style="display:none"></label>
+      <span class="sub" style="margin:0" id="csvName"></span>
+    </div>
+    <p class="sub" style="margin:0 0 10px">Steht in der Spalte <code>Gezaehlt_von</code> ein Name, gilt der f&uuml;r
+      die jeweilige Zeile. Sonst wird dieser Name verwendet &ndash; so ist im Archiv immer nachvollziehbar,
+      wer gez&auml;hlt hat.</p>
+    <div id="csvErgebnis"></div>
+  </div>
+</section>
+
+<section id="v-banf" class="verstecke">
+  <h1>Bestellanforderung</h1>
+  <p class="sub">Positionen erg&auml;nzen oder &auml;ndern, dann als PDF drucken bzw. speichern.</p>
+
+  <div class="karte">
+    <h2 style="margin-top:0">Kopfdaten</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">
+      <label>BANF-Nummer<input type="text" id="bNummer" placeholder="wird vorgeschlagen"></label>
+      <label>Datum<input type="date" id="bDatum"></label>
+      <label>Angefordert von<input type="text" id="bVon" placeholder="Name"></label>
+      <label>Abteilung / Kostenstelle<input type="text" id="bKost" placeholder="z. B. Ausbildungswerkstatt"></label>
+      <label>Lieferant<input type="text" id="bLieferant" placeholder="optional"></label>
+      <label>Ben&ouml;tigt bis<input type="date" id="bBis"></label>
+      <label>Standard-Werkstoff<input type="text" id="bWerkstoff"></label>
+      <label>Standardl&auml;nge mm<input type="number" id="bLaenge" min="1"></label>
+    </div>
+    <label style="display:block;margin-top:10px">Bemerkung
+      <textarea id="bBemerkung" rows="2" style="width:100%" placeholder="z. B. Anlieferung an Tor 3, Kursbeginn 15.09."></textarea></label>
+  </div>
+
+  <div class="karte">
+    <h2 style="margin-top:0">Positionen</h2>
+    <div class="werkzeuge">
+      <button class="btn sek" onclick="banfZeile()">+ Position</button>
+      <button class="btn sek" onclick="banfAusVorschlag()">Aus Bestellvorschlag f&uuml;llen</button>
+      <button class="btn sek" onclick="banfAusKnapp()">Knappe Best&auml;nde &uuml;bernehmen</button>
+      <button class="btn sek" onclick="banfLeeren()">Alle Positionen l&ouml;schen</button>
+    </div>
+    <div style="overflow:auto">
+      <table class="edit" style="min-width:820px"><thead><tr>
+        <th style="width:118px">Ma&szlig; B&times;D</th><th style="width:150px">Werkstoff</th>
+        <th style="width:100px">L&auml;nge mm</th><th style="width:85px">Stangen</th>
+        <th style="width:105px">Gewicht kg</th><th>Bemerkung / Verwendung</th><th style="width:34px"></th>
+      </tr></thead><tbody id="banfBody"></tbody></table>
+    </div>
+    <div class="werkzeuge" style="margin-top:12px">
+      <button class="btn" onclick="banfDrucken()">Als PDF drucken</button>
+      <button class="btn sek" onclick="banfRechnen()">Gewichte neu berechnen</button>
+      <button class="btn sek" onclick="banfCsv()">Als CSV</button>
+    </div>
+    <div id="banfSumme"></div>
+    <p class="sub" style="margin:10px 0 0">Gewicht gerechnet mit 7,85 kg/dm&sup3; f&uuml;r Stahl.
+      Beim Drucken im Dialog &bdquo;Als PDF speichern&ldquo; w&auml;hlen.</p>
+  </div>
+</section>
+
+<section id="v-verbrauch" class="verstecke">
+  <h1>Verbrauch &amp; Vorschau</h1>
+  <p class="sub">Was wurde entnommen, wann wird es knapp und wann kommt die n&auml;chste Spitze.</p>
+  <div id="demoHinweis"></div>
+  <div class="werkzeuge">
+    <div class="zeitwahl" id="zeitwahl">
+      <button data-zeit="1" class="aktiv">Letzter Monat</button>
+      <button data-zeit="3">Letztes Quartal</button>
+      <button data-zeit="12">Letztes Jahr</button>
+    </div>
+    <button class="btn sek" onclick="demoDatenErzeugen()">Beispieldaten laden</button>
+    <button class="btn sek" onclick="verbrauchLeeren()">Verbrauchsdaten leeren</button>
+  </div>
+  <div class="kennzahlen" id="vKennzahlen"></div>
+  <div class="karte">
+    <h2 style="margin-top:0">Verbrauch je Monat</h2>
+    <div class="diagramm" id="chartMonate"></div>
+    <div class="legende">
+      <span><i style="background:#0F4C81"></i>Verbrauch in Stangen</span>
+      <span><i style="background:#E4B23C"></i>Kurszeitraum</span>
+      <span><i style="background:#B3261E"></i>Durchschnitt</span>
+      <span><i style="background:#0F4C81;opacity:.32"></i>au&szlig;erhalb des gew&auml;hlten Zeitraums</span>
+    </div>
+  </div>
+  <div class="karte">
+    <h2 style="margin-top:0">Meistverbrauchte Ma&szlig;e im Zeitraum</h2>
+    <div class="diagramm" id="chartTop"></div>
+  </div>
+  <div class="karte">
+    <h2 style="margin-top:0">Reichweite und Bestellvorschlag</h2>
+    <p class="sub">Reichweite = aktueller Bestand geteilt durch den durchschnittlichen Monatsverbrauch.</p>
+    <div style="overflow:auto;max-height:52vh">
+      <table class="liste"><thead><tr>
+        <th>Ma&szlig;</th><th>Fach</th><th style="text-align:right">Bestand</th>
+        <th style="text-align:right" id="thSchnitt">&Oslash; / Monat</th>
+        <th style="text-align:right">Spitzenmonat</th>
+        <th style="text-align:right">Reichweite</th><th>Bewertung</th><th style="text-align:right">Vorschlag</th>
+      </tr></thead><tbody id="reichweiteBody"></tbody></table>
+    </div>
+  </div>
+  <div class="karte">
+    <h2 style="margin-top:0">Analyse</h2>
+    <div class="analyse" id="analyseText"></div>
+  </div>
+</section>
+
+<section id="v-archiv" class="verstecke">
+  <h1>Archiv</h1>
+  <p class="sub">Jede &Auml;nderung mit Zeitpunkt, Person und altem sowie neuem Wert.</p>
+  <div class="werkzeuge">
+    <input type="text" id="aSuche" placeholder="Ma&szlig;, Fach oder Text" style="width:200px">
+    <select id="aBenutzer"><option value="">alle Personen</option></select>
+    <select id="aArt">
+      <option value="">alle Vorg&auml;nge</option>
+      <option value="Bestand">Bestand ge&auml;ndert</option>
+      <option value="Entnahme">Entnahme</option>
+      <option value="Inventur">Inventur</option>
+      <option value="Fach">Fach bearbeitet</option>
+      <option value="Werkstoff">Werkstoff</option>
+      <option value="System">System</option>
+    </select>
+    <label>von <input type="date" id="aVon"></label>
+    <label>bis <input type="date" id="aBis"></label>
+    <button class="btn sek" onclick="archivCsv()">Archiv als CSV</button>
+  </div>
+  <div class="kennzahlen" id="aKennzahlen"></div>
+  <div class="karte" style="padding:0;overflow:auto;max-height:64vh">
+    <table class="liste"><thead><tr>
+      <th style="width:140px">Zeitpunkt</th><th style="width:120px">Person</th><th style="width:120px">Vorgang</th>
+      <th>Ma&szlig;</th><th>Fach</th><th style="text-align:right">vorher</th>
+      <th style="text-align:right">nachher</th><th style="text-align:right">Differenz</th><th>Bemerkung</th>
+    </tr></thead><tbody id="archivBody"></tbody></table>
+  </div>
+</section>
+
+<section id="v-daten" class="verstecke">
+  <h1>Daten &amp; Einstellungen</h1>
+  <div class="karte">
+    <h2 style="margin-top:0">Einstellungen</h2>
+    <div class="werkzeuge">
+      <label>Stangenl&auml;nge mm <input type="number" id="stangeLaenge" value="1300" min="1" style="width:90px"></label>
+      <label>Standard-Werkstoff <input type="text" id="stdWerkstoff" value="S235JR+C" style="width:140px"></label>
+    </div>
+    <p class="sub" style="margin:0">Ein St&uuml;ck im Bestand entspricht einer Stange dieser L&auml;nge.</p>
+  </div>
+  <div class="karte">
+    <h2 style="margin-top:0">Sichern &amp; laden</h2>
+    <div class="werkzeuge">
+      <button class="btn" onclick="exportJson()">Bestand sichern (.json)</button>
+      <button class="btn sek" onclick="exportCsv()">Vollst&auml;ndige Liste (.csv)</button>
+      <label class="btn sek" style="display:inline-block">Sicherung laden
+        <input type="file" id="importDatei" accept=".json" style="display:none"></label>
+      <button class="btn sek" onclick="drucken()">Drucken</button>
+      <button class="btn rot" onclick="abmelden()" id="btnAbmelden" style="display:none">Abmelden</button>
+    </div>
+    <div class="hinweis" style="margin-bottom:0" id="datenHinweis">Die Daten liegen nur in diesem Browser. Nach dem Arbeiten sichern
+      und die Datei aufs Netzlaufwerk legen.</div>
+  </div>
+  <div class="karte">
+    <h2 style="margin-top:0">Protokoll dieser Sitzung</h2>
+    <div class="protokoll" id="protokoll"><div>Noch keine &Auml;nderungen.</div></div>
+  </div>
+</section>
+
+</main>
+
+<div id="loginBox"></div>
+<div id="dialogBox"></div>
+<div id="druck"></div>
+<footer>Stahllager 1 + 2 &nbsp;&middot;&nbsp; 98 F&auml;cher &nbsp;&middot;&nbsp; interne Anwendung</footer>
+
+<script>
+/* =====================================================================
+   FIREBASE-ZUGANGSDATEN - hier die Werte aus der Firebase-Konsole eintragen.
+   Solange apiKey leer bleibt, laeuft die Datei wie bisher rein lokal.
+   ===================================================================== */
+const FIREBASE_KONFIG = {
+  apiKey:            "AIzaSyDMamppXsVxi56nBiNOX0uDqtoqrDVMYR0",
+  authDomain:        "iwb-ausbildung.firebaseapp.com",
+  projectId:         "iwb-ausbildung",
+  storageBucket:     "iwb-ausbildung.firebasestorage.app",
+  messagingSenderId: "430719610437",
+  appId:             "1:430719610437:web:80e51fef1920f817a1bd2c"
+};
+/* ===================================================================== */
+
+const LOGO = 'data:image/png;base64,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';
+const START = [{"r": 1, "f": 1, "gruppe": "Vierkant", "farbe": "#0F4C81", "items": [{"m": "5x5", "q": null, "rest": 0, "wst": "S235JR+C"}]}, {"r": 1, "f": 2, "gruppe": "Vierkant", "farbe": "#0F4C81", "items": [{"m": "6x6", "q": 8, "rest": 0, "wst": "S235JR+C"}]}, {"r": 1, "f": 3, "gruppe": "Vierkant", "farbe": "#0F4C81", "items": [{"m": "12x12", "q": 8, "rest": 0, "wst": "S235JR+C"}]}, {"r": 1, "f": 4, "gruppe": "Vierkant", "farbe": "#0F4C81", "items": [{"m": "15x15", "q": 12, "rest": 0, "wst": "S235JR+C"}]}, {"r": 1, "f": 5, "gruppe": "Vierkant", "farbe": "#0F4C81", "items": [{"m": "16x16", "q": 14, "rest": 0, "wst": "S235JR+C"}]}, {"r": 1, "f": 6, "gruppe": "Vierkant", "farbe": "#0F4C81", "items": [{"m": "18x18", "q": 7, "rest": 0, "wst": "S235JR+C"}]}, {"r": 1, "f": 7, "gruppe": "Vierkant", "farbe": "#0F4C81", "items": [{"m": "30x30", "q": 13, "rest": 0, "wst": "S235JR+C"}]}, {"r": 1, "f": 8, "gruppe": "Vierkant", "farbe": "#0F4C81", "items": [{"m": "32x32", "q": 8, "rest": 0, "wst": "S235JR+C"}]}, {"r": 1, "f": 9, "gruppe": "Vierkant", "farbe": "#0F4C81", "items": [{"m": "40x40", "q": 5, "rest": 0, "wst": "S235JR+C"}]}, {"r": 1, "f": 10, "gruppe": "Vierkant", "farbe": "#0F4C81", "items": [{"m": "45x45", "q": 6, "rest": 0, "wst": "S235JR+C"}]}, {"r": 1, "f": 11, "gruppe": "Vierkant", "farbe": "#0F4C81", "items": [{"m": "55x55", "q": 6, "rest": 3, "wst": "S235JR+C"}]}, {"r": 1, "f": 12, "gruppe": "Vierkant", "farbe": "#0F4C81", "items": [{"m": "60x60", "q": 5, "rest": 0, "wst": "S235JR+C"}]}, {"r": 1, "f": 13, "gruppe": "Vierkant", "farbe": "#0F4C81", "items": []}, {"r": 1, "f": 14, "gruppe": "Vierkant", "farbe": "#0F4C81", "items": []}, {"r": 2, "f": 1, "gruppe": "Flach 10-20", "farbe": "#1C6BA8", "items": [{"m": "10x5", "q": 6, "rest": 0, "wst": "S235JR+C"}, {"m": "10x6", "q": 10, "rest": 0, "wst": "S235JR+C"}]}, {"r": 2, "f": 2, "gruppe": "Flach 10-20", "farbe": "#1C6BA8", "items": [{"m": "10x8", "q": 18, "rest": 0, "wst": "S235JR+C"}]}, {"r": 2, "f": 3, "gruppe": "Flach 10-20", "farbe": "#1C6BA8", "items": [{"m": "12x4", "q": 12, "rest": 0, "wst": "S235JR+C"}, {"m": "12x5", "q": 15, "rest": 0, "wst": "S235JR+C"}]}, {"r": 2, "f": 4, "gruppe": "Flach 10-20", "farbe": "#1C6BA8", "items": [{"m": "12x6", "q": 14, "rest": 0, "wst": "S235JR+C"}, {"m": "12x10", "q": 6, "rest": 0, "wst": "S235JR+C"}]}, {"r": 2, "f": 5, "gruppe": "Flach 10-20", "farbe": "#1C6BA8", "items": [{"m": "14x5", "q": 6, "rest": 0, "wst": "S235JR+C"}]}, {"r": 2, "f": 6, "gruppe": "Flach 10-20", "farbe": "#1C6BA8", "items": [{"m": "15x4", "q": null, "rest": 0, "wst": "S235JR+C"}, {"m": "15x5", "q": 12, "rest": 0, "wst": "S235JR+C"}]}, {"r": 2, "f": 7, "gruppe": "Flach 10-20", "farbe": "#1C6BA8", "items": [{"m": "15x6", "q": 10, "rest": 0, "wst": "S235JR+C"}, {"m": "15x8", "q": 5, "rest": 0, "wst": "S235JR+C"}]}, {"r": 2, "f": 8, "gruppe": "Flach 10-20", "farbe": "#1C6BA8", "items": [{"m": "15x10", "q": 8, "rest": 0, "wst": "S235JR+C"}]}, {"r": 2, "f": 9, "gruppe": "Flach 10-20", "farbe": "#1C6BA8", "items": [{"m": "16x5", "q": 12, "rest": 0, "wst": "S235JR+C"}]}, {"r": 2, "f": 10, "gruppe": "Flach 10-20", "farbe": "#1C6BA8", "items": [{"m": "16x12", "q": 14, "rest": 0, "wst": "S235JR+C"}]}, {"r": 2, "f": 11, "gruppe": "Flach 10-20", "farbe": "#1C6BA8", "items": [{"m": "18x8", "q": 10, "rest": 0, "wst": "S235JR+C"}]}, {"r": 2, "f": 12, "gruppe": "Flach 10-20", "farbe": "#1C6BA8", "items": [{"m": "18x10", "q": 13, "rest": 0, "wst": "S235JR+C"}]}, {"r": 2, "f": 13, "gruppe": "Flach 10-20", "farbe": "#1C6BA8", "items": [{"m": "20x4", "q": 14, "rest": 0, "wst": "S235JR+C"}]}, {"r": 2, "f": 14, "gruppe": "Flach 10-20", "farbe": "#1C6BA8", "items": [{"m": "20x12", "q": 6, "rest": 0, "wst": "S235JR+C"}, {"m": "20x18", "q": 2, "rest": 0, "wst": "S235JR+C"}]}, {"r": 3, "f": 1, "gruppe": "Flach 22-30", "farbe": "#2E8B57", "items": [{"m": "22x8", "q": 12, "rest": 0, "wst": "S235JR+C"}]}, {"r": 3, "f": 2, "gruppe": "Flach 22-30", "farbe": "#2E8B57", "items": [{"m": "22x12", "q": 13, "rest": 0, "wst": "S235JR+C"}]}, {"r": 3, "f": 3, "gruppe": "Flach 22-30", "farbe": "#2E8B57", "items": [{"m": "25x6", "q": 2, "rest": 0, "wst": "S235JR+C"}]}, {"r": 3, "f": 4, "gruppe": "Flach 22-30", "farbe": "#2E8B57", "items": [{"m": "25x8", "q": 10, "rest": 0, "wst": "S235JR+C"}]}, {"r": 3, "f": 5, "gruppe": "Flach 22-30", "farbe": "#2E8B57", "items": [{"m": "25x10", "q": 2, "rest": 0, "wst": "S235JR+C"}]}, {"r": 3, "f": 6, "gruppe": "Flach 22-30", "farbe": "#2E8B57", "items": [{"m": "25x12", "q": 5, "rest": 0, "wst": "S235JR+C"}]}, {"r": 3, "f": 7, "gruppe": "Flach 22-30", "farbe": "#2E8B57", "items": [{"m": "25x15", "q": 4, "rest": 0, "wst": "S235JR+C"}]}, {"r": 3, "f": 8, "gruppe": "Flach 22-30", "farbe": "#2E8B57", "items": [{"m": "25x16", "q": 4, "rest": 0, "wst": "S235JR+C"}]}, {"r": 3, "f": 9, "gruppe": "Flach 22-30", "farbe": "#2E8B57", "items": [{"m": "25x18", "q": 6, "rest": 0, "wst": "S235JR+C"}]}, {"r": 3, "f": 10, "gruppe": "Flach 22-30", "farbe": "#2E8B57", "items": [{"m": "25x20", "q": 8, "rest": 0, "wst": "S235JR+C"}]}, {"r": 3, "f": 11, "gruppe": "Flach 22-30", "farbe": "#2E8B57", "items": [{"m": "28x5", "q": 4, "rest": 0, "wst": "S235JR+C"}]}, {"r": 3, "f": 12, "gruppe": "Flach 22-30", "farbe": "#2E8B57", "items": [{"m": "28x10", "q": 8, "rest": 0, "wst": "S235JR+C"}]}, {"r": 3, "f": 13, "gruppe": "Flach 22-30", "farbe": "#2E8B57", "items": [{"m": "28x12", "q": 11, "rest": 0, "wst": "S235JR+C"}]}, {"r": 3, "f": 14, "gruppe": "Flach 22-30", "farbe": "#2E8B57", "items": [{"m": "30x2", "q": 5, "rest": 0, "wst": "S235JR+C"}]}, {"r": 4, "f": 1, "gruppe": "Flach 30/32", "farbe": "#8A6D1F", "items": [{"m": "30x5", "q": 7, "rest": 0, "wst": "S235JR+C"}]}, {"r": 4, "f": 2, "gruppe": "Flach 30/32", "farbe": "#8A6D1F", "items": [{"m": "30x6", "q": 19, "rest": 0, "wst": "S235JR+C"}]}, {"r": 4, "f": 3, "gruppe": "Flach 30/32", "farbe": "#8A6D1F", "items": [{"m": "30x8", "q": 11, "rest": 0, "wst": "S235JR+C"}]}, {"r": 4, "f": 4, "gruppe": "Flach 30/32", "farbe": "#8A6D1F", "items": [{"m": "30x10", "q": 7, "rest": 0, "wst": "S235JR+C"}]}, {"r": 4, "f": 5, "gruppe": "Flach 30/32", "farbe": "#8A6D1F", "items": [{"m": "30x15", "q": 7, "rest": 0, "wst": "S235JR+C"}]}, {"r": 4, "f": 6, "gruppe": "Flach 30/32", "farbe": "#8A6D1F", "items": [{"m": "30x16", "q": 5, "rest": 0, "wst": "S235JR+C"}]}, {"r": 4, "f": 7, "gruppe": "Flach 30/32", "farbe": "#8A6D1F", "items": [{"m": "30x20", "q": 15, "rest": 0, "wst": "S235JR+C"}]}, {"r": 4, "f": 8, "gruppe": "Flach 30/32", "farbe": "#8A6D1F", "items": [{"m": "30x25", "q": 16, "rest": 0, "wst": "S235JR+C"}]}, {"r": 4, "f": 9, "gruppe": "Flach 30/32", "farbe": "#8A6D1F", "items": [{"m": "32x5", "q": 9, "rest": 0, "wst": "S235JR+C"}]}, {"r": 4, "f": 10, "gruppe": "Flach 30/32", "farbe": "#8A6D1F", "items": [{"m": "32x8", "q": 15, "rest": 0, "wst": "S235JR+C"}]}, {"r": 4, "f": 11, "gruppe": "Flach 30/32", "farbe": "#8A6D1F", "items": [{"m": "32x10", "q": 12, "rest": 0, "wst": "S235JR+C"}]}, {"r": 4, "f": 12, "gruppe": "Flach 30/32", "farbe": "#8A6D1F", "items": [{"m": "32x12", "q": 15, "rest": 0, "wst": "S235JR+C"}]}, {"r": 4, "f": 13, "gruppe": "Flach 30/32", "farbe": "#8A6D1F", "items": [{"m": "32x16", "q": 6, "rest": 0, "wst": "S235JR+C"}]}, {"r": 4, "f": 14, "gruppe": "Flach 30/32", "farbe": "#8A6D1F", "items": [{"m": "32x20", "q": 4, "rest": 0, "wst": "S235JR+C"}, {"m": "32x25", "q": 7, "rest": 0, "wst": "S235JR+C"}]}, {"r": 5, "f": 1, "gruppe": "Flach 35-45", "farbe": "#A0522D", "items": [{"m": "35x5", "q": 3, "rest": 0, "wst": "S235JR+C"}, {"m": "35x6", "q": 5, "rest": 0, "wst": "S235JR+C"}]}, {"r": 5, "f": 2, "gruppe": "Flach 35-45", "farbe": "#A0522D", "items": [{"m": "35x8", "q": 4, "rest": 0, "wst": "S235JR+C"}]}, {"r": 5, "f": 3, "gruppe": "Flach 35-45", "farbe": "#A0522D", "items": [{"m": "35x20", "q": 4, "rest": 0, "wst": "S235JR+C"}]}, {"r": 5, "f": 4, "gruppe": "Flach 35-45", "farbe": "#A0522D", "items": [{"m": "35x25", "q": 7, "rest": 0, "wst": "S235JR+C"}]}, {"r": 5, "f": 5, "gruppe": "Flach 35-45", "farbe": "#A0522D", "items": [{"m": "40x3", "q": 13, "rest": 0, "wst": "S235JR+C"}]}, {"r": 5, "f": 6, "gruppe": "Flach 35-45", "farbe": "#A0522D", "items": [{"m": "40x5", "q": 11, "rest": 0, "wst": "S235JR+C"}]}, {"r": 5, "f": 7, "gruppe": "Flach 35-45", "farbe": "#A0522D", "items": [{"m": "40x6", "q": 6, "rest": 0, "wst": "S235JR+C"}]}, {"r": 5, "f": 8, "gruppe": "Flach 35-45", "farbe": "#A0522D", "items": [{"m": "40x8", "q": 11, "rest": 0, "wst": "S235JR+C"}]}, {"r": 5, "f": 9, "gruppe": "Flach 35-45", "farbe": "#A0522D", "items": [{"m": "40x12", "q": 17, "rest": 0, "wst": "S235JR+C"}]}, {"r": 5, "f": 10, "gruppe": "Flach 35-45", "farbe": "#A0522D", "items": [{"m": "40x15", "q": 7, "rest": 0, "wst": "S235JR+C"}]}, {"r": 5, "f": 11, "gruppe": "Flach 35-45", "farbe": "#A0522D", "items": [{"m": "40x20", "q": 4, "rest": 0, "wst": "S235JR+C"}]}, {"r": 5, "f": 12, "gruppe": "Flach 35-45", "farbe": "#A0522D", "items": [{"m": "40x25", "q": 13, "rest": 0, "wst": "S235JR+C"}]}, {"r": 5, "f": 13, "gruppe": "Flach 35-45", "farbe": "#A0522D", "items": [{"m": "45x5", "q": 5, "rest": 0, "wst": "S235JR+C"}, {"m": "45x6", "q": 2, "rest": 0, "wst": "S235JR+C"}]}, {"r": 5, "f": 14, "gruppe": "Flach 35-45", "farbe": "#A0522D", "items": [{"m": "45x10", "q": 19, "rest": 0, "wst": "S235JR+C"}]}, {"r": 6, "f": 1, "gruppe": "Flach 50-60", "farbe": "#6A3D9A", "items": [{"m": "50x4", "q": 5, "rest": 0, "wst": "S235JR+C"}, {"m": "50x5", "q": 6, "rest": 0, "wst": "S235JR+C"}]}, {"r": 6, "f": 2, "gruppe": "Flach 50-60", "farbe": "#6A3D9A", "items": [{"m": "50x6", "q": 20, "rest": 0, "wst": "S235JR+C"}]}, {"r": 6, "f": 3, "gruppe": "Flach 50-60", "farbe": "#6A3D9A", "items": [{"m": "50x8", "q": 5, "rest": 0, "wst": "S235JR+C"}]}, {"r": 6, "f": 4, "gruppe": "Flach 50-60", "farbe": "#6A3D9A", "items": [{"m": "50x10", "q": 7, "rest": 0, "wst": "S235JR+C"}]}, {"r": 6, "f": 5, "gruppe": "Flach 50-60", "farbe": "#6A3D9A", "items": [{"m": "50x16", "q": 22, "rest": 0, "wst": "S235JR+C"}]}, {"r": 6, "f": 6, "gruppe": "Flach 50-60", "farbe": "#6A3D9A", "items": [{"m": "50x20", "q": 18, "rest": 32, "wst": "S235JR+C"}]}, {"r": 6, "f": 7, "gruppe": "Flach 50-60", "farbe": "#6A3D9A", "items": [{"m": "55x15", "q": 12, "rest": 0, "wst": "S235JR+C"}]}, {"r": 6, "f": 8, "gruppe": "Flach 50-60", "farbe": "#6A3D9A", "items": [{"m": "55x16", "q": 10, "rest": 0, "wst": "S235JR+C"}]}, {"r": 6, "f": 9, "gruppe": "Flach 50-60", "farbe": "#6A3D9A", "items": [{"m": "56x16", "q": 12, "rest": 0, "wst": "S235JR+C"}]}, {"r": 6, "f": 10, "gruppe": "Flach 50-60", "farbe": "#6A3D9A", "items": [{"m": "60x4", "q": 8, "rest": 0, "wst": "S235JR+C"}, {"m": "60x5", "q": 8, "rest": 0, "wst": "S235JR+C"}, {"m": "60x6", "q": 5, "rest": 0, "wst": "S235JR+C"}]}, {"r": 6, "f": 11, "gruppe": "Flach 50-60", "farbe": "#6A3D9A", "items": [{"m": "60x10", "q": 9, "rest": 0, "wst": "S235JR+C"}]}, {"r": 6, "f": 12, "gruppe": "Flach 50-60", "farbe": "#6A3D9A", "items": [{"m": "60x12", "q": 10, "rest": 0, "wst": "S235JR+C"}]}, {"r": 6, "f": 13, "gruppe": "Flach 50-60", "farbe": "#6A3D9A", "items": [{"m": "60x15", "q": 10, "rest": 0, "wst": "S235JR+C"}]}, {"r": 6, "f": 14, "gruppe": "Flach 50-60", "farbe": "#6A3D9A", "items": [{"m": "60x16", "q": 19, "rest": 0, "wst": "S235JR+C"}]}, {"r": 7, "f": 1, "gruppe": "Flach 60-100", "farbe": "#A5203C", "items": [{"m": "60x25", "q": 12, "rest": 6, "wst": "S235JR+C"}]}, {"r": 7, "f": 2, "gruppe": "Flach 60-100", "farbe": "#A5203C", "items": [{"m": "60x30", "q": 8, "rest": 27, "wst": "S235JR+C"}]}, {"r": 7, "f": 3, "gruppe": "Flach 60-100", "farbe": "#A5203C", "items": [{"m": "63x6", "q": 11, "rest": 0, "wst": "S235JR+C"}]}, {"r": 7, "f": 4, "gruppe": "Flach 60-100", "farbe": "#A5203C", "items": [{"m": "63x12", "q": 2, "rest": 0, "wst": "S235JR+C"}]}, {"r": 7, "f": 5, "gruppe": "Flach 60-100", "farbe": "#A5203C", "items": [{"m": "65x15", "q": 20, "rest": 6, "wst": "S235JR+C"}]}, {"r": 7, "f": 6, "gruppe": "Flach 60-100", "farbe": "#A5203C", "items": [{"m": "65x16", "q": 4, "rest": 0, "wst": "S235JR+C"}]}, {"r": 7, "f": 7, "gruppe": "Flach 60-100", "farbe": "#A5203C", "items": [{"m": "70x8", "q": 16, "rest": 0, "wst": "S235JR+C"}]}, {"r": 7, "f": 8, "gruppe": "Flach 60-100", "farbe": "#A5203C", "items": [{"m": "70x12", "q": 3, "rest": 0, "wst": "S235JR+C"}]}, {"r": 7, "f": 9, "gruppe": "Flach 60-100", "farbe": "#A5203C", "items": [{"m": "70x15", "q": 18, "rest": 8, "wst": "S235JR+C"}]}, {"r": 7, "f": 10, "gruppe": "Flach 60-100", "farbe": "#A5203C", "items": [{"m": "80x8", "q": 16, "rest": 0, "wst": "S235JR+C"}]}, {"r": 7, "f": 11, "gruppe": "Flach 60-100", "farbe": "#A5203C", "items": [{"m": "80x10", "q": 4, "rest": 0, "wst": "S235JR+C"}]}, {"r": 7, "f": 12, "gruppe": "Flach 60-100", "farbe": "#A5203C", "items": [{"m": "80x20", "q": 9, "rest": 0, "wst": "S235JR+C"}]}, {"r": 7, "f": 13, "gruppe": "Flach 60-100", "farbe": "#A5203C", "items": [{"m": "80x30", "q": 2, "rest": 0, "wst": "S235JR+C"}]}, {"r": 7, "f": 14, "gruppe": "Flach 60-100", "farbe": "#A5203C", "items": [{"m": "100x8", "q": 7, "rest": 0, "wst": "S235JR+C"}]}];
+let lager = JSON.parse(JSON.stringify(START));
+let protokoll = [];
+let csvDiff = null;
+
+const alleItems = () => lager.flatMap(f => f.items.map(i => ({...i, r:f.r, fa:f.f, gruppe:f.gruppe, farbe:f.farbe})));
+const findItem = m => { for(const f of lager){ for(const i of f.items){ if(i.m===m) return {fach:f,item:i}; } } return null; };
+const el = id => document.getElementById(id);
+const mindest = () => parseInt(el('mindest').value||'0',10);
+const stange = () => parseInt(el('stangeLaenge').value||'1300',10);
+const stdWst = () => el('stdWerkstoff').value.trim() || 'S235JR+C';
+const istGenug = i => i.q === null;
+const breite = m => parseFloat(String(m).split('x')[0]);
+const dicke  = m => parseFloat(String(m).split('x')[1]);
+
+/* ---------- Navigation ---------- */
+document.querySelectorAll('nav button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('nav button').forEach(x => x.classList.remove('aktiv'));
+  b.classList.add('aktiv');
+  ['plan','bestand','stueck','zaehlen','banf','verbrauch','archiv','daten'].forEach(v =>
+    el('v-'+v).classList.toggle('verstecke', v !== b.dataset.ansicht));
+  if(b.dataset.ansicht === 'plan') skaliere();
+  if(b.dataset.ansicht === 'verbrauch') zeichneVerbrauch();
+  if(b.dataset.ansicht === 'banf' && !document.querySelector('#banfBody tr')) banfZeile();
+  if(b.dataset.ansicht === 'archiv') zeichneArchiv();
+});
+
+/* ---------- Lagerplan ---------- */
+function zeichneRaster(){
+  const min = mindest();
+  let h = '<table class="raster"><thead><tr><th>Gruppe</th><th>R</th>';
+  for(let i=1;i<=7;i++) h += '<th>Fach '+i+'</th>';
+  h += '<th class="luecke"></th>';
+  for(let i=8;i<=14;i++) h += '<th>Fach '+i+'</th>';
+  h += '<th>R</th></tr></thead><tbody>';
+  for(let r=1;r<=7;r++){
+    const zeile = lager.filter(x => x.r===r).sort((a,b)=>a.f-b.f);
+    const farbe = zeile[0].farbe, gruppe = zeile[0].gruppe;
+    h += '<tr><td class="gruppe" style="background:'+farbe+'">'+gruppe.replace(' ','<br>')+'</td>';
+    h += '<td class="reihe" style="background:'+farbe+'">'+r+'</td>';
+    zeile.forEach((f,idx) => {
+      if(idx===7) h += '<td class="luecke"></td>';
+      if(f.items.length===0){
+        h += '<td><div class="fach frei" onclick="oeffneFach('+r+','+f.f+')">frei<span class="nr">F'+f.f+'</span></div></td>';
+      } else {
+        const kritisch = f.items.some(i => !istGenug(i) && i.q <= min && i.q > 0);
+        const leer0 = f.items.every(i => !istGenug(i) && i.q === 0);
+        const wst = [...new Set(f.items.map(i=>i.wst))];
+        h += '<td><div class="fach'+(f.items.length>1?' mehrfach':'')+(kritisch?' kritisch':'')+
+             (leer0?' leer0':'')+'" onclick="oeffneFach('+r+','+f.f+')">'+
+             '<span class="balken" style="background:'+farbe+'"></span>';
+        f.items.forEach(i => {
+          h += '<div class="zeile"><span class="mass">'+i.m+'</span><span class="anz">'+
+               (istGenug(i)?'genug':i.q)+'</span></div>';
+        });
+        h += '<span class="nr">F'+f.f+'</span>'+
+             (wst.length===1 && wst[0]!==stdWst() ? '<span class="wst">'+wst[0]+'</span>':'')+'</div></td>';
+      }
+    });
+    h += '<td class="reihe" style="background:'+farbe+'">'+r+'</td></tr>';
+  }
+  el('raster').innerHTML = h + '</tbody></table>';
+  zeichneKennzahlen();
+  skaliere();
+}
+
+function skaliere(){
+  const box = el('raster').parentElement.parentElement;
+  const tab = el('raster').firstChild;
+  if(!tab) return;
+  const modus = el('zoomModus').value;
+  const breiteVerf = box.clientWidth - 20;
+  let s = modus === 'auto' ? Math.min(1, breiteVerf / tab.offsetWidth) : parseInt(modus,10)/100;
+  el('rasterSkala').style.transform = 'scale('+s+')';
+  el('rasterSkala').style.width = (100/s)+'%';
+  box.style.height = (tab.offsetHeight * s + 20) + 'px';
+}
+window.addEventListener('resize', skaliere);
+
+function zeichneKennzahlen(){
+  const items = alleItems(), min = mindest();
+  const stueck = items.reduce((s,i)=> s + (istGenug(i)?0:i.q), 0);
+  const meter = (stueck * stange() / 1000);
+  const knapp = items.filter(i => !istGenug(i) && i.q <= min && i.q > 0).length;
+  const leer  = items.filter(i => !istGenug(i) && i.q === 0).length;
+  el('kennzahlen').innerHTML =
+    kz(items.length,'Ma&szlig;e') + kz(stueck,'Stangen') +
+    kz(meter.toLocaleString('de-DE',{maximumFractionDigits:0})+' m','Gesamtl&auml;nge') +
+    kz(lager.filter(f=>f.items.length===0).length,'F&auml;cher frei') +
+    kz(knapp,'knapp', knapp>0) + kz(leer,'leer', leer>0);
+}
+const kz = (w,t,warn) => '<div class="kz'+(warn?' warn':'')+'"><b>'+w+'</b><span>'+t+'</span></div>';
+
+/* ---------- Fach bearbeiten ---------- */
+function oeffneFach(r,f){
+  const fach = lager.find(x => x.r===r && x.f===f);
+  let zeilen = fach.items.map(i => ({...i}));
+  const zeichne = () => {
+    el('dialogBox').innerHTML =
+      '<div class="overlay" onclick="if(event.target===this)schliesse()"><div class="dialog">'+
+      '<div class="kopf"><div><b>Fach R'+r+' / F'+f+'</b> <span>&nbsp;Lager '+(f<=7?1:2)+
+      ' &middot; '+fach.gruppe+'</span></div><button class="zu" onclick="schliesse()">&times;</button></div>'+
+      '<div class="rumpf"><table class="edit"><thead><tr>'+
+      '<th style="width:120px">Ma&szlig; (BxD)</th><th style="width:150px">Werkstoff</th>'+
+      '<th style="width:95px">Stangen</th><th style="width:95px">Rest extern</th><th style="width:36px"></th>'+
+      '</tr></thead><tbody id="editBody"></tbody></table>'+
+      '<div style="margin-top:12px"><button class="btn sek" onclick="editZeile()">+ Ma&szlig; hinzuf&uuml;gen</button></div>'+
+      '<p class="sub" style="margin-top:12px">Bestand leer lassen f&uuml;r &bdquo;genug&ldquo; (wird nicht gez&auml;hlt). '+
+      'Ma&szlig; l&ouml;schen: Zeile mit &times; entfernen.</p></div>'+
+      '<div class="fuss"><button class="btn sek" onclick="schliesse()">Abbrechen</button>'+
+      '<button class="btn" onclick="fachSpeichern('+r+','+f+')">Speichern</button></div></div></div>';
+    el('editBody').innerHTML = zeilen.map((z,ix) =>
+      '<tr><td><input type="text" value="'+z.m+'" data-k="m" data-ix="'+ix+'"></td>'+
+      '<td><input type="text" value="'+(z.wst||stdWst())+'" data-k="wst" data-ix="'+ix+'"></td>'+
+      '<td><input type="text" value="'+(z.q===null?'':z.q)+'" data-k="q" data-ix="'+ix+'" placeholder="genug"></td>'+
+      '<td><input type="text" value="'+(z.rest||'')+'" data-k="rest" data-ix="'+ix+'" placeholder="0"></td>'+
+      '<td><button class="mini" onclick="editEntfernen('+ix+')">&times;</button></td></tr>').join('') ||
+      '<tr><td colspan="5" class="sub" style="padding:12px">Fach ist leer.</td></tr>';
+  };
+  window.__zeilen = zeilen; window.__zeichneEdit = zeichne;
+  zeichne();
+}
+function editLesen(){
+  document.querySelectorAll('#editBody input').forEach(inp => {
+    const z = window.__zeilen[parseInt(inp.dataset.ix,10)];
+    if(inp.dataset.k === 'q') z.q = inp.value.trim()==='' ? null : Math.max(0, parseInt(inp.value,10)||0);
+    else if(inp.dataset.k === 'rest') z.rest = parseInt(inp.value,10)||0;
+    else z[inp.dataset.k] = inp.value.trim();
+  });
+}
+function editZeile(){ editLesen(); window.__zeilen.push({m:'',wst:stdWst(),q:0,rest:0}); window.__zeichneEdit(); }
+function editEntfernen(ix){ editLesen(); window.__zeilen.splice(ix,1); window.__zeichneEdit(); }
+function schliesse(){ el('dialogBox').innerHTML=''; }
+
+function fachSpeichern(r,f){
+  editLesen();
+  const fach = lager.find(x => x.r===r && x.f===f);
+  const neu = window.__zeilen.filter(z => z.m && /^\d+([.,]\d+)?x\d+([.,]\d+)?$/.test(z.m.replace(/\s/g,'')));
+  const ungueltig = window.__zeilen.filter(z => z.m).length - neu.length;
+  if(ungueltig){ alert('Bitte Maße im Format 40x12 eintragen. '+ungueltig+' Zeile(n) nicht erkannt.'); return; }
+  const alt = fach.items.map(i => i.m+'/'+(i.q===null?'genug':i.q)).join(', ') || 'leer';
+  fach.items = neu.map(z => ({m:z.m.replace(/\s/g,''), q:z.q, rest:z.rest||0, wst:z.wst||stdWst()}));
+  const jetzt = fach.items.map(i => i.m+'/'+(i.q===null?'genug':i.q)).join(', ') || 'leer';
+  if(alt !== jetzt){
+    logge('Fach R'+r+'/F'+f+' bearbeitet: '+alt+' → '+jetzt);
+    notiere('Fach', '', 'R'+r+' / F'+f, null, null, 'vorher: '+alt+' | nachher: '+jetzt);
+  }
+  schliesse(); alles();
+}
+
+function werkstoffGlobal(){
+  const w = prompt('Werkstoff für ALLE Maße setzen:', stdWst());
+  if(!w) return;
+  lager.forEach(f => f.items.forEach(i => i.wst = w.trim()));
+  el('stdWerkstoff').value = w.trim();
+  logge('Werkstoff für alle Positionen auf '+w.trim()+' gesetzt');
+  notiere('Werkstoff', '', 'alle', null, null, 'auf '+w.trim()+' gesetzt');
+  alles();
+}
+
+function aendere(item, eingabe){
+  const alt = item.q; let neu;
+  if(/^[+-]/.test(String(eingabe))) neu = alt + parseFloat(String(eingabe).replace(',','.'));
+  else neu = parseFloat(String(eingabe).replace(',','.'));
+  if(isNaN(neu)) return;
+  neu = Math.max(0, Math.round(neu));
+  if(neu < alt) buche(item.m, alt - neu);
+  const pos = findItem(item.m);
+  notiere(neu < alt ? 'Entnahme' : 'Bestand', item.m,
+          pos ? 'R'+pos.fach.r+' / F'+pos.fach.f : '', alt, neu, '');
+  item.q = neu;
+  logge(item.m + ': ' + alt + ' → ' + neu + ' Stangen (' + (neu>alt?'+':'') + (neu-alt) + ')');
+  alles();
+}
+
+function logge(text){
+  const t = new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+  protokoll.unshift(t + ' · ' + text);
+  el('protokoll').innerHTML = protokoll.length ? protokoll.map(p=>'<div>'+p+'</div>').join('')
+                                              : '<div>Noch keine Änderungen.</div>';
+  el('standInfo').textContent = 'Stand: ' + new Date().toLocaleString('de-DE') + ' · ' + protokoll.length + ' Änderung(en)';
+}
+
+/* ---------- Bestandsliste ---------- */
+function zeichneBestand(){
+  const min = mindest(), lg = stange();
+  const suche = el('suche').value.trim().toLowerCase();
+  const sort = el('sortierung').value;
+  const nurKnapp = el('nurKnapp').checked;
+  let items = alleItems();
+  if(suche) items = items.filter(i => i.m.toLowerCase().includes(suche) ||
+      i.gruppe.toLowerCase().includes(suche) || (i.wst||'').toLowerCase().includes(suche));
+  if(nurKnapp) items = items.filter(i => !istGenug(i) && i.q <= min);
+  if(sort==='mass') items.sort((a,b)=> breite(a.m)-breite(b.m) || dicke(a.m)-dicke(b.m));
+  else if(sort==='anz') items.sort((a,b)=> (istGenug(a)?9999:a.q) - (istGenug(b)?9999:b.q));
+  else items.sort((a,b)=> a.r-b.r || a.fa-b.fa);
+
+  el('bestandBody').innerHTML = items.map(i => {
+    const st = istGenug(i) ? '<span class="pill ok">genug</span>'
+      : i.q === 0 ? '<span class="pill krit">leer</span>'
+      : i.q <= min ? '<span class="pill warn">knapp</span>' : '<span class="pill ok">ok</span>';
+    const steuer = istGenug(i) ? '–' :
+      '<button class="mini" onclick="schnell(\'' + i.m + '\',-1)">−</button> '+
+      '<input class="menge" type="number" value="'+i.q+'" onchange="setze(\'' + i.m + '\',this.value)"> '+
+      '<button class="mini" onclick="schnell(\'' + i.m + '\',1)">+</button>';
+    return '<tr><td><b>'+i.m+'</b></td><td style="color:var(--text-hell)">'+(i.wst||'')+'</td>'+
+      '<td>'+i.r+'</td><td>'+i.fa+'</td><td>'+(i.fa<=7?'1':'2')+'</td>'+
+      '<td class="num"><b>'+(istGenug(i)?'genug':i.q)+'</b></td><td>'+steuer+'</td>'+
+      '<td class="num">'+(istGenug(i)?'–':(i.q*lg/1000).toLocaleString('de-DE',{maximumFractionDigits:1}))+'</td>'+
+      '<td class="num">'+(i.rest? i.rest : '')+'</td><td>'+st+'</td></tr>';
+  }).join('') || '<tr><td colspan="10" style="padding:18px;color:var(--text-hell)">Nichts gefunden.</td></tr>';
+}
+function schnell(m, delta){ const t = findItem(m); if(t) aendere(t.item, (delta>0?'+':'')+delta); }
+function setze(m, wert){ const t = findItem(m); if(t) aendere(t.item, wert); }
+
+/* ---------- Stückliste ---------- */
+function zeileHinzu(mass='', laenge='', stk='', bez=''){
+  const tr = document.createElement('tr');
+  tr.innerHTML =
+    '<td><input type="text" placeholder="40x12" value="'+mass+'"></td>'+
+    '<td><input type="text" placeholder="320" value="'+laenge+'"></td>'+
+    '<td><input type="number" min="1" placeholder="1" value="'+stk+'"></td>'+
+    '<td><input type="text" placeholder="optional" value="'+bez+'"></td>'+
+    '<td><button class="mini" onclick="this.closest(\'tr\').remove()">&times;</button></td>';
+  el('stkBody').appendChild(tr);
+}
+function stkLeeren(){ el('stkBody').innerHTML=''; el('stkErgebnis').innerHTML=''; zeileHinzu(); }
+function pasteImport(){
+  el('paste').value.split('\n').filter(z=>z.trim()).forEach(z => {
+    const teile = z.split(/[;\t]/).map(t=>t.trim());
+    if(teile.length >= 3){ zeileHinzu(teile[0], teile[1], teile[2], teile[3]||''); return; }
+    const m = z.match(/(\d+)\s*[x\u00d7*]\s*(\d+(?:[.,]\d+)?)/);
+    if(!m) return;
+    const anzM = z.match(/(?:x|st|stk|stück|\*)\s*(\d+)\s*$/i);
+    zeileHinzu(m[1]+'x'+m[2], '', anzM? anzM[1] : '1', '');
+  });
+  el('paste').value='';
+}
+
+function pruefen(){
+  const lg = stange();
+  const zeilen = [...document.querySelectorAll('#stkBody tr')].map(tr => {
+    const e = tr.querySelectorAll('input');
+    return { mass:e[0].value.trim().replace(/\s/g,'').replace(/[\u00d7*]/g,'x'),
+             laenge: parseFloat((e[1].value||'').replace(',','.')) || 0,
+             stk: parseInt(e[2].value||'1',10)||1, bez:e[3].value.trim() };
+  }).filter(z => z.mass);
+  if(!zeilen.length){ el('stkErgebnis').innerHTML='<div class="hinweis">Bitte mindestens eine Position eintragen.</div>'; return; }
+
+  const bedarf = {};
+  const zuLang = [];
+  zeilen.forEach(z => {
+    let stangen, info;
+    if(z.laenge > 0){
+      if(z.laenge > lg){ zuLang.push(z.mass+' mit '+z.laenge+' mm'); stangen = z.stk; info = 'Länge > Stange'; }
+      else { const proStange = Math.floor(lg / z.laenge);
+             stangen = Math.ceil(z.stk / proStange);
+             info = z.stk+' Teile à '+z.laenge+' mm → '+proStange+' je Stange'; }
+    } else { stangen = z.stk; info = 'ohne Länge: 1 Stück = 1 Stange'; }
+    if(!bedarf[z.mass]) bedarf[z.mass] = {stangen:0, zeilen:[]};
+    bedarf[z.mass].stangen += stangen;
+    bedarf[z.mass].zeilen.push({...z, stangen, info});
+  });
+
+  let fehlt = [], reihenHtml = '';
+  Object.keys(bedarf).forEach(mass => {
+    const b = bedarf[mass], noetig = b.stangen, t = findItem(mass);
+    const details = b.zeilen.map(z => (z.bez? z.bez+': ':'')+z.info).join('<br>');
+    if(!t){
+      const alt = alternativen(mass);
+      fehlt.push({mass, noetig, da:0});
+      reihenHtml += '<tr><td><b>'+mass+'</b><br><span class="sub">'+details+'</span></td>'+
+        '<td class="num">'+noetig+'</td><td class="num">–</td><td>–</td>'+
+        '<td><span class="pill krit">nicht im Sortiment</span>'+
+        (alt.length? '<br><span class="sub">Passt evtl.: '+alt.join(', ')+'</span>':'')+'</td></tr>';
+      return;
+    }
+    const da = istGenug(t.item) ? Infinity : t.item.q;
+    const ok = da >= noetig;
+    if(!ok) fehlt.push({mass, noetig, da: da===Infinity?0:da});
+    reihenHtml += '<tr><td><b>'+mass+'</b> <span class="sub">'+(t.item.wst||'')+'</span>'+
+      '<br><span class="sub">'+details+'</span></td>'+
+      '<td class="num"><b>'+noetig+'</b></td>'+
+      '<td class="num">'+(da===Infinity?'genug':da)+'</td>'+
+      '<td>R'+t.fach.r+' / F'+t.fach.f+'<br><span class="sub">Lager '+(t.fach.f<=7?1:2)+'</span></td>'+
+      '<td>'+(ok? '<span class="pill ok">vorhanden</span>'+(da!==Infinity?'<br><span class="sub">Rest danach: '+(da-noetig)+'</span>':'')
+            : '<span class="pill krit">fehlt '+(noetig-(da===Infinity?0:da))+'</span>'+
+              (t.item.rest? '<br><span class="sub">extern noch '+t.item.rest+'</span>':''))+'</td></tr>';
+  });
+
+  const abbuchung = {}; Object.keys(bedarf).forEach(m => abbuchung[m] = bedarf[m].stangen);
+  let kopf = '';
+  if(zuLang.length) kopf += '<div class="hinweis gelb"><b>Länger als eine Stange ('+lg+' mm):</b> '+
+    zuLang.join(', ')+'. Hier ist Stückeln oder Sondermaterial nötig.</div>';
+  kopf += fehlt.length
+    ? '<div class="hinweis rot"><b>Nachbestellen erforderlich.</b><br>'+
+      fehlt.map(f => f.mass+': '+(f.noetig-f.da)+' Stangen').join(' · ')+'</div>'
+    : '<div class="hinweis gruen"><b>Alles vorhanden.</b> Die Stückliste kann komplett aus dem Lager gefertigt werden.</div>';
+
+  el('stkErgebnis').innerHTML = kopf +
+    '<div class="karte" style="padding:0;overflow:auto"><table class="liste"><thead><tr>'+
+    '<th>Rohma&szlig;</th><th style="text-align:right">Stangen n&ouml;tig</th><th style="text-align:right">Bestand</th>'+
+    '<th>Lagerplatz</th><th>Ergebnis</th></tr></thead><tbody>'+reihenHtml+'</tbody></table></div>'+
+    '<div class="werkzeuge"><button class="btn gruen" onclick=\'entnehmen('+
+    JSON.stringify(abbuchung).replace(/'/g,"&#39;")+')\'>Material entnehmen und abbuchen</button>'+
+    (fehlt.length? '<button class="btn sek" onclick=\'bestellliste('+
+      JSON.stringify(fehlt).replace(/'/g,"&#39;")+')\'>Bestellliste kopieren</button>':'')+'</div>';
+}
+
+function alternativen(mass){
+  const b = breite(mass), d = dicke(mass);
+  if(isNaN(b)||isNaN(d)) return [];
+  return alleItems().filter(i => breite(i.m) >= b && dicke(i.m) >= d && (istGenug(i)||i.q>0))
+    .sort((x,y) => (breite(x.m)-b)+(dicke(x.m)-d) - ((breite(y.m)-b)+(dicke(y.m)-d)))
+    .slice(0,3).map(i => i.m+' (R'+i.r+'/F'+i.fa+')');
+}
+function entnehmen(bedarf){
+  let n = 0;
+  Object.keys(bedarf).forEach(m => {
+    const t = findItem(m);
+    if(t && !istGenug(t.item)){
+      const ab = Math.min(t.item.q, bedarf[m]);
+      if(ab>0){ const alt = t.item.q; t.item.q -= ab; n++; buche(m, ab);
+        notiere('Entnahme', m, 'R'+t.fach.r+' / F'+t.fach.f, alt, t.item.q, 'aus Stücklisten-Prüfung');
+        protokoll.unshift(new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+
+          ' · Entnahme '+m+': '+alt+' → '+t.item.q); }
+    }
+  });
+  logge('Stückliste abgebucht ('+n+' Positionen)');
+  alert('Bestand aktualisiert.'); alles();
+}
+function bestellliste(fehlt){
+  const txt = fehlt.map(f => 'Flachstahl '+f.mass+' '+(findItem(f.mass)?findItem(f.mass).item.wst:stdWst())+
+              ' – '+(f.noetig-f.da)+' Stangen à '+stange()+' mm').join('\n');
+  if(navigator.clipboard) navigator.clipboard.writeText(txt).then(()=>alert('Bestellliste kopiert:\n\n'+txt));
+  else prompt('Bestellliste:', txt);
+}
+
+/* ---------- Inventur / CSV ---------- */
+function zaehllisteCsv(){
+  const ohne = el('ohneSoll').checked;
+  const kopf = ['Reihe','Fach','Lager','Gruppe','Mass','Werkstoff']
+    .concat(ohne? [] : ['Soll']).concat(['Gezaehlt','Gezaehlt_von','Bemerkung']).join(';');
+  const zeilen = alleItems().sort((a,b)=>a.r-b.r||a.fa-b.fa).map(i => {
+    const basis = [i.r, i.fa, i.fa<=7?1:2, i.gruppe, i.m, i.wst||''];
+    const soll = istGenug(i) ? 'genug' : i.q;
+    return basis.concat(ohne? [] : [soll]).concat(['','','']).join(';');
+  });
+  lade(new Blob(['\ufeff'+kopf+'\n'+zeilen.join('\n')], {type:'text/csv;charset=utf-8'}),
+       'Zaehlliste_Stahllager_'+datum()+'.csv');
+  logge('Zählliste erzeugt ('+zeilen.length+' Positionen'+(ohne?', Blindzählung':'')+')');
+}
+
+el('csvDatei').addEventListener('change', e => {
+  const datei = e.target.files[0]; if(!datei) return;
+  if(!el('zaehlerName').value.trim()){
+    const vorschlag = el('benutzer').value.trim();
+    const n = (prompt('Wer hat gezählt? Der Name wird im Archiv zu jeder Korrektur gespeichert.', vorschlag) || '').trim();
+    if(!n){ el('csvErgebnis').innerHTML = '<div class="hinweis rot">Ohne Namen wird nicht übernommen. '+
+      'Bitte oben eintragen, wer gezählt hat.</div>'; e.target.value=''; return; }
+    el('zaehlerName').value = n;
+  }
+  el('csvName').textContent = datei.name;
+  const leser = new FileReader();
+  leser.onload = ev => csvAuswerten(ev.target.result);
+  leser.readAsText(datei, 'utf-8');
+  e.target.value = '';
+});
+
+function csvZerlege(zeile, trenner){
+  const felder = []; let akt = '', inAnf = false;
+  for(let i=0;i<zeile.length;i++){
+    const c = zeile[i];
+    if(c === '"'){ if(inAnf && zeile[i+1] === '"'){ akt += '"'; i++; } else inAnf = !inAnf; }
+    else if(c === trenner && !inAnf){ felder.push(akt); akt = ''; }
+    else akt += c;
+  }
+  felder.push(akt);
+  return felder.map(f => f.trim());
+}
+
+function csvAuswerten(text){
+  const roh = text.replace(/^\ufeff/,'').split(/\r?\n/).filter(z => z.trim());
+  if(!roh.length){ el('csvErgebnis').innerHTML='<div class="hinweis rot">Die Datei ist leer.</div>'; return; }
+  // Trennzeichen anhand der Kopfzeile bestimmen
+  const kandidaten = [';','\t',','];
+  let trenner = ';', beste = 0;
+  kandidaten.forEach(t => { const n = roh[0].split(t).length; if(n > beste){ beste = n; trenner = t; } });
+  const kopf = csvZerlege(roh[0], trenner).map(s => s.toLowerCase().replace(/[^a-zäöüß]/g,''));
+  const finde = (...namen) => kopf.findIndex(s => namen.some(n => s.startsWith(n)));
+  const iM = finde('mass','maß','abmess');
+  const iG = kopf.findIndex(s => (s.startsWith('gez') || s.startsWith('ist') || s.startsWith('zaehl'))
+      && !s.includes('von') && !s.includes('name') && !s.includes('person'));
+  const iP = kopf.findIndex(s => s.includes('von') || s.startsWith('person') || s.startsWith('name')
+      || s.startsWith('zaehler') || s.startsWith('zähler'));
+  const iS = finde('soll','bestand','stangen');
+  const iR = finde('reihe'); const iF = finde('fach');
+  const iW = finde('werkstoff','material'); const iB = finde('bemerk','notiz');
+
+  const diagnose = [];
+  if(iM < 0){
+    el('csvErgebnis').innerHTML = '<div class="hinweis rot"><b>Spalte mit dem Maß nicht gefunden.</b><br>'+
+      'Gefundene Spalten: <code>'+csvZerlege(roh[0],trenner).join(' | ')+'</code><br>'+
+      'Bitte die Zählliste aus Schritt 1 verwenden und die Spaltenüberschriften nicht ändern.</div>'; return;
+  }
+
+  const diff = [], unbekannt = [], ohneWert = [];
+  let gelesen = 0, mitWert = 0, ausSoll = 0;
+  roh.slice(1).forEach(z => {
+    const s = csvZerlege(z, trenner);
+    const mass = (s[iM]||'').replace(/\s/g,'').replace(/[\u00d7*X]/g,'x');
+    if(!mass || mass.toLowerCase() === 'mass') return;
+    gelesen++;
+    const t = findItem(mass);
+    const alt = t ? (istGenug(t.item) ? null : t.item.q) : null;
+    let rohWert = iG >= 0 ? (s[iG]||'').trim() : '';
+    let quelle = 'gezaehlt';
+    // Falls nichts in "Gezaehlt" steht, aber die Soll-Spalte veraendert wurde: diese nehmen
+    if(rohWert === '' && iS >= 0 && t){
+      const sollWert = (s[iS]||'').trim();
+      if(sollWert !== '' && sollWert.toLowerCase() !== 'genug'){
+        const sz = parseFloat(sollWert.replace(',','.'));
+        if(!isNaN(sz) && alt !== null && Math.round(sz) !== alt){ rohWert = sollWert; quelle = 'soll'; ausSoll++; }
+      }
+    }
+    if(rohWert === ''){ ohneWert.push(mass); return; }
+    const gez = Math.round(parseFloat(rohWert.replace(',','.')));
+    if(isNaN(gez)) { ohneWert.push(mass); return; }
+    mitWert++;
+    if(!t){ unbekannt.push({mass, gez, r:s[iR]||'', f:s[iF]||'', wst:(iW>=0?s[iW]:'')||stdWst(),
+      person:(iP>=0 ? (s[iP]||'').trim() : '') || el('zaehlerName').value.trim() || benutzer()}); return; }
+    const bem = iB>=0 ? (s[iB]||'') : '';
+    const person = (iP>=0 ? (s[iP]||'').trim() : '') || el('zaehlerName').value.trim() || benutzer();
+    if(alt !== gez) diff.push({mass, alt, neu:Math.max(0,gez), r:t.fach.r, f:t.fach.f, bem, quelle, person});
+  });
+
+  csvDiff = {diff, unbekannt};
+  const info = '<div class="sub" style="margin:10px 0 0">'+gelesen+' Zeilen gelesen · '+mitWert+
+    ' mit Zähleintrag · '+ohneWert.length+' ohne Eintrag'+
+    (ausSoll? ' · '+ausSoll+' Wert(e) aus der Soll-Spalte übernommen':'')+
+    ' · Trennzeichen "'+(trenner==='\t'?'Tab':trenner)+'"</div>';
+
+  let h = '';
+  if(!diff.length && !unbekannt.length){
+    h = '<div class="hinweis '+(mitWert? 'gruen':'gelb')+'"><b>'+
+        (mitWert ? 'Keine Abweichungen – der Bestand stimmt.'
+                 : 'Es wurde kein einziger Zählwert gefunden.')+'</b>'+
+        (mitWert? '' : '<br>Die Spalte <code>Gezaehlt</code> ist überall leer. Bitte die gezählte Stückzahl '+
+          'in diese Spalte eintragen und speichern – in Excel unbedingt als <b>CSV (Trennzeichen-getrennt)</b>.')+
+        '</div>' + info;
+  } else {
+    h = '<div class="hinweis gelb"><b>'+diff.length+' Abweichung(en)'+
+        (unbekannt.length? ' und '+unbekannt.length+' unbekannte(s) Maß':'')+'</b> gefunden. Bitte prüfen.</div>';
+    if(diff.length){
+      h += '<div class="karte" style="padding:0;overflow:auto;max-height:50vh"><table class="liste"><thead><tr>'+
+        '<th>Ma&szlig;</th><th>Fach</th><th style="text-align:right">System</th>'+
+        '<th style="text-align:right">Gez&auml;hlt</th><th style="text-align:right">Differenz</th>'+
+        '<th>Gez&auml;hlt von</th><th>Bemerkung</th>'+
+        '</tr></thead><tbody>'+ diff.map(d => {
+          const dv = d.alt===null ? '' : d.neu - d.alt;
+          const farbe = dv===''? '' : (dv<0? 'color:var(--rot)' : 'color:var(--gruen)');
+          return '<tr><td><b>'+d.mass+'</b>'+(d.quelle==='soll'? ' <span class="pill neu">aus Soll</span>':'')+'</td>'+
+            '<td>R'+d.r+' / F'+d.f+'</td>'+
+            '<td class="num">'+(d.alt===null?'genug':d.alt)+'</td><td class="num"><b>'+d.neu+'</b></td>'+
+            '<td class="num" style="'+farbe+'">'+(dv===''?'–':(dv>0?'+':'')+dv)+'</td>'+
+            '<td><b>'+(d.person||'')+'</b></td>'+
+            '<td style="color:var(--text-hell)">'+d.bem+'</td></tr>';
+        }).join('') +'</tbody></table></div>';
+    }
+    if(unbekannt.length){
+      h += '<div class="hinweis"><b>Unbekannte Maße:</b> '+
+        unbekannt.map(u => u.mass+' ('+u.gez+')').join(', ')+
+        '<br>Können auf freie Fächer angelegt werden – danach im Lagerplan den richtigen Platz zuweisen.</div>';
+    }
+    h += '<div class="werkzeuge" style="margin-top:12px">'+
+      '<button class="btn gruen" onclick="csvUebernehmen(false)">Abweichungen übernehmen</button>'+
+      (unbekannt.length? '<button class="btn" onclick="csvUebernehmen(true)">Übernehmen und neue Maße anlegen</button>':'')+
+      '<button class="btn sek" onclick="csvVerwerfen()">Verwerfen</button></div>' + info;
+  }
+  el('csvErgebnis').innerHTML = h;
+}
+
+function csvUebernehmen(mitNeuen){
+  if(!csvDiff) return;
+  const wer = el('zaehlerName').value.trim() || benutzer();
+  csvDiff.diff.forEach(d => {
+    const t = findItem(d.mass);
+    if(!t) return;
+    const alt = istGenug(t.item) ? 'genug' : t.item.q;
+    if(typeof alt === 'number' && d.neu < alt) buche(d.mass, alt - d.neu);
+    const einv = {t:new Date().toISOString(), u:d.person || wer, art:'Inventur', m:d.mass,
+                  f:'R'+d.r+' / F'+d.f, a:alt, n:d.neu,
+                  i:'Zählliste, übernommen von '+wer+(d.bem? ' · '+d.bem:'')};
+    archiv.unshift(einv); archivSchreiben(einv);
+    t.item.q = d.neu;
+  });
+  let angelegt = 0;
+  if(mitNeuen){
+    const frei = lager.filter(f => f.items.length === 0);
+    csvDiff.unbekannt.forEach(u => {
+      if(findItem(u.mass)) return;
+      const ziel = frei.shift();
+      if(ziel){ ziel.items.push({m:u.mass, q:u.gez, rest:0, wst:u.wst||stdWst()}); angelegt++;
+        const enew = {t:new Date().toISOString(), u:u.person || wer, art:'Inventur', m:u.mass,
+                      f:'R'+ziel.r+' / F'+ziel.f, a:null, n:u.gez,
+                      i:'neu angelegt aus Zählliste, übernommen von '+wer};
+        archiv.unshift(enew); archivSchreiben(enew); }
+    });
+  }
+  logge('Inventur übernommen: '+csvDiff.diff.length+' Korrektur(en)'+(angelegt? ', '+angelegt+' neu angelegt':'')+
+        ' (gezählt von '+wer+')');
+  const zaehler = [...new Set(csvDiff.diff.map(d => d.person).filter(Boolean))];
+  el('csvErgebnis').innerHTML = '<div class="hinweis gruen"><b>Bestand aktualisiert.</b> '+
+    csvDiff.diff.length+' Position(en) korrigiert'+(angelegt? ', '+angelegt+' neu angelegt':'')+
+    (zaehler.length? ' &middot; gezählt von '+zaehler.join(', '):'')+
+    '. Im Archiv ist jede Korrektur mit Namen hinterlegt. Nicht vergessen: unter <b>Daten</b> sichern.</div>';
+  csvDiff = null; alles();
+}
+function csvVerwerfen(){ csvDiff = null; el('csvErgebnis').innerHTML = ''; el('csvName').textContent = ''; }
+
+/* ---------- Archiv ---------- */
+let archiv = [];
+
+function benutzer(){
+  let n = el('benutzer').value.trim();
+  if(!n){
+    n = (prompt('Bitte Namen eintragen – er wird bei jeder Änderung mitgeschrieben:', '') || '').trim();
+    if(n) el('benutzer').value = n;
+  }
+  return n || 'ohne Namen';
+}
+
+function notiere(art, mass, fach, alt, neu, info){
+  const ev = {t: new Date().toISOString(), u: benutzer(), art,
+              m: mass || '', f: fach || '', a: alt === undefined ? null : alt,
+              n: neu === undefined ? null : neu, i: info || ''};
+  archiv.unshift(ev);
+  archivSchreiben(ev);
+  if(!el('v-archiv').classList.contains('verstecke')) zeichneArchiv();
+}
+
+const zeitText = iso => new Date(iso).toLocaleString('de-DE',
+  {day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
+
+function archivGefiltert(){
+  const s = el('aSuche').value.trim().toLowerCase();
+  const u = el('aBenutzer').value, a = el('aArt').value;
+  const von = el('aVon').value, bis = el('aBis').value;
+  return archiv.filter(e => {
+    if(u && e.u !== u) return false;
+    if(a && e.art !== a) return false;
+    if(von && e.t.slice(0,10) < von) return false;
+    if(bis && e.t.slice(0,10) > bis) return false;
+    if(s && !((e.m+' '+e.f+' '+e.i+' '+e.u+' '+e.art).toLowerCase().includes(s))) return false;
+    return true;
+  });
+}
+
+function zeichneArchiv(){
+  const nutzer = [...new Set(archiv.map(e => e.u))].sort();
+  const sel = el('aBenutzer'), gewaehlt = sel.value;
+  sel.innerHTML = '<option value="">alle Personen</option>' +
+    nutzer.map(n => '<option'+(n===gewaehlt?' selected':'')+'>'+n+'</option>').join('');
+  const liste = archivGefiltert();
+  const heute = new Date().toISOString().slice(0,10);
+  el('aKennzahlen').innerHTML =
+    kz(archiv.length,'Eintr&auml;ge gesamt') +
+    kz(liste.length,'gefiltert') +
+    kz(archiv.filter(e=>e.t.slice(0,10)===heute).length,'heute') +
+    kz(nutzer.length,'Personen');
+  el('archivBody').innerHTML = liste.slice(0,600).map(e => {
+    const diff = (typeof e.a === 'number' && typeof e.n === 'number') ? e.n - e.a : null;
+    const farbe = diff === null ? '' : (diff < 0 ? 'color:var(--rot)' : 'color:var(--gruen)');
+    const wert = v => v === null || v === undefined ? '–' : (v === 'genug' ? 'genug' : v);
+    return '<tr><td style="white-space:nowrap">'+zeitText(e.t)+'</td>'+
+      '<td><b>'+e.u+'</b></td><td>'+e.art+'</td><td>'+(e.m?'<b>'+e.m+'</b>':'')+'</td><td>'+e.f+'</td>'+
+      '<td class="num">'+wert(e.a)+'</td><td class="num">'+wert(e.n)+'</td>'+
+      '<td class="num" style="'+farbe+'">'+(diff===null?'':(diff>0?'+':'')+diff)+'</td>'+
+      '<td style="color:var(--text-hell)">'+e.i+'</td></tr>';
+  }).join('') || '<tr><td colspan="9" style="padding:18px;color:var(--text-hell)">Keine Einträge.</td></tr>';
+}
+
+function archivCsv(){
+  const kopf = 'Zeitpunkt;Person;Vorgang;Mass;Fach;Vorher;Nachher;Differenz;Bemerkung\n';
+  const zeilen = archivGefiltert().map(e => {
+    const diff = (typeof e.a === 'number' && typeof e.n === 'number') ? e.n - e.a : '';
+    return [zeitText(e.t), e.u, e.art, e.m, e.f,
+            e.a===null||e.a===undefined?'':e.a, e.n===null||e.n===undefined?'':e.n, diff,
+            String(e.i).replace(/;/g,',')].join(';');
+  }).join('\n');
+  lade(new Blob(['\ufeff'+kopf+zeilen], {type:'text/csv;charset=utf-8'}), 'Stahllager_Archiv_'+datum()+'.csv');
+}
+
+['aSuche','aBenutzer','aArt','aVon','aBis'].forEach(id =>
+  el(id).addEventListener('input', zeichneArchiv));
+
+/* ---------- Verbrauch ---------- */
+let verbrauch = [];   // {d:"2026-03-14", m:"40x12", n:2}
+let istDemo = false;
+let zeitraum = 1;
+
+function buche(mass, stangen){
+  if(stangen > 0) verbrauch.push({d:new Date().toISOString().slice(0,10), m:mass, n:stangen});
+}
+function verbrauchLeeren(){
+  if(!confirm('Alle Verbrauchsdaten löschen?')) return;
+  verbrauch = []; istDemo = false; logge('Verbrauchsdaten geleert'); zeichneVerbrauch();
+}
+
+/* Beispieldaten: zwei Kursblöcke im Jahr (März/April und September/Oktober) */
+function demoDatenErzeugen(){
+  const massen = ['40x12','30x6','50x16','45x10','60x16','32x12','25x8','20x4','12x5','16x12',
+                  '40x25','50x6','30x20','80x8','70x8','15x5','35x25','60x30','22x12','10x8'];
+  const grund  = [9,7,8,6,5,5,4,4,4,3,3,3,3,2,2,3,2,2,2,3];
+  let saat = 20260811;
+  const zufall = () => { saat = (saat*1103515245 + 12345) & 0x7fffffff; return saat / 0x7fffffff; };
+  const heute = new Date();
+  const neu = [];
+  for(let zurueck = 23; zurueck >= 0; zurueck--){
+    const d = new Date(heute.getFullYear(), heute.getMonth() - zurueck, 1);
+    const monat = d.getMonth() + 1;
+    const kurs = [3,4,9,10].includes(monat) ? 2.9 : ([2,8].includes(monat) ? 1.5 : 1);
+    const ferien = [7,8,12].includes(monat) ? 0.45 : 1;
+    massen.forEach((m, ix) => {
+      const basis = grund[ix] * kurs * ferien * (0.65 + zufall()*0.75);
+      let stangen = Math.round(basis);
+      if(stangen <= 0) return;
+      // auf 1-4 Entnahmen im Monat verteilen
+      const teile = 1 + Math.floor(zufall()*3);
+      for(let t=0; t<teile && stangen>0; t++){
+        const n = t === teile-1 ? stangen : Math.max(1, Math.round(stangen/teile));
+        const tag = 1 + Math.floor(zufall()*27);
+        neu.push({d: new Date(d.getFullYear(), d.getMonth(), tag).toISOString().slice(0,10), m, n:Math.min(n,stangen)});
+        stangen -= n;
+      }
+    });
+  }
+  verbrauch = neu.sort((a,b)=> a.d.localeCompare(b.d));
+  istDemo = true;
+  logge('Beispieldaten für die Verbrauchsanalyse erzeugt ('+verbrauch.length+' Buchungen)');
+  archiv.unshift({t:new Date().toISOString(), u:el('benutzer').value.trim()||'ohne Namen',
+                  art:'System', m:'', f:'', a:null, n:null, i:'Beispieldaten geladen'});
+  document.querySelector('nav button[data-ansicht="verbrauch"]').click();
+}
+
+const monKurz = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+const de = (n,k=1) => Number(n).toFixed(k).replace('.',',');
+const KURSMONATE = [3,4,9,10];
+
+function monatsReihe(anzahl){
+  const heute = new Date(); const liste = [];
+  for(let z = anzahl-1; z >= 0; z--){
+    const d = new Date(heute.getFullYear(), heute.getMonth() - z, 1);
+    liste.push({jahr:d.getFullYear(), monat:d.getMonth()+1,
+                schl: d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'),
+                label: monKurz[d.getMonth()] + (d.getMonth()===0? ' '+String(d.getFullYear()).slice(2):''),
+                summe:0});
+  }
+  return liste;
+}
+
+function zeichneVerbrauch(){
+  el('demoHinweis').innerHTML = istDemo
+    ? '<div class="demo"><b>Beispieldaten.</b> Diese Zahlen sind erfunden und zeigen nur, wie die Auswertung aussieht. '+
+      'Sobald ihr Entnahmen über die Anwendung bucht, entsteht die echte Statistik von selbst.</div>'
+    : (verbrauch.length ? '' :
+      '<div class="hinweis">Noch keine Verbrauchsdaten. Jede Entnahme über die Bestandsliste oder die Stücklisten-Prüfung '+
+      'wird ab sofort mitgeschrieben. Zum Ansehen der Auswertung kannst du Beispieldaten laden.</div>');
+
+  const monate24 = monatsReihe(24);
+  verbrauch.forEach(v => {
+    const schl = v.d.slice(0,7);
+    const m = monate24.find(x => x.schl === schl);
+    if(m) m.summe += v.n;
+  });
+
+  const grenze = new Date(); grenze.setMonth(grenze.getMonth() - zeitraum);
+  const grenzStr = grenze.toISOString().slice(0,10);
+  const imZeitraum = verbrauch.filter(v => v.d >= grenzStr);
+  const jeMass = {};
+  imZeitraum.forEach(v => jeMass[v.m] = (jeMass[v.m]||0) + v.n);
+  const top = Object.entries(jeMass).sort((a,b)=>b[1]-a[1]);
+
+  const summe = imZeitraum.reduce((s,v)=>s+v.n, 0);
+  const lg = stange();
+  el('vKennzahlen').innerHTML =
+    kz(summe,'Stangen verbraucht') +
+    kz((summe*lg/1000).toLocaleString('de-DE',{maximumFractionDigits:0})+' m','Materiall&auml;nge') +
+    kz(top.length,'verschiedene Ma&szlig;e') +
+    kz(top.length? top[0][0] : '–','Spitzenreiter') +
+    kz(imZeitraum.length,'Buchungen');
+
+  el('chartMonate').innerHTML = chartMonate(monate24);
+  el('chartTop').innerHTML = chartTop(top.slice(0,10));
+  el('thSchnitt').innerHTML = '&Oslash; / Monat<br><span style="font-weight:400;text-transform:none">'+
+    (zeitraum===1?'letzter Monat':zeitraum===3?'letztes Quartal':'letztes Jahr')+'</span>';
+  reichweite(monate24, summe);
+}
+
+function chartMonate(monate){
+  const B = 1000, H = 300, l = 46, r = 12, o = 16, u = 42;
+  const max = Math.max(1, ...monate.map(m=>m.summe));
+  const skala = Math.ceil(max/10)*10 || 10;
+  const bw = (B-l-r)/monate.length;
+  const y = w => H-u - (w/skala)*(H-u-o);
+  let s = '<svg class="chart" viewBox="0 0 '+B+' '+H+'" preserveAspectRatio="xMidYMid meet">';
+  for(let i=0;i<=4;i++){
+    const w = skala*i/4, yy = y(w);
+    s += '<line x1="'+l+'" y1="'+yy+'" x2="'+(B-r)+'" y2="'+yy+'" stroke="#E3E8ED"/>'+
+         '<text x="'+(l-8)+'" y="'+(yy+4)+'" text-anchor="end" font-size="11" fill="#5B6B78">'+Math.round(w)+'</text>';
+  }
+  const schnitt = monate.reduce((a,m)=>a+m.summe,0)/monate.length;
+  monate.forEach((m,i) => {
+    const x = l + i*bw + bw*0.16, w = bw*0.68, h = Math.max(0, H-u - y(m.summe));
+    const kurs = KURSMONATE.includes(m.monat);
+    if(kurs) s += '<rect x="'+(l+i*bw)+'" y="'+o+'" width="'+bw+'" height="'+(H-u-o)+'" fill="#E4B23C" opacity="0.16"/>';
+    const imFenster = i >= monate.length - zeitraum;
+    s += '<rect x="'+x+'" y="'+y(m.summe)+'" width="'+w+'" height="'+h+'" fill="#0F4C81" rx="1" '+
+         'opacity="'+(imFenster? 1 : 0.32)+'">'+
+         '<title>'+m.label+': '+m.summe+' Stangen</title></rect>';
+    if(i % 2 === 0 || monate.length <= 14)
+      s += '<text x="'+(l+i*bw+bw/2)+'" y="'+(H-u+15)+'" text-anchor="middle" font-size="10.5" fill="#5B6B78">'+m.label+'</text>';
+  });
+  s += '<line x1="'+l+'" y1="'+y(schnitt)+'" x2="'+(B-r)+'" y2="'+y(schnitt)+'" stroke="#B3261E" stroke-dasharray="5 4"/>'+
+       '<text x="'+(B-r)+'" y="'+(y(schnitt)-6)+'" text-anchor="end" font-size="11" fill="#B3261E">Ø '+
+       schnitt.toFixed(0)+' Stangen/Monat</text>';
+  s += '<line x1="'+l+'" y1="'+(H-u)+'" x2="'+(B-r)+'" y2="'+(H-u)+'" stroke="#8A97A3"/></svg>';
+  return s;
+}
+
+function chartTop(top){
+  if(!top.length) return '<p class="sub">Im gewählten Zeitraum wurde nichts entnommen.</p>';
+  const zeilenH = 30, B = 1000, l = 92, r = 60, o = 6;
+  const H = top.length*zeilenH + o + 10;
+  const max = top[0][1];
+  let s = '<svg class="chart" viewBox="0 0 '+B+' '+H+'" preserveAspectRatio="xMidYMid meet">';
+  top.forEach((t,i) => {
+    const y = o + i*zeilenH, w = (B-l-r) * (t[1]/max);
+    s += '<text x="'+(l-10)+'" y="'+(y+16)+'" text-anchor="end" font-size="13" font-weight="600" fill="#1E2A33">'+t[0]+'</text>'+
+         '<rect x="'+l+'" y="'+(y+3)+'" width="'+w+'" height="19" fill="#1C6BA8" rx="2"/>'+
+         '<text x="'+(l+w+8)+'" y="'+(y+17)+'" font-size="12.5" fill="#5B6B78">'+t[1]+' Stangen</text>';
+  });
+  return s + '</svg>';
+}
+
+function reichweite(monate24, summeZeitraum){
+  const letzte12 = monate24.slice(-12);
+  const fenster = monate24.slice(-zeitraum);
+  const jeMassMonat = {};
+  verbrauch.forEach(v => {
+    const schl = v.d.slice(0,7);
+    if(!letzte12.some(m => m.schl === schl)) return;
+    jeMassMonat[v.m] = jeMassMonat[v.m] || {};
+    jeMassMonat[v.m][schl] = (jeMassMonat[v.m][schl]||0) + v.n;
+  });
+  const zeilen = [];
+  Object.keys(jeMassMonat).forEach(m => {
+    const werte = letzte12.map(x => jeMassMonat[m][x.schl] || 0);
+    const werteZ = fenster.map(x => jeMassMonat[m][x.schl] || 0);
+    const schnitt = werteZ.reduce((a,b)=>a+b,0)/fenster.length;
+    const spitze = Math.max(...werte);
+    const t = findItem(m);
+    const bestand = t ? (istGenug(t.item) ? Infinity : t.item.q) : 0;
+    const rw = schnitt > 0 ? bestand/schnitt : Infinity;
+    zeilen.push({m, schnitt, spitze, bestand, rw,
+                 fach: t ? 'R'+t.fach.r+' / F'+t.fach.f : '–',
+                 vorschlag: Math.max(0, Math.ceil(spitze*1.2 - (bestand===Infinity?0:bestand)))});
+  });
+  zeilen.sort((a,b)=> a.rw - b.rw);
+  el('reichweiteBody').innerHTML = zeilen.map(z => {
+    const kritisch = z.rw < 2, knapp = z.rw < 4;
+    const bew = z.bestand===Infinity ? '<span class="pill ok">genug</span>'
+      : kritisch ? '<span class="pill krit">reicht nicht bis zur Spitze</span>'
+      : knapp ? '<span class="pill warn">beobachten</span>' : '<span class="pill ok">ausreichend</span>';
+    return '<tr><td><b>'+z.m+'</b></td><td>'+z.fach+'</td>'+
+      '<td class="num">'+(z.bestand===Infinity?'genug':z.bestand)+'</td>'+
+      '<td class="num">'+de(z.schnitt)+'</td><td class="num">'+z.spitze+'</td>'+
+      '<td class="num">'+(z.rw===Infinity?'–':de(z.rw)+' Mon.')+'</td>'+
+      '<td>'+bew+'</td>'+
+      '<td class="num">'+(z.vorschlag>0 && z.bestand!==Infinity ? '<b>+'+z.vorschlag+'</b>' : '–')+'</td></tr>';
+  }).join('') || '<tr><td colspan="8" class="sub" style="padding:16px">Keine Verbrauchsdaten vorhanden.</td></tr>';
+
+  analyse(monate24, zeilen, summeZeitraum);
+}
+
+function analyse(monate24, zeilen, summeZeitraum){
+  if(!verbrauch.length){ el('analyseText').innerHTML = '<p class="sub">Sobald Entnahmen gebucht sind, erscheint hier die Auswertung.</p>'; return; }
+  const letzte12 = monate24.slice(-12);
+  const kursM = letzte12.filter(m => KURSMONATE.includes(m.monat));
+  const restM = letzte12.filter(m => !KURSMONATE.includes(m.monat));
+  const dKurs = kursM.length ? kursM.reduce((a,m)=>a+m.summe,0)/kursM.length : 0;
+  const dRest = restM.length ? restM.reduce((a,m)=>a+m.summe,0)/restM.length : 0;
+  const faktor = dRest > 0 ? dKurs/dRest : 0;
+  const jahr = letzte12.reduce((a,m)=>a+m.summe,0);
+  const staerkster = [...letzte12].sort((a,b)=>b.summe-a.summe)[0];
+
+  // nächster Kursmonat
+  const heute = new Date(); let n = null;
+  for(let i=0;i<12;i++){
+    const d = new Date(heute.getFullYear(), heute.getMonth()+i, 1);
+    if(KURSMONATE.includes(d.getMonth()+1)){ n = {d, i}; break; }
+  }
+  const kritisch = zeilen.filter(z => z.rw < 2 && z.bestand !== Infinity);
+  const beobachten = zeilen.filter(z => z.rw >= 2 && z.rw < 4 && z.bestand !== Infinity);
+  const bestellSumme = kritisch.reduce((a,z)=>a+z.vorschlag,0);
+
+  const zrName = zeitraum===1?'letzten Monat':zeitraum===3?'letzten Quartal':'letzten Jahr';
+  let t = '<p><b>Im '+zrName+'</b> wurden <b>'+(summeZeitraum||0)+' Stangen</b> entnommen. '+
+    'Über die letzten zwölf Monate sind es '+jahr+' Stangen, also rund '+
+    (jahr*stange()/1000).toLocaleString('de-DE',{maximumFractionDigits:0})+' Meter Material.</p>';
+  if(faktor > 1.3){
+    t += '<p><b>Deutliche Saisonspitze.</b> In den Kursmonaten (März, April, September, Oktober) werden im Schnitt '+
+      dKurs.toFixed(0)+' Stangen pro Monat verbraucht, in den übrigen Monaten nur '+dRest.toFixed(0)+
+      ' – das ist der <b>'+de(faktor)+'-fache</b> Bedarf. Stärkster Monat war '+staerkster.label+
+      ' mit '+staerkster.summe+' Stangen.</p>';
+  } else {
+    t += '<p>Der Verbrauch verteilt sich bisher gleichmäßig über das Jahr; eine klare Saisonspitze ist noch nicht erkennbar.</p>';
+  }
+  if(n){
+    const wann = n.i === 0 ? 'in diesem Monat' : 'in '+n.i+' Monat'+(n.i>1?'en':'');
+    t += '<p><b>Nächste Spitze:</b> '+monKurz[n.d.getMonth()]+' '+n.d.getFullYear()+', also '+wann+
+      '. Erfahrungsgemäß solltet ihr etwa vier bis sechs Wochen vorher bestellen, damit das Material rechtzeitig da ist.</p>';
+  }
+  if(kritisch.length){
+    t += '<p><b>Kritisch:</b> Bei '+kritisch.length+' Maß'+(kritisch.length>1?'en':'')+
+      ' reicht der Bestand nicht durch die nächste Spitze – '+
+      kritisch.slice(0,6).map(z=>z.m+' (Reichweite '+de(z.rw)+' Monate, Vorschlag +'+z.vorschlag+')').join(', ')+
+      (kritisch.length>6? ' und weitere':'')+'. Zusammen wären das rund <b>'+bestellSumme+' Stangen</b>.</p>';
+  } else {
+    t += '<p>Aktuell reicht bei allen ausgewerteten Maßen der Bestand über die nächste Spitze hinaus.</p>';
+  }
+  if(beobachten.length){
+    t += '<p><b>Beobachten:</b> '+beobachten.slice(0,8).map(z=>z.m).join(', ')+
+      ' liegen zwischen zwei und vier Monaten Reichweite. Das genügt im Normalbetrieb, aber nicht, wenn zwei Kurse zusammenfallen.</p>';
+  }
+  t += '<p class="sub" style="margin:0">Der Bestellvorschlag ist so gerechnet, dass der stärkste Monat der letzten zwölf '+
+    'plus zwanzig Prozent Sicherheit abgedeckt ist.</p>';
+  el('analyseText').innerHTML = t;
+}
+
+document.querySelectorAll('#zeitwahl button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('#zeitwahl button').forEach(x => x.classList.remove('aktiv'));
+  b.classList.add('aktiv'); zeitraum = parseInt(b.dataset.zeit,10); zeichneVerbrauch();
+});
+
+/* ---------- BANF ---------- */
+const DICHTE = 7.85e-6; // kg pro mm³
+function gewicht(mass, laenge, stangen){
+  const b = breite(mass), d = dicke(mass);
+  if(isNaN(b)||isNaN(d)||!laenge) return 0;
+  return b*d*laenge*DICHTE*(stangen||0);
+}
+
+function banfZeile(mass='', wst='', laenge='', stangen='', bem=''){
+  const tr = document.createElement('tr');
+  tr.innerHTML =
+    '<td><input type="text" class="bM" placeholder="40x12" value="'+mass+'"></td>'+
+    '<td><input type="text" class="bW" value="'+(wst || el('bWerkstoff').value)+'"></td>'+
+    '<td><input type="text" class="bL" value="'+(laenge || el('bLaenge').value)+'"></td>'+
+    '<td><input type="number" min="1" class="bS" value="'+(stangen||1)+'"></td>'+
+    '<td><span class="bG" style="color:var(--text-hell)">–</span></td>'+
+    '<td><input type="text" class="bB" placeholder="optional" value="'+bem+'"></td>'+
+    '<td><button class="mini" onclick="this.closest(\'tr\').remove();banfRechnen()">&times;</button></td>';
+  el('banfBody').appendChild(tr);
+  tr.querySelectorAll('input').forEach(i => i.addEventListener('input', banfRechnen));
+  banfRechnen();
+}
+function banfLeeren(){ el('banfBody').innerHTML=''; el('banfSumme').innerHTML=''; banfZeile(); }
+
+function banfLesen(){
+  return [...document.querySelectorAll('#banfBody tr')].map(tr => {
+    const g = k => { const e = tr.querySelector(k); return e ? e.value.trim() : ''; };
+    const mass = g('.bM').replace(/\s/g,'').replace(/[\u00d7*X]/g,'x');
+    const laenge = parseFloat(g('.bL').replace(',','.')) || 0;
+    const stangen = parseInt(g('.bS'),10) || 0;
+    return {mass, wst:g('.bW'), laenge, stangen, bem:g('.bB'),
+            kg: gewicht(mass, laenge, stangen)};
+  }).filter(z => z.mass);
+}
+
+function banfRechnen(){
+  const zeilen = banfLesen();
+  [...document.querySelectorAll('#banfBody tr')].forEach((tr, ix) => {
+    const feld = tr.querySelector('.bG');
+    const z = zeilen.find(x => x.mass === (tr.querySelector('.bM')||{}).value.replace(/\s/g,'').replace(/[\u00d7*X]/g,'x'));
+    if(feld) feld.textContent = z && z.kg ? de(z.kg,1)+' kg' : '–';
+  });
+  const kg = zeilen.reduce((s,z)=>s+z.kg,0);
+  const st = zeilen.reduce((s,z)=>s+z.stangen,0);
+  el('banfSumme').innerHTML = zeilen.length
+    ? '<div class="hinweis" style="margin:12px 0 0"><b>'+zeilen.length+' Position(en)</b> &middot; '+
+      st+' Stangen &middot; rund <b>'+de(kg,0)+' kg</b> Gesamtgewicht</div>' : '';
+}
+
+function banfAusVorschlag(){
+  if(!verbrauch.length){ alert('Für den Bestellvorschlag werden Verbrauchsdaten benötigt. '+
+    'Du kannst im Reiter Verbrauch Beispieldaten laden oder Positionen von Hand eintragen.'); return; }
+  zeichneVerbrauch();
+  const monate24 = monatsReihe(24), letzte12 = monate24.slice(-12);
+  const jeMassMonat = {};
+  verbrauch.forEach(v => {
+    const schl = v.d.slice(0,7);
+    if(!letzte12.some(m => m.schl === schl)) return;
+    jeMassMonat[v.m] = jeMassMonat[v.m] || {};
+    jeMassMonat[v.m][schl] = (jeMassMonat[v.m][schl]||0) + v.n;
+  });
+  let n = 0;
+  Object.keys(jeMassMonat).forEach(m => {
+    const werte = letzte12.map(x => jeMassMonat[m][x.schl] || 0);
+    const spitze = Math.max(...werte);
+    const t = findItem(m);
+    const bestand = t ? (istGenug(t.item) ? Infinity : t.item.q) : 0;
+    if(bestand === Infinity) return;
+    const menge = Math.ceil(spitze*1.2 - bestand);
+    if(menge > 0){
+      banfZeile(m, t ? t.item.wst : el('bWerkstoff').value, el('bLaenge').value, menge,
+        'Spitzenmonat '+spitze+' St, Bestand '+bestand);
+      n++;
+    }
+  });
+  if(!n) alert('Kein Bedarf: Bei allen Maßen reicht der Bestand über die nächste Spitze.');
+}
+
+function banfAusKnapp(){
+  const min = mindest();
+  const knapp = alleItems().filter(i => !istGenug(i) && i.q <= min)
+                           .sort((a,b)=> a.q - b.q);
+  if(!knapp.length){ alert('Kein Maß liegt auf oder unter dem Mindestbestand von '+min+'.'); return; }
+  knapp.forEach(i => banfZeile(i.m, i.wst, el('bLaenge').value, Math.max(1, (min*2) - i.q),
+    'Bestand '+i.q+' (R'+i.r+'/F'+i.fa+')'));
+}
+
+function banfCsv(){
+  const z = banfLesen();
+  if(!z.length){ alert('Keine Positionen vorhanden.'); return; }
+  const kopf = 'Pos;Mass;Werkstoff;Laenge_mm;Stangen;Gewicht_kg;Bemerkung\n';
+  const txt = z.map((x,i)=>[i+1,x.mass,x.wst,x.laenge,x.stangen,de(x.kg,1),
+    String(x.bem).replace(/;/g,',')].join(';')).join('\n');
+  lade(new Blob(['\ufeff'+kopf+txt], {type:'text/csv;charset=utf-8'}),
+       'BANF_'+(el('bNummer').value.trim()||datum())+'.csv');
+}
+
+function banfDrucken(){
+  const zeilen = banfLesen();
+  if(!zeilen.length){ alert('Bitte mindestens eine Position eintragen.'); return; }
+  const dat = el('bDatum').value ? new Date(el('bDatum').value).toLocaleDateString('de-DE')
+                                 : new Date().toLocaleDateString('de-DE');
+  const bis = el('bBis').value ? new Date(el('bBis').value).toLocaleDateString('de-DE') : '';
+  const nr = el('bNummer').value.trim() || ('BANF-'+datum()+'-01');
+  const kgSumme = zeilen.reduce((s,z)=>s+z.kg,0);
+  const stSumme = zeilen.reduce((s,z)=>s+z.stangen,0);
+
+  const feld = (l,w) => w ? '<tr><td class="l">'+l+'</td><td><b>'+w+'</b></td></tr>' : '';
+
+  el('druck').innerHTML =
+   '<div class="dseite">'+
+    '<div class="bkopf"><div><p class="titel">BESTELLANFORDERUNG</p>'+
+      '<div class="unter">Stahllager &middot; Flach- und Vierkantstahl</div></div>'+
+      '<div style="text-align:right"><img class="dlogo" src="'+LOGO+'" alt="IWB">'+
+      '<div class="unter" style="margin-top:5px"><b>'+nr+'</b><br>'+dat+'</div></div></div>'+
+
+    '<table class="bkopfdaten">'+
+      feld('Angefordert von', el('bVon').value.trim() || el('benutzer').value.trim()) +
+      feld('Abteilung / Kostenstelle', el('bKost').value.trim()) +
+      feld('Lieferant', el('bLieferant').value.trim()) +
+      feld('Ben&ouml;tigt bis', bis) +
+      feld('Werkstoff (Standard)', el('bWerkstoff').value.trim()) +
+    '</table>'+
+
+    '<table class="bpos"><thead><tr>'+
+      '<th style="width:9mm">Pos</th><th style="width:26mm">Abmessung B&times;D</th>'+
+      '<th style="width:34mm">Werkstoff</th><th style="width:24mm" class="n">L&auml;nge mm</th>'+
+      '<th style="width:20mm" class="n">Stangen</th><th style="width:24mm" class="n">Gewicht kg</th>'+
+      '<th>Bemerkung</th></tr></thead><tbody>'+
+      zeilen.map((z,i) =>
+        '<tr><td>'+(i+1)+'</td><td><b>'+z.mass+'</b> mm</td><td>'+(z.wst||'')+'</td>'+
+        '<td class="n">'+(z.laenge? z.laenge.toLocaleString('de-DE') : '')+'</td>'+
+        '<td class="n"><b>'+z.stangen+'</b></td>'+
+        '<td class="n">'+(z.kg? de(z.kg,1):'')+'</td><td>'+z.bem+'</td></tr>').join('')+
+      '<tr class="summe"><td colspan="4">Summe</td><td class="n">'+stSumme+'</td>'+
+      '<td class="n">'+de(kgSumme,1)+'</td><td></td></tr>'+
+    '</tbody></table>'+
+
+    '<div class="bbem"><span class="l">Bemerkung</span>'+
+      (el('bBemerkung').value.trim() || '&nbsp;')+'</div>'+
+
+    '<div class="bunterschrift">'+
+      '<div>Datum, Anforderer</div><div>Datum, Freigabe Vorgesetzter</div><div>Datum, Einkauf</div></div>'+
+
+    '<div class="dfuss" style="margin-top:8mm"><span>Gewichte berechnet mit 7,85 kg/dm&sup3; &middot; '+
+      'Angaben ohne Gew&auml;hr, ma&szlig;geblich ist die Bestellbest&auml;tigung</span>'+
+      '<span>Erstellt am '+new Date().toLocaleString('de-DE')+'</span></div>'+
+   '</div>';
+
+  window.print();
+  notiere('BANF', '', '', null, null, nr+': '+zeilen.length+' Position(en), '+stSumme+' Stangen, '+de(kgSumme,0)+' kg');
+}
+
+/* ---------- Drucken ---------- */
+function drucken(){
+  const lg = stange();
+  const items = alleItems();
+  const stangen = items.reduce((s,i)=> s + (istGenug(i)?0:i.q), 0);
+  const meter = (stangen*lg/1000).toLocaleString('de-DE',{maximumFractionDigits:0});
+  const wstListe = [...new Set(items.map(i=>i.wst).filter(Boolean))];
+  const heute = new Date().toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+
+  const kopf = (titel, zusatz) =>
+    '<div class="dkopf"><div><h2>'+titel+'</h2>'+
+    '<div class="zeile">Lager 1 = Fach 1&ndash;7 &middot; Lager 2 = Fach 8&ndash;14 &middot; '+
+    'eine Stange = '+lg+' mm &middot; Werkstoff '+(wstListe.length===1? wstListe[0] : wstListe.join(', '))+'</div></div>'+
+    '<div class="rechtsblock"><div class="rechts"><b>Stand '+heute+'</b><br>'+items.length+
+    ' Maße &middot; '+stangen+' Stangen &middot; '+meter+' m'+(zusatz? '<br>'+zusatz : '')+'</div>'+
+    '<img class="dlogo" src="'+LOGO+'" alt="IWB"></div></div>';
+
+  /* Seite 1: Gesamtübersicht */
+  let raster = '<table class="draster"><thead><tr><th style="width:15mm">Gruppe</th><th style="width:6mm">R</th>';
+  for(let i=1;i<=7;i++) raster += '<th>Fach '+i+'</th>';
+  raster += '<th class="dluecke"></th>';
+  for(let i=8;i<=14;i++) raster += '<th>Fach '+i+'</th>';
+  raster += '<th style="width:6mm">R</th></tr></thead><tbody>';
+  for(let r=1;r<=7;r++){
+    const zeile = lager.filter(x=>x.r===r).sort((a,b)=>a.f-b.f);
+    const farbe = zeile[0].farbe;
+    raster += '<tr><td class="dgruppe" style="background:'+farbe+'">'+zeile[0].gruppe.replace(' ','<br>')+'</td>'+
+              '<td class="dreihe" style="background:'+farbe+'">'+r+'</td>';
+    zeile.forEach((f,ix) => {
+      if(ix===7) raster += '<td class="dluecke"></td>';
+      if(!f.items.length){
+        raster += '<td><div class="dfach dfrei">frei<span class="dnr">F'+f.f+'</span></div></td>';
+      } else {
+        raster += '<td><div class="dfach'+(f.items.length>1?' dmehr':'')+'">'+
+          f.items.map(i => '<span class="dm">'+i.m+' <span class="dq">'+
+            (istGenug(i)?'genug':i.q+' St')+'</span></span>').join('')+
+          '<span class="dnr">F'+f.f+'</span></div></td>';
+      }
+    });
+    raster += '<td class="dreihe" style="background:'+farbe+'">'+r+'</td></tr>';
+  }
+  raster += '</tbody></table>';
+
+  /* Seite 2: Tabelle aller Stähle, nach Breite und Dicke */
+  const sortiert = [...items].sort((a,b)=> breite(a.m)-breite(b.m) || dicke(a.m)-dicke(b.m));
+  const nurEinWst = wstListe.length === 1;
+  const zeilenHtml = [];
+  let letzteBreite = null;
+  sortiert.forEach(i => {
+    const b = breite(i.m);
+    if(b !== letzteBreite){
+      zeilenHtml.push({grp:true, html:'<tr class="grp"><td colspan="'+(nurEinWst?5:6)+'">Breite '+b+' mm</td></tr>'});
+      letzteBreite = b;
+    }
+    zeilenHtml.push({grp:false, html:'<tr><td><b>'+i.m+'</b></td>'+
+      (nurEinWst? '' : '<td>'+(i.wst||'')+'</td>')+
+      '<td>R'+i.r+'/F'+i.fa+'</td><td class="n">'+(i.fa<=7?'1':'2')+'</td>'+
+      '<td class="n"><b>'+(istGenug(i)?'genug':i.q)+'</b></td>'+
+      '<td class="n">'+(istGenug(i)?'–':(i.q*lg/1000).toFixed(1).replace('.',','))+
+      (i.rest? ' <span style="color:#8A6D1F">+'+i.rest+'</span>':'')+'</td></tr>'});
+  });
+  const kopfZeile = '<thead><tr><th>Maß</th>'+(nurEinWst?'':'<th>Werkstoff</th>')+
+    '<th>Fach</th><th class="n">Lg</th><th class="n">Stangen</th><th class="n">Meter</th></tr></thead>';
+  const proSpalte = Math.ceil(zeilenHtml.length / 3);
+  let spalten = '';
+  for(let s=0; s<3; s++){
+    const teil = zeilenHtml.slice(s*proSpalte, (s+1)*proSpalte);
+    if(!teil.length) continue;
+    spalten += '<table class="dliste">'+kopfZeile+'<tbody>'+teil.map(z=>z.html).join('')+'</tbody></table>';
+  }
+
+  el('druck').innerHTML =
+    '<div class="dseite">'+kopf('Stahllager 1 + 2 &ndash; Gesamt&uuml;bersicht')+raster+
+      '<div class="dfuss"><span>Gelb hinterlegt = mehrere Ma&szlig;e in einem Fach &middot; '+
+      'St = Stangen &agrave; '+lg+' mm</span><span>Seite 1 von 2</span></div></div>'+
+    '<div class="dseite">'+kopf('Materialliste &ndash; alle Ma&szlig;e', 'sortiert nach Breite, dann Dicke')+
+      '<div class="dspalten">'+spalten+'</div>'+
+      '<div class="dfuss"><span>Lg = Lager &middot; Meter = Bestand &times; '+lg+' mm'+
+      ' &middot; gelbe Zahl = zus&auml;tzlicher Rest au&szlig;erhalb des Regals</span><span>Seite 2 von 2</span></div></div>';
+
+  window.print();
+}
+
+/* ---------- Daten ---------- */
+function exportJson(){
+  lade(new Blob([JSON.stringify({stand:new Date().toISOString(), stange:stange(),
+    werkstoff:stdWst(), lager, protokoll, verbrauch, istDemo, archiv}, null, 2)], {type:'application/json'}),
+    'Stahllager_Bestand_'+datum()+'.json');
+  logge('Bestand gesichert');
+}
+function exportCsv(){
+  const lg = stange();
+  const kopf = 'Reihe;Fach;Lager;Gruppe;Mass;Breite;Dicke;Werkstoff;Stangen;Meter;Rest extern\n';
+  const zeilen = alleItems().sort((a,b)=>a.r-b.r||a.fa-b.fa).map(i =>
+    [i.r,i.fa,i.fa<=7?1:2,i.gruppe,i.m,breite(i.m),dicke(i.m),i.wst||'',
+     istGenug(i)?'genug':i.q, istGenug(i)?'':(i.q*lg/1000).toFixed(1).replace('.',','), i.rest].join(';')).join('\n');
+  lade(new Blob(['\ufeff'+kopf+zeilen], {type:'text/csv;charset=utf-8'}), 'Stahllager_Bestand_'+datum()+'.csv');
+}
+const datum = () => new Date().toISOString().slice(0,10).replace(/-/g,'');
+function lade(blob, name){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name; a.click(); URL.revokeObjectURL(a.href);
+}
+el('importDatei').addEventListener('change', e => {
+  const datei = e.target.files[0]; if(!datei) return;
+  const leser = new FileReader();
+  leser.onload = ev => {
+    try{
+      const obj = JSON.parse(ev.target.result);
+      if(!obj.lager) throw new Error('Format');
+      lager = obj.lager; protokoll = obj.protokoll || [];
+      verbrauch = obj.verbrauch || []; istDemo = !!obj.istDemo; archiv = obj.archiv || [];
+      if(obj.stange) el('stangeLaenge').value = obj.stange;
+      if(obj.werkstoff) el('stdWerkstoff').value = obj.werkstoff;
+      logge('Bestand aus Datei geladen: ' + datei.name);
+      archiv.unshift({t:new Date().toISOString(), u:el('benutzer').value.trim()||'ohne Namen',
+                      art:'System', m:'', f:'', a:null, n:null, i:'Sicherung geladen: '+datei.name});
+      alles();
+    }catch(err){ alert('Datei konnte nicht gelesen werden.'); }
+  };
+  leser.readAsText(datei);
+  e.target.value='';
+});
+
+/* ---------- Firebase ---------- */
+let db = null, fbAuth = null, cloudAktiv = false, angemeldet = null;
+const clientId = Math.random().toString(36).slice(2,10);
+let letzterStand = '', schreibTimer = null, ersterEmpfang = true;
+
+function cloudStatus(text, farbe){
+  el('cloudStatus').innerHTML = '<span style="color:'+farbe+'">&#9679;</span> '+text;
+}
+
+function firebaseStarten(){
+  if(!FIREBASE_KONFIG.apiKey){ cloudStatus('Lokaler Modus', '#E4B23C'); return; }
+  cloudStatus('verbinde &hellip;', '#E4B23C');
+  const quellen = [
+    'https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js',
+    'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js',
+    'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js'
+  ];
+  let ix = 0;
+  const weiter = () => {
+    if(ix >= quellen.length) return firebaseBereit();
+    const sc = document.createElement('script');
+    sc.src = quellen[ix++];
+    sc.onload = weiter;
+    sc.onerror = () => cloudStatus('Firebase nicht erreichbar &ndash; lokaler Modus', '#B3261E');
+    document.head.appendChild(sc);
+  };
+  weiter();
+}
+
+function firebaseBereit(){
+  try{
+    firebase.initializeApp(FIREBASE_KONFIG);
+    fbAuth = firebase.auth();
+    db = firebase.firestore();
+    cloudAktiv = true;
+    fbAuth.onAuthStateChanged(nutzer => {
+      if(nutzer){
+        angemeldet = nutzer;
+        el('loginBox').innerHTML = '';
+        if(!el('benutzer').value.trim()) el('benutzer').value = nutzer.email.split('@')[0];
+        cloudStatus('verbunden als '+nutzer.email, '#7ED957');
+        datenLauschen();
+      } else {
+        angemeldet = null;
+        cloudStatus('nicht angemeldet', '#E4B23C');
+        loginZeigen();
+      }
+    });
+  }catch(e){
+    cloudStatus('Fehler bei der Verbindung &ndash; lokaler Modus', '#B3261E');
+  }
+}
+
+function loginZeigen(fehler){
+  el('loginBox').innerHTML =
+    '<div class="loginhuelle"><div class="loginkarte">'+
+    '<img src="'+LOGO+'" alt="IWB">'+
+    '<h2>Stahllager</h2><p>Bitte mit dem Firmenkonto anmelden.</p>'+
+    '<label>E-Mail</label><input type="email" id="lMail" autocomplete="username">'+
+    '<label>Passwort</label><input type="password" id="lPass" autocomplete="current-password">'+
+    '<button class="btn" onclick="anmelden()">Anmelden</button>'+
+    (fehler? '<div class="loginfehler">'+fehler+'</div>' : '')+
+    '</div></div>';
+  el('lPass').addEventListener('keydown', ev => { if(ev.key === 'Enter') anmelden(); });
+  el('lMail').focus();
+}
+
+function anmelden(){
+  const mail = el('lMail').value.trim(), pass = el('lPass').value;
+  if(!mail || !pass){ loginZeigen('Bitte E-Mail und Passwort eingeben.'); return; }
+  fbAuth.signInWithEmailAndPassword(mail, pass).catch(e => {
+    const texte = {
+      'auth/invalid-email': 'Die E-Mail-Adresse ist ungueltig.',
+      'auth/user-not-found': 'Dieses Konto gibt es nicht.',
+      'auth/wrong-password': 'Das Passwort stimmt nicht.',
+      'auth/invalid-credential': 'E-Mail oder Passwort stimmt nicht.',
+      'auth/too-many-requests': 'Zu viele Versuche. Bitte kurz warten.',
+      'auth/network-request-failed': 'Keine Verbindung zum Server.'
+    };
+    loginZeigen(texte[e.code] || ('Anmeldung fehlgeschlagen: '+e.code));
+  });
+}
+
+function abmelden(){ if(fbAuth) fbAuth.signOut(); }
+
+function datenLauschen(){
+  db.collection('stahllager').doc('bestand').onSnapshot(schnapp => {
+    if(!schnapp.exists){ cloudSpeichern(true); return; }
+    const d = schnapp.data();
+    if(d.clientId === clientId) return;
+    if(d.lager) lager = d.lager;
+    if(d.verbrauch) verbrauch = d.verbrauch;
+    if(d.stange) el('stangeLaenge').value = d.stange;
+    if(d.werkstoff) el('stdWerkstoff').value = d.werkstoff;
+    letzterStand = JSON.stringify({lager, verbrauch});
+    alles();
+    if(!ersterEmpfang){
+      cloudStatus('aktualisiert durch '+(d.updatedBy || 'jemand anderen'), '#7ED957');
+      setTimeout(() => { if(angemeldet) cloudStatus('verbunden als '+angemeldet.email, '#7ED957'); }, 4000);
+    }
+    ersterEmpfang = false;
+  }, () => cloudStatus('Verbindung unterbrochen', '#B3261E'));
+
+  db.collection('archiv').orderBy('t','desc').limit(500).onSnapshot(s => {
+    const aus = [];
+    s.forEach(dok => aus.push(dok.data()));
+    if(aus.length) archiv = aus;
+    if(!el('v-archiv').classList.contains('verstecke')) zeichneArchiv();
+  }, () => {});
+}
+
+function cloudSpeichern(erzwingen){
+  if(!cloudAktiv || !angemeldet) return;
+  const jetzt = JSON.stringify({lager, verbrauch});
+  if(!erzwingen && jetzt === letzterStand) return;
+  letzterStand = jetzt;
+  clearTimeout(schreibTimer);
+  schreibTimer = setTimeout(() => {
+    db.collection('stahllager').doc('bestand').set({
+      lager, verbrauch, stange: stange(), werkstoff: stdWst(),
+      updatedAt: new Date().toISOString(),
+      updatedBy: el('benutzer').value.trim() || angemeldet.email,
+      clientId
+    }).then(() => cloudStatus('gespeichert &middot; '+new Date().toLocaleTimeString('de-DE',
+        {hour:'2-digit',minute:'2-digit'}), '#7ED957'))
+      .catch(e => cloudStatus('Speichern fehlgeschlagen: '+e.code, '#B3261E'));
+  }, 1000);
+}
+
+function archivSchreiben(eintrag){
+  if(!cloudAktiv || !angemeldet) return;
+  db.collection('archiv').add(eintrag).catch(()=>{});
+}
+
+/* ---------- Start ---------- */
+
+function alles(){ zeichneRaster(); zeichneBestand(); cloudSpeichern(); }
+['suche','sortierung','nurKnapp','mindest','stangeLaenge','stdWerkstoff'].forEach(id =>
+  el(id).addEventListener('input', alles));
+el('zoomModus').addEventListener('change', skaliere);
+el('kopfLogo').src = LOGO;
+firebaseStarten();
+if(FIREBASE_KONFIG.apiKey){
+  el('btnAbmelden').style.display = 'inline-block';
+  el('datenHinweis').innerHTML = 'Die Daten liegen auf dem Firebase-Server und werden automatisch '+
+    'zwischen allen Arbeitsplätzen abgeglichen. Eine Sicherung als Datei bleibt trotzdem sinnvoll.';
+}
+zeileHinzu();
+el('bDatum').value = new Date().toISOString().slice(0,10);
+el('bNummer').value = 'BANF-'+datum()+'-01';
+el('bWerkstoff').value = stdWst();
+el('bLaenge').value = stange();
+el('stdWerkstoff').addEventListener('input', () => el('bWerkstoff').value = stdWst());
+el('stangeLaenge').addEventListener('input', () => el('bLaenge').value = stange());
+alles();
+el('standInfo').textContent = 'Stand: ' + new Date().toLocaleDateString('de-DE');
+</script>
+</body>
+</html>
