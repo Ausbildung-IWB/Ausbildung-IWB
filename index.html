@@ -167,6 +167,26 @@ code{background:#eef1f4;padding:1px 5px;border-radius:2px;font-size:12.5px}
   padding:16px 14px;border-radius:3px;cursor:pointer;text-align:left}
 .namenknopf:hover,.namenknopf:active{background:var(--blau);color:#fff;border-left-color:var(--blau-dunkel)}
 .namenknopf.andere{border-left-color:var(--text-hell);font-weight:400;color:var(--text-hell)}
+.rollenbox{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:10px;margin-top:12px}
+.rollenbox div{background:var(--blau-hell);border-left:3px solid var(--blau);padding:10px 13px;border-radius:2px}
+.rollenbox b{display:block;font-size:13.5px;color:var(--blau-dunkel);margin-bottom:3px}
+.rollenbox span{font-size:12.5px;color:var(--text-hell);line-height:1.45}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{background:var(--blau-hell);border:1px solid var(--grau-linie);border-radius:16px;
+  padding:5px 8px 5px 14px;font-size:13.5px;display:flex;align-items:center;gap:7px}
+.chip button{background:none;border:none;color:var(--text-hell);font-size:16px;line-height:1;
+  cursor:pointer;padding:0 3px}
+.chip button:hover{color:var(--rot)}
+.codebox{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--grau-bg);
+  border:1px solid var(--grau-linie);padding:12px 16px;border-radius:3px}
+.codebox span{font-family:"Consolas",monospace;font-size:19px;font-weight:700;
+  letter-spacing:2px;color:var(--blau-dunkel);flex:1;min-width:180px}
+.bslot{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+  border:1px solid var(--grau-linie);border-left:3px solid var(--gruen);padding:11px 14px;
+  border-radius:2px;margin-top:9px}
+.bslot.leer{border-left-color:var(--grau-linie);color:var(--text-hell)}
+.bslot b{font-size:14px}
+.bslot .details{font-size:12.5px;color:var(--text-hell)}
 .zaehler{max-width:620px;margin:0 auto}
 .zfortschritt{height:6px;background:var(--grau-linie);border-radius:3px;overflow:hidden;margin-bottom:16px}
 .zfortschritt div{height:100%;background:var(--blau);transition:width .25s}
@@ -297,6 +317,7 @@ code{background:#eef1f4;padding:1px 5px;border-radius:2px;font-size:12.5px}
     <button data-ansicht="verbrauch">Verbrauch</button>
     <button data-ansicht="archiv">Archiv</button>
     <button data-ansicht="keller" class="nav30">Kellerlager</button>
+    <button data-ansicht="verwaltung">Verwaltung</button>
     <button data-ansicht="daten">Daten</button>
   </nav>
   <img id="kopfLogo" class="firmenlogo" alt="Industriepark Werk Bobingen">
@@ -305,6 +326,7 @@ code{background:#eef1f4;padding:1px 5px;border-radius:2px;font-size:12.5px}
 <div class="tabletband" id="tabletBand" style="display:none">
   <span>Tablet-Betrieb &middot; angemeldet: <b id="tabletPerson">&ndash;</b></span>
   <button onclick="standbyAn()">Sperren</button>
+  <button onclick="abmelden()">Abmelden</button>
 </div>
 <div class="standortband" id="standortBand" style="display:none">
   <span>Standort: <b id="standortName">&ndash;</b></span>
@@ -569,6 +591,80 @@ code{background:#eef1f4;padding:1px 5px;border-radius:2px;font-size:12.5px}
   </div>
 </section>
 
+<section id="v-verwaltung" class="verstecke">
+  <h1>Verwaltung</h1>
+  <p class="sub">Tablets, Personen, Sperrcode und Sicherungen an einer Stelle.</p>
+
+  <div class="karte">
+    <h2 style="margin-top:0">Konten und Rollen</h2>
+    <p class="sub">Die Konten selbst werden in der Firebase-Konsole angelegt
+      (Authentication &rarr; Nutzer). Hier legst du nur fest, was ein Konto darf.
+      Ein Konto ohne Eintrag hat automatisch vollen Zugriff.</p>
+
+    <div class="rollenbox">
+      <div><b>Voller Zugriff</b><span>Alle Reiter, Fächer bearbeiten, Bestellanforderung,
+        Verwaltung. F&uuml;r dich und Kollegen im B&uuml;ro.</span></div>
+      <div><b>Tablet Stahllager</b><span>Nur Lagerplan, Bestandsliste und Inventur.
+        Kein Bearbeiten von F&auml;chern, kein Archiv, kein Abmelden ohne Code.</span></div>
+      <div><b>Tablet Keller</b><span>Nur das Kellerlager mit Hinzuf&uuml;gen und Entnehmen.
+        Kein Anlegen oder L&ouml;schen von Artikeln.</span></div>
+    </div>
+
+    <div style="overflow:auto;margin-top:16px">
+      <table class="liste"><thead><tr>
+        <th>Konto</th><th style="width:210px">Rolle</th><th style="width:44px"></th>
+      </tr></thead><tbody id="rollenBody"></tbody></table>
+    </div>
+
+    <div class="werkzeuge" style="margin-top:14px;align-items:flex-end">
+      <label>Neues Konto zuordnen<input type="text" id="rMail"
+        placeholder="tablet-stahl@iwb.local" style="width:250px"></label>
+      <label>Rolle<select id="rRolle" style="width:190px">
+        <option value="tablet-stahl">Tablet Stahllager</option>
+        <option value="tablet-keller">Tablet Keller</option>
+        <option value="admin">Voller Zugriff</option>
+      </select></label>
+      <button class="btn" onclick="rolleHinzu()">Zuordnen</button>
+    </div>
+  </div>
+
+  <div class="karte">
+    <h2 style="margin-top:0">Namensliste der Tablets</h2>
+    <p class="sub">Diese Namen erscheinen nach dem Entsperren als Kacheln. Wer tippt, wird
+      zu jeder Buchung im Archiv gespeichert.</p>
+    <div id="personenListe" class="chips"></div>
+    <div class="werkzeuge" style="margin-top:12px">
+      <input type="text" id="pNeu" placeholder="Vorname Nachname" style="width:230px"
+        onkeydown="if(event.key==='Enter')personHinzu()">
+      <button class="btn" onclick="personHinzu()">Hinzuf&uuml;gen</button>
+      <button class="btn sek" onclick="personenMehrere()">Mehrere auf einmal</button>
+    </div>
+  </div>
+
+  <div class="karte">
+    <h2 style="margin-top:0">Sperrcode der Tablets</h2>
+    <p class="sub">Ohne diesen Code kann sich ein Tablet nicht abmelden und nicht den
+      Standort wechseln. Notiere ihn dir &ndash; am besten nicht am Tablet selbst.</p>
+    <div class="codebox">
+      <span id="codeAnzeige">&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;</span>
+      <button class="btn sek" onclick="codeZeigen()" id="codeKnopf">Anzeigen</button>
+      <button class="btn sek" onclick="codeAendern()">&Auml;ndern</button>
+    </div>
+  </div>
+
+  <div class="karte">
+    <h2 style="margin-top:0">Automatische Sicherungen</h2>
+    <p class="sub">Es werden immer die letzten drei Sicherungen aufbewahrt. Die &auml;lteste wird
+      dabei &uuml;berschrieben. Einmal t&auml;glich beim ersten Start legt die Anwendung
+      selbstst&auml;ndig eine an.</p>
+    <div id="backupListe"></div>
+    <div class="werkzeuge" style="margin-top:12px">
+      <button class="btn" onclick="backupJetzt()">Jetzt sichern</button>
+      <button class="btn sek" onclick="exportJson()">Zus&auml;tzlich als Datei</button>
+    </div>
+  </div>
+</section>
+
 <section id="v-daten" class="verstecke">
   <h1>Daten &amp; Einstellungen</h1>
   <div class="karte">
@@ -592,17 +688,6 @@ code{background:#eef1f4;padding:1px 5px;border-radius:2px;font-size:12.5px}
     <div class="hinweis" style="margin-bottom:0" id="datenHinweis">Die Daten liegen nur in diesem Browser. Nach dem Arbeiten sichern
       und die Datei aufs Netzlaufwerk legen.</div>
   </div>
-  <div class="karte nurAdmin">
-    <h2 style="margin-top:0">Tablets und Personen</h2>
-    <p class="sub">Konten werden in der Firebase-Konsole angelegt. Hier wird nur festgelegt,
-      was ein Konto sehen darf.</p>
-    <div class="werkzeuge">
-      <button class="btn" onclick="rolleZuweisen()">Konto zuordnen</button>
-      <button class="btn sek" onclick="personenPflegen()">Namensliste pflegen</button>
-    </div>
-    <div id="rollenListe"></div>
-  </div>
-
   <div class="karte">
     <h2 style="margin-top:0">Protokoll dieser Sitzung</h2>
     <div class="protokoll" id="protokoll"><div>Noch keine &Auml;nderungen.</div></div>
@@ -722,13 +807,14 @@ const dicke  = m => parseFloat(String(m).split('x')[1]);
 document.querySelectorAll('nav button').forEach(b => b.onclick = () => {
   document.querySelectorAll('nav button').forEach(x => x.classList.remove('aktiv'));
   b.classList.add('aktiv');
-  ['plan','bestand','stueck','zaehlen','banf','verbrauch','archiv','keller','daten'].forEach(v =>
+  ['plan','bestand','stueck','zaehlen','banf','verbrauch','archiv','keller','verwaltung','daten'].forEach(v =>
     el('v-'+v).classList.toggle('verstecke', v !== b.dataset.ansicht));
   if(b.dataset.ansicht === 'plan') skaliere();
   if(b.dataset.ansicht === 'verbrauch') zeichneVerbrauch();
   if(b.dataset.ansicht === 'banf' && !document.querySelector('#banfBody tr')) banfZeile();
   if(b.dataset.ansicht === 'archiv') zeichneArchiv();
   if(b.dataset.ansicht === 'keller') zeichneKeller();
+  if(b.dataset.ansicht === 'verwaltung') zeichneVerwaltung();
 });
 
 /* ---------- Lagerplan ---------- */
@@ -1828,7 +1914,7 @@ function drucken(){
 /* ---------- Daten ---------- */
 function exportJson(){
   lade(new Blob([JSON.stringify({stand:new Date().toISOString(), stange:stange(),
-    werkstoff:stdWst(), lager, protokoll, verbrauch, istDemo, archiv, keller, rollenTabelle, personen}, null, 2)], {type:'application/json'}),
+    werkstoff:stdWst(), lager, protokoll, verbrauch, istDemo, archiv, keller, rollenTabelle, personen, sperrcode}, null, 2)], {type:'application/json'}),
     'Stahllager_Bestand_'+datum()+'.json');
   logge('Bestand gesichert');
 }
@@ -1856,6 +1942,7 @@ el('importDatei').addEventListener('change', e => {
       verbrauch = obj.verbrauch || []; istDemo = !!obj.istDemo; archiv = obj.archiv || [];
       keller = obj.keller || [];
       rollenTabelle = obj.rollenTabelle || {}; personen = obj.personen || [];
+      if(obj.sperrcode) sperrcode = obj.sperrcode;
       if(obj.stange) el('stangeLaenge').value = obj.stange;
       if(obj.werkstoff) el('stdWerkstoff').value = obj.werkstoff;
       datenGeladen = true;
@@ -1869,6 +1956,193 @@ el('importDatei').addEventListener('change', e => {
   leser.readAsText(datei);
   e.target.value='';
 });
+
+/* ---------- Verwaltung ---------- */
+const CODE_START = 'IWB-Lager-4719';
+let sperrcode = CODE_START;
+let rollenTabelle = {};
+let backups = [];          // [{slot, stand, von, groesse}]
+let codeSichtbar = false;
+
+function zeichneVerwaltung(){ rollenZeichnen(); personenZeichnen(); backupsZeichnen(); codeZeichnen(); }
+
+/* --- Rollen --- */
+function rollenZeichnen(){
+  const zeilen = Object.entries(rollenTabelle);
+  const feld = el('rollenBody');
+  if(!feld) return;
+  feld.innerHTML = zeilen.length
+    ? zeilen.sort((a,b)=>a[0].localeCompare(b[0])).map(([mail,r]) =>
+        '<tr><td><b>'+mail+'</b>'+(mail === (angemeldet? (angemeldet.email||'').toLowerCase():'')
+          ? ' <span class="pill neu">das bist du</span>':'')+'</td>'+
+        '<td><select onchange="rolleSetzen(\''+mail+'\',this.value)" style="width:100%">'+
+          ['admin','tablet-stahl','tablet-keller'].map(o =>
+            '<option value="'+o+'"'+(o===r?' selected':'')+'>'+rollenName(o)+'</option>').join('')+
+        '</select></td>'+
+        '<td><button class="mini" onclick="rolleEntfernen(\''+mail+'\')">&times;</button></td></tr>').join('')
+    : '<tr><td colspan="3" style="padding:16px;color:var(--text-hell)">Noch keine Zuordnung. '+
+      'Alle Konten haben vollen Zugriff.</td></tr>';
+}
+const rollenName = r => ({'admin':'Voller Zugriff','tablet-stahl':'Tablet Stahllager',
+                          'tablet-keller':'Tablet Keller'}[r] || r);
+
+function rolleHinzu(){
+  const mail = el('rMail').value.trim().toLowerCase();
+  if(!mail || !mail.includes('@')) return alert('Bitte eine gültige E-Mail eingeben.');
+  rollenTabelle[mail] = el('rRolle').value;
+  el('rMail').value = '';
+  rollenSpeichern('Konto '+mail+' als '+rollenName(rollenTabelle[mail])+' zugeordnet');
+}
+function rolleSetzen(mail, r){ rollenTabelle[mail] = r; rollenSpeichern('Rolle von '+mail+' geändert'); }
+function rolleEntfernen(mail){
+  if(!confirm('Zuordnung für '+mail+' entfernen? Das Konto hat danach vollen Zugriff.')) return;
+  delete rollenTabelle[mail];
+  rollenSpeichern('Zuordnung für '+mail+' entfernt');
+}
+function rollenSpeichern(text){
+  if(cloudAktiv && angemeldet)
+    db.collection('stahllager').doc('rollen')
+      .set({tabelle:rollenTabelle, sperrcode, clientId}).catch(()=>{});
+  if(text){ logge(text); notiere('Verwaltung','','',null,null,text); }
+  rollenZeichnen();
+}
+
+/* --- Personen --- */
+function personenZeichnen(){
+  const feld = el('personenListe');
+  if(!feld) return;
+  feld.innerHTML = personen.length
+    ? personen.map((n,ix) => '<span class="chip">'+n+
+        '<button onclick="personWeg('+ix+')" title="Entfernen">&times;</button></span>').join('')
+    : '<p class="sub" style="margin:0">Noch keine Namen. Die Tablets fragen dann nach freier Eingabe.</p>';
+}
+function personHinzu(){
+  const n = el('pNeu').value.trim();
+  if(!n) return;
+  if(personen.includes(n)) return alert('Der Name steht schon in der Liste.');
+  personen.push(n); personen.sort((a,b)=>a.localeCompare(b,'de'));
+  el('pNeu').value = '';
+  personenSpeichern(n+' zur Namensliste hinzugefügt');
+}
+function personWeg(ix){
+  const n = personen[ix];
+  if(!confirm('"'+n+'" aus der Liste entfernen?')) return;
+  personen.splice(ix,1);
+  personenSpeichern(n+' aus der Namensliste entfernt');
+}
+function personenMehrere(){
+  const text = prompt('Ein Name je Zeile:', personen.join('\n'));
+  if(text === null) return;
+  personen = [...new Set(text.split('\n').map(z=>z.trim()).filter(Boolean))]
+             .sort((a,b)=>a.localeCompare(b,'de'));
+  personenSpeichern('Namensliste aktualisiert ('+personen.length+' Personen)');
+}
+function personenSpeichern(text){
+  if(cloudAktiv && angemeldet)
+    db.collection('stahllager').doc('personen').set({namen:personen, clientId}).catch(()=>{});
+  logge(text); personenZeichnen();
+}
+
+/* --- Sperrcode --- */
+function codeZeichnen(){
+  const a = el('codeAnzeige'); if(!a) return;
+  a.textContent = codeSichtbar ? sperrcode : '\u2022'.repeat(Math.max(8, sperrcode.length));
+  el('codeKnopf').textContent = codeSichtbar ? 'Verbergen' : 'Anzeigen';
+}
+function codeZeigen(){ codeSichtbar = !codeSichtbar; codeZeichnen(); }
+function codeAendern(){
+  const n = (prompt('Neuen Sperrcode eingeben (mindestens 6 Zeichen):', sperrcode) || '').trim();
+  if(n.length < 6) return alert('Der Code sollte mindestens 6 Zeichen haben.');
+  sperrcode = n;
+  rollenSpeichern('Sperrcode der Tablets geändert');
+  codeSichtbar = true; codeZeichnen();
+}
+function codePruefen(zweck){
+  const e = (prompt(zweck+'\n\nBitte den Sperrcode eingeben:', '') || '').trim();
+  if(e === sperrcode) return true;
+  if(e) alert('Der Code stimmt nicht.');
+  return false;
+}
+
+/* --- Sicherungen --- */
+function backupsZeichnen(){
+  const feld = el('backupListe'); if(!feld) return;
+  feld.innerHTML = [1,2,3].map(nr => {
+    const b = backups.find(x => x.slot === nr);
+    if(!b) return '<div class="bslot leer"><div><b>Platz '+nr+'</b>'+
+      '<div class="details">noch nicht belegt</div></div></div>';
+    return '<div class="bslot"><div><b>'+new Date(b.stand).toLocaleString('de-DE')+'</b>'+
+      '<div class="details">Platz '+nr+' &middot; von '+(b.von||'unbekannt')+
+      ' &middot; '+(b.faecher||0)+' F&auml;cher, '+(b.artikel||0)+' Keller-Artikel</div></div>'+
+      '<button class="btn sek" onclick="backupZurueck('+nr+')">Wiederherstellen</button></div>';
+  }).join('');
+}
+
+function backupJetzt(automatisch){
+  if(!cloudAktiv || !angemeldet){ if(!automatisch) alert('Sicherungen brauchen eine Verbindung zur Datenbank.'); return; }
+  const belegt = backups.map(b => b.slot);
+  let slot;
+  if(belegt.length < 3) slot = [1,2,3].find(n => !belegt.includes(n));
+  else slot = backups.slice().sort((a,b) => a.stand.localeCompare(b.stand))[0].slot;
+  const inhalt = {
+    stand: new Date().toISOString(),
+    von: el('benutzer').value.trim() || (angemeldet.email||''),
+    faecher: lager.length, artikel: keller.length,
+    lager, keller, verbrauch, personen, rollenTabelle,
+    stange: stange(), werkstoff: stdWst(), slot, clientId
+  };
+  db.collection('backups').doc('slot'+slot).set(inhalt).then(() => {
+    backups = backups.filter(b => b.slot !== slot);
+    backups.push({slot, stand:inhalt.stand, von:inhalt.von, faecher:inhalt.faecher, artikel:inhalt.artikel});
+    backupsZeichnen();
+    if(!automatisch){
+      logge('Sicherung auf Platz '+slot+' abgelegt');
+      notiere('Sicherung','','',null,null,'Platz '+slot+' überschrieben');
+      alert('Sicherung angelegt (Platz '+slot+').');
+    } else logge('Automatische Tagessicherung auf Platz '+slot);
+  }).catch(e => { if(!automatisch) alert('Sicherung fehlgeschlagen: '+e.code); });
+}
+
+function backupZurueck(slot){
+  const b = backups.find(x => x.slot === slot); if(!b) return;
+  if(!confirm('Sicherung vom '+new Date(b.stand).toLocaleString('de-DE')+
+     ' wiederherstellen?\n\nDer aktuelle Bestand wird dabei überschrieben. '+
+     'Vorher wird automatisch eine Sicherung des jetzigen Standes angelegt.')) return;
+  backupJetzt(true);
+  db.collection('backups').doc('slot'+slot).get().then(sn => {
+    if(!sn.exists) return alert('Sicherung nicht gefunden.');
+    const d = sn.data();
+    if(d.lager) lager = d.lager;
+    if(d.keller) keller = d.keller;
+    if(d.verbrauch) verbrauch = d.verbrauch;
+    if(d.stange) el('stangeLaenge').value = d.stange;
+    if(d.werkstoff) el('stdWerkstoff').value = d.werkstoff;
+    logge('Sicherung von Platz '+slot+' wiederhergestellt');
+    notiere('Sicherung','','',null,null,'Platz '+slot+' wiederhergestellt (Stand '+
+            new Date(d.stand).toLocaleString('de-DE')+')');
+    cloudSpeichern(true); kellerSpeichern(); alles();
+    alert('Wiederhergestellt.');
+  }).catch(e => alert('Fehler: '+e.code));
+}
+
+function backupsLauschen(){
+  db.collection('backups').onSnapshot(s => {
+    backups = [];
+    s.forEach(dok => { const d = dok.data();
+      backups.push({slot:d.slot, stand:d.stand, von:d.von, faecher:d.faecher, artikel:d.artikel}); });
+    backupsZeichnen();
+    tagessicherung();
+  }, () => {});
+}
+
+let sicherungGeprueft = false;
+function tagessicherung(){
+  if(sicherungGeprueft || rolle !== 'admin') return;
+  sicherungGeprueft = true;
+  const heute = new Date().toISOString().slice(0,10);
+  const neueste = backups.map(b => b.stand).sort().pop();
+  if(!neueste || neueste.slice(0,10) < heute) setTimeout(() => backupJetzt(true), 3000);
+}
 
 /* ---------- Handy-Suche ---------- */
 function handySuche(){
@@ -2225,56 +2499,6 @@ function standbyNeuStarten(){
 ['click','keydown','touchstart','mousemove'].forEach(e =>
   document.addEventListener(e, standbyNeuStarten, {passive:true}));
 
-/* --- Personenliste --- */
-function personenPflegen(){
-  const text = prompt('Namensliste für die Tablets – ein Name je Zeile:',
-                      personen.join('\n'));
-  if(text === null) return;
-  personen = text.split('\n').map(z => z.trim()).filter(Boolean);
-  if(cloudAktiv && angemeldet)
-    db.collection('stahllager').doc('personen')
-      .set({namen:personen, clientId}).catch(()=>{});
-  logge('Namensliste aktualisiert ('+personen.length+' Personen)');
-  rollenZeichnen();
-}
-
-/* --- Rollenverwaltung --- */
-let rollenTabelle = {};
-function rollenZeichnen(){
-  const zeilen = Object.entries(rollenTabelle);
-  el('rollenListe').innerHTML =
-    (zeilen.length
-      ? '<table class="liste"><thead><tr><th>Konto</th><th>Rolle</th><th style="width:40px"></th></tr></thead><tbody>'+
-        zeilen.map(([mail,r]) =>
-          '<tr><td>'+mail+'</td><td>'+rollenName(r)+'</td>'+
-          '<td><button class="mini" onclick="rolleEntfernen(\''+mail+'\')">&times;</button></td></tr>').join('')+
-        '</tbody></table>'
-      : '<p class="sub" style="margin:0">Noch keine Zuordnung. Ohne Eintrag hat jedes Konto vollen Zugriff.</p>')+
-    '<p class="sub" style="margin:12px 0 0">Namensliste: '+
-      (personen.length ? personen.join(', ') : 'noch leer')+'</p>';
-}
-const rollenName = r => ({'admin':'Voller Zugriff','tablet-stahl':'Tablet Stahllager',
-                          'tablet-keller':'Tablet Keller'}[r] || r);
-
-function rolleZuweisen(){
-  const mail = (prompt('E-Mail des Kontos:', '') || '').trim().toLowerCase();
-  if(!mail) return;
-  const r = (prompt('Rolle: admin, tablet-stahl oder tablet-keller', 'tablet-stahl') || '').trim();
-  if(!['admin','tablet-stahl','tablet-keller'].includes(r)) return alert('Unbekannte Rolle.');
-  rollenTabelle[mail] = r;
-  rollenSpeichern();
-}
-function rolleEntfernen(mail){
-  delete rollenTabelle[mail];
-  rollenSpeichern();
-}
-function rollenSpeichern(){
-  if(cloudAktiv && angemeldet)
-    db.collection('stahllager').doc('rollen').set({tabelle:rollenTabelle, clientId}).catch(()=>{});
-  logge('Rollen aktualisiert');
-  rollenZeichnen();
-}
-
 /* ---------- Standorte ---------- */
 let standort = null;
 let keller = [];   // {id, name, kat, platz, q, einheit, min, notiz}
@@ -2285,6 +2509,7 @@ const STANDORTE = {
 };
 
 function standortWaehlen(){
+  if(istTablet() && !codePruefen('Der Standortwechsel ist am Tablet geschützt.')) return;
   el('wahlBox').innerHTML =
     '<div class="wahlhuelle"><div class="wahlkarte">'+
     '<img src="'+LOGO+'" alt="IWB">'+
@@ -2315,7 +2540,7 @@ function standortSetzen(id){
   document.querySelectorAll('nav button').forEach(b => b.classList.remove('aktiv'));
   const knopf = document.querySelector('nav button[data-ansicht="'+ziel+'"]');
   if(knopf) knopf.classList.add('aktiv');
-  ['plan','bestand','stueck','zaehlen','banf','verbrauch','archiv','keller','daten'].forEach(v =>
+  ['plan','bestand','stueck','zaehlen','banf','verbrauch','archiv','keller','verwaltung','daten'].forEach(v =>
     el('v-'+v).classList.toggle('verstecke', v !== ziel));
   if(id === '649') skaliere(); else zeichneKeller();
 }
@@ -2542,7 +2767,10 @@ function anmelden(){
   });
 }
 
-function abmelden(){ if(fbAuth) fbAuth.signOut(); }
+function abmelden(){
+  if(istTablet() && !codePruefen('Abmelden ist am Tablet geschützt.')) return;
+  if(fbAuth) fbAuth.signOut();
+}
 
 let abosGestartet = false;
 
@@ -2550,6 +2778,8 @@ function datenLauschen(){
   // Zuerst die Rolle klaeren - danach nur abonnieren, was erlaubt ist
   db.collection('stahllager').doc('rollen').onSnapshot(sn => {
     rollenTabelle = (sn.exists && sn.data().tabelle) || {};
+    if(sn.exists && sn.data().sperrcode) sperrcode = sn.data().sperrcode;
+    codeZeichnen();
     const meine = rollenTabelle[(angemeldet.email||'').toLowerCase()] || 'admin';
     if(meine !== rolle){ rolle = meine; rolleAnwenden(); }
     rollenZeichnen();
@@ -2558,14 +2788,14 @@ function datenLauschen(){
 
   db.collection('stahllager').doc('personen').onSnapshot(sn => {
     personen = (sn.exists && sn.data().namen) || [];
-    rollenZeichnen();
+    personenZeichnen();
   }, () => {});
 }
 
 function abosStarten(){
   if(rolle !== 'tablet-keller') bestandLauschen();
   if(rolle !== 'tablet-stahl')  kellerLauschen();
-  if(rolle === 'admin')         archivLauschen();
+  if(rolle === 'admin'){ archivLauschen(); backupsLauschen(); }
 }
 
 function bestandLauschen(){
