@@ -131,6 +131,8 @@ svg.chart text{font-family:inherit}
 .demo{background:#FDF6E3;border:1px dashed var(--gelb);color:#7a5c00;padding:8px 14px;
   font-size:12.5px;border-radius:2px;display:inline-block;margin-bottom:12px}
 code{background:#eef1f4;padding:1px 5px;border-radius:2px;font-size:12.5px}
+#kopfbereich{position:sticky;top:0;z-index:60;box-shadow:0 2px 8px rgba(10,40,70,.10)}
+table.liste th{z-index:2}
 #druck{display:none}
 .loginhuelle{position:fixed;inset:0;background:#0A3760;display:flex;align-items:center;
   justify-content:center;z-index:200;padding:20px}
@@ -238,7 +240,7 @@ code{background:#eef1f4;padding:1px 5px;border-radius:2px;font-size:12.5px}
 @media print{
   @page{ size: A4 landscape; margin: 8mm; }
   html,body{background:#fff;margin:0}
-  .topbar,header,main,footer,#dialogBox{display:none !important}
+  .topbar,header,main,footer,#dialogBox,#kopfbereich{display:none !important}
   #druck{display:block}
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .dseite{page-break-after:always}
@@ -295,6 +297,7 @@ code{background:#eef1f4;padding:1px 5px;border-radius:2px;font-size:12.5px}
 </head>
 <body>
 
+<div id="kopfbereich">
 <div class="topbar">
   <span>Stahllager &ndash; interne Bestandsverwaltung &middot; Daten aus Firestore</span>
   <span id="cloudStatus">&ndash;</span>
@@ -331,6 +334,8 @@ code{background:#eef1f4;padding:1px 5px;border-radius:2px;font-size:12.5px}
 <div class="standortband" id="standortBand" style="display:none">
   <span>Standort: <b id="standortName">&ndash;</b></span>
   <button onclick="standortWaehlen()">Standort wechseln</button>
+</div>
+
 </div>
 
 <main>
@@ -2471,11 +2476,12 @@ function namenAbfragen(){
     '<div class="namenwahl"><div class="namenkarte">'+
     '<img src="'+LOGO+'" alt="IWB">'+
     '<h2>Wer arbeitet gerade?</h2>'+
-    '<p>Der Name wird zu jeder Buchung im Archiv gespeichert.</p>'+
+    '<p>Der Name wird zu jeder Buchung im Archiv gespeichert. '+
+    'Fehlt jemand, über „Neuer Name“ ergänzen – er steht danach für alle in der Liste.</p>'+
     '<div class="namengitter">'+
       liste.map(n => '<button class="namenknopf" onclick="personSetzen(\''+
         String(n).replace(/'/g,"\\'")+'\')">'+n+'</button>').join('')+
-      '<button class="namenknopf andere" onclick="personFrei()">Anderer Name …</button>'+
+      '<button class="namenknopf andere" onclick="personFrei()">+ Neuer Name …</button>'+
     '</div></div></div>';
 }
 
@@ -2487,8 +2493,17 @@ function personSetzen(name){
   standbyNeuStarten();
 }
 function personFrei(){
-  const n = (prompt('Name eingeben:', '') || '').trim();
-  if(n) personSetzen(n); else namenAbfragen();
+  const n = (prompt('Name eingeben – er wird in die Liste aufgenommen:', '') || '').trim();
+  if(!n){ namenAbfragen(); return; }
+  if(!personen.includes(n)){
+    personen.push(n);
+    personen.sort((a,b)=>a.localeCompare(b,'de'));
+    if(cloudAktiv && angemeldet)
+      db.collection('stahllager').doc('personen').set({namen:personen, clientId}).catch(()=>{});
+    notiere('Verwaltung','','',null,null,'Name "'+n+'" am Tablet zur Liste hinzugefügt');
+    personenZeichnen();
+  }
+  personSetzen(n);
 }
 
 function standbyNeuStarten(){
