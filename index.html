@@ -1991,7 +1991,7 @@ function rollenZeichnen(){
         '<tr><td><b>'+mail+'</b>'+(mail === (angemeldet? (angemeldet.email||'').toLowerCase():'')
           ? ' <span class="pill neu">das bist du</span>':'')+'</td>'+
         '<td><select onchange="rolleSetzen(\''+mail+'\',this.value)" style="width:100%">'+
-          ['admin','tablet-stahl','tablet-keller'].map(o =>
+          ['admin','ansicht','tablet-stahl','tablet-keller'].map(o =>
             '<option value="'+o+'"'+(o===r?' selected':'')+'>'+rollenName(o)+'</option>').join('')+
         '</select></td>'+
         '<td><button class="mini" onclick="rolleEntfernen(\''+mail+'\')">&times;</button></td></tr>').join('')
