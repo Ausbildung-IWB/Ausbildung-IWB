@@ -326,6 +326,9 @@ table.liste th{z-index:2}
   <img id="kopfLogo" class="firmenlogo" alt="Industriepark Werk Bobingen">
 </header>
 
+<div class="tabletband" id="leseBand" style="display:none;background:#3A5A78">
+  <span>Nur-Lese-Zugang &middot; Buchungen sind hier gesperrt und erfolgen am Tablet im Lager.</span>
+</div>
 <div class="tabletband" id="tabletBand" style="display:none">
   <span>Tablet-Betrieb &middot; angemeldet: <b id="tabletPerson">&ndash;</b></span>
   <button onclick="standbyAn()">Sperren</button>
@@ -583,7 +586,7 @@ table.liste th{z-index:2}
     <input type="text" id="kSuche" placeholder="Suchen, z. B. Papier oder Regal 3" style="width:220px">
     <select id="kKategorie"><option value="">alle Kategorien</option></select>
     <label><input type="checkbox" id="kNurKnapp"> nur knappe Best&auml;nde</label>
-    <button class="btn" onclick="kellerNeu()">+ Artikel anlegen</button>
+    <button class="btn nurAdmin" onclick="kellerNeu()">+ Artikel anlegen</button>
     <button class="btn sek" id="btnKellerCsv" onclick="kellerCsv()">Als CSV</button>
   </div>
 
@@ -609,6 +612,9 @@ table.liste th{z-index:2}
     <div class="rollenbox">
       <div><b>Voller Zugriff</b><span>Alle Reiter, Fächer bearbeiten, Bestellanforderung,
         Verwaltung. F&uuml;r dich und Kollegen im B&uuml;ro.</span></div>
+      <div><b>Nur Einsicht</b><span>Sieht Lagerplan, Best&auml;nde, St&uuml;cklistenpr&uuml;fung,
+        Verbrauch und Keller &ndash; und kann eine BANF schreiben. Kann nichts buchen.
+        F&uuml;r B&uuml;ro, Arbeitsvorbereitung und unterwegs.</span></div>
       <div><b>Tablet Stahllager</b><span>Nur Lagerplan, Bestandsliste und Inventur.
         Kein Bearbeiten von F&auml;chern, kein Archiv, kein Abmelden ohne Code.</span></div>
       <div><b>Tablet Keller</b><span>Nur das Kellerlager mit Hinzuf&uuml;gen und Entnehmen.
@@ -625,6 +631,7 @@ table.liste th{z-index:2}
       <label>Neues Konto zuordnen<input type="text" id="rMail"
         placeholder="tablet-stahl@iwb.local" style="width:250px"></label>
       <label>Rolle<select id="rRolle" style="width:190px">
+        <option value="ansicht">Nur Einsicht</option>
         <option value="tablet-stahl">Tablet Stahllager</option>
         <option value="tablet-keller">Tablet Keller</option>
         <option value="admin">Voller Zugriff</option>
@@ -767,6 +774,7 @@ function zuschnittPlanen(item, laenge, stueck){
 }
 
 function zuschnitt(mass, laenge, stueck){
+  if(nurLesen()) return alert('Dieser Zugang darf nichts buchen.');
   const t = findItem(mass);
   if(!t) return alert('Maß nicht gefunden.');
   const lg = stange();
@@ -906,12 +914,12 @@ function oeffneFach(r,f){
       '<th style="width:78px">Stangen</th><th style="width:140px">Rest&shy;st&uuml;cke mm</th>'+
       '<th style="width:78px">extern</th><th style="width:70px"></th>'+
       '</tr></thead><tbody id="editBody"></tbody></table>'+
-      (istTablet()? '' : '<div style="margin-top:12px"><button class="btn sek" onclick="editZeile()">+ Ma&szlig; hinzuf&uuml;gen</button></div>')+
+      ((istTablet()||nurLesen())? '' : '<div style="margin-top:12px"><button class="btn sek" onclick="editZeile()">+ Ma&szlig; hinzuf&uuml;gen</button></div>')+
       '<p class="sub" style="margin-top:12px">Bestand leer lassen f&uuml;r &bdquo;genug&ldquo; (wird nicht gez&auml;hlt). '+
       'Rest&shy;st&uuml;cke als L&auml;ngen in mm, mit Komma getrennt. Die Schere entnimmt einen Zuschnitt und '+
       'verrechnet ihn automatisch mit den Resten.</p></div>'+
       '<div class="fuss"><button class="btn sek" onclick="schliesse()">Abbrechen</button>'+
-      (istTablet()? '' : '<button class="btn" onclick="fachSpeichern('+r+','+f+')">Speichern</button>')+
+      ((istTablet()||nurLesen())? '' : '<button class="btn" onclick="fachSpeichern('+r+','+f+')">Speichern</button>')+
       '</div></div></div>';
     el('editBody').innerHTML = zeilen.map((z,ix) =>
       '<tr><td><input type="text" value="'+z.m+'" data-k="m" data-ix="'+ix+'"></td>'+
@@ -921,8 +929,8 @@ function oeffneFach(r,f){
         '" placeholder="z. B. 340, 780"></td>'+
       '<td><input type="text" value="'+(z.rest||'')+'" data-k="rest" data-ix="'+ix+'" placeholder="0"></td>'+
       '<td style="white-space:nowrap">'+
-        (z.m? '<button class="mini" title="Zuschnitt entnehmen" onclick="schliesse();zuschnittFragen(\''+z.m+'\')">&#9986;</button> ':'')+
-        '<button class="mini" onclick="editEntfernen('+ix+')">&times;</button></td></tr>').join('') ||
+        (z.m && !nurLesen()? '<button class="mini" title="Zuschnitt entnehmen" onclick="schliesse();zuschnittFragen(\''+z.m+'\')">&#9986;</button> ':'')+
+        (nurLesen()? '' : '<button class="mini" onclick="editEntfernen('+ix+')">&times;</button>')+'</td></tr>').join('') ||
       '<tr><td colspan="6" class="sub" style="padding:12px">Fach ist leer.</td></tr>';
   };
   window.__zeilen = zeilen; window.__zeichneEdit = zeichne;
@@ -970,6 +978,7 @@ function werkstoffGlobal(){
 }
 
 function aendere(item, eingabe){
+  if(nurLesen()) return alert('Dieser Zugang darf nichts buchen.');
   const alt = item.q; let neu;
   if(/^[+-]/.test(String(eingabe))) neu = alt + parseFloat(String(eingabe).replace(',','.'));
   else neu = parseFloat(String(eingabe).replace(',','.'));
@@ -1010,7 +1019,7 @@ function zeichneBestand(){
     const st = istGenug(i) ? '<span class="pill ok">genug</span>'
       : i.q === 0 ? '<span class="pill krit">leer</span>'
       : i.q <= min ? '<span class="pill warn">knapp</span>' : '<span class="pill ok">ok</span>';
-    const steuer = istGenug(i) ? '–' :
+    const steuer = nurLesen() ? '–' : istGenug(i) ? '–' :
       '<button class="mini" onclick="schnell(\'' + i.m + '\',-1)">−</button> '+
       '<input class="menge" type="number" value="'+i.q+'" onchange="setze(\'' + i.m + '\',this.value)"> '+
       '<button class="mini" onclick="schnell(\'' + i.m + '\',1)">+</button>';
@@ -1018,7 +1027,7 @@ function zeichneBestand(){
       '<td>'+i.r+'</td><td>'+i.fa+'</td><td>'+(i.fa<=7?'1':'2')+'</td>'+
       '<td class="num"><b>'+(istGenug(i)?'genug':i.q)+'</b></td><td>'+steuer+'</td>'+
       '<td style="white-space:nowrap">'+
-        '<button class="mini" title="Zuschnitt entnehmen" onclick="zuschnittFragen(\''+i.m+'\')">&#9986;</button>'+
+        (nurLesen()? '' : '<button class="mini" title="Zuschnitt entnehmen" onclick="zuschnittFragen(\''+i.m+'\')">&#9986;</button>')+
         (resteVon(i).length? ' <span style="color:var(--gelb);font-size:12px">'+resteText(i)+'</span>':'')+'</td>'+
       '<td class="num">'+(istGenug(i)?'–':((i.q*lg + resteMm(i))/1000).toLocaleString('de-DE',{maximumFractionDigits:1}))+'</td>'+
       '<td class="num">'+(i.rest? i.rest : '')+'</td><td>'+st+'</td></tr>';
@@ -1138,8 +1147,8 @@ function pruefen(){
     '<div class="karte" style="padding:0;overflow:auto"><table class="liste"><thead><tr>'+
     '<th>Rohma&szlig;</th><th style="text-align:right">Stangen n&ouml;tig</th><th style="text-align:right">Bestand</th>'+
     '<th>Lagerplatz</th><th>Ergebnis</th></tr></thead><tbody>'+reihenHtml+'</tbody></table></div>'+
-    '<div class="werkzeuge"><button class="btn gruen" onclick=\'entnehmen('+
-    JSON.stringify(abbuchung).replace(/'/g,"&#39;")+')\'>Material entnehmen und abbuchen</button>'+
+    '<div class="werkzeuge">'+(nurLesen()? '' : '<button class="btn gruen" onclick=\'entnehmen('+
+    JSON.stringify(abbuchung).replace(/'/g,"&#39;")+')\'>Material entnehmen und abbuchen</button>')+
     (fehlt.length? '<button class="btn sek" onclick=\'bestellliste('+
       JSON.stringify(fehlt).replace(/'/g,"&#39;")+')\'>Bestellliste kopieren</button>':'')+'</div>';
 }
@@ -1152,6 +1161,7 @@ function alternativen(mass){
     .slice(0,3).map(i => i.m+' (R'+i.r+'/F'+i.fa+')');
 }
 function entnehmen(bedarf){
+  if(nurLesen()) return alert('Dieser Zugang darf nichts buchen.');
   let n = 0;
   Object.keys(bedarf).forEach(m => {
     const t = findItem(m);
@@ -1988,7 +1998,8 @@ function rollenZeichnen(){
     : '<tr><td colspan="3" style="padding:16px;color:var(--text-hell)">Noch keine Zuordnung. '+
       'Alle Konten haben vollen Zugriff.</td></tr>';
 }
-const rollenName = r => ({'admin':'Voller Zugriff','tablet-stahl':'Tablet Stahllager',
+const rollenName = r => ({'admin':'Voller Zugriff','ansicht':'Nur Einsicht',
+                          'tablet-stahl':'Tablet Stahllager',
                           'tablet-keller':'Tablet Keller'}[r] || r);
 
 function rolleHinzu(){
@@ -2411,6 +2422,7 @@ let standbyTimer = null, standbyAktiv = false;
 const STANDBY_MINUTEN = 4;
 
 const istTablet = () => rolle === 'tablet-stahl' || rolle === 'tablet-keller';
+const nurLesen  = () => rolle === 'ansicht';
 
 function rolleAnwenden(){
   el('tabletBand').style.display = istTablet() ? 'flex' : 'none';
@@ -2425,6 +2437,7 @@ function rolleAnwenden(){
 function erlaubteAnsichten(){
   if(rolle === 'tablet-stahl')  return ['plan','bestand','zaehlen'];
   if(rolle === 'tablet-keller') return ['keller'];
+  if(rolle === 'ansicht')       return ['plan','bestand','stueck','banf','verbrauch','keller'];
   return null;   // admin: alles
 }
 
@@ -2435,8 +2448,9 @@ function sichtbarkeitSetzen(){
     if(!erlaubt.includes(b.dataset.ansicht)) b.style.display = 'none';
   });
   document.querySelectorAll('.nurAdmin').forEach(e => {
-    e.style.display = istTablet() ? 'none' : '';
+    e.style.display = (istTablet() || nurLesen()) ? 'none' : '';
   });
+  el('leseBand').style.display = nurLesen() ? 'flex' : 'none';
   // Am Tablet nur buchen, nicht umbauen
   const aus = istTablet() ? 'none' : '';
   ['btnWerkstoffGlobal','btnKellerCsv'].forEach(id => { const e = el(id); if(e) e.style.display = aus; });
@@ -2597,11 +2611,12 @@ function zeichneKeller(){
       '<td>'+(a.platz||'')+'</td>'+
       '<td class="num"><b>'+a.q+'</b></td><td style="color:var(--text-hell)">'+(a.einheit||'')+'</td>'+
       '<td style="white-space:nowrap">'+
-        '<button class="mini" onclick="kellerAendern(\''+a.id+'\',-1)">&minus;</button> '+
-        '<input class="menge" type="number" value="'+a.q+'" onchange="kellerSetzen(\''+a.id+'\',this.value)"> '+
-        '<button class="mini" onclick="kellerAendern(\''+a.id+'\',1)">+</button></td>'+
+        (nurLesen()? '<span class="sub">gesperrt</span>' :
+          '<button class="mini" onclick="kellerAendern(\''+a.id+'\',-1)">&minus;</button> '+
+          '<input class="menge" type="number" value="'+a.q+'" onchange="kellerSetzen(\''+a.id+'\',this.value)"> '+
+          '<button class="mini" onclick="kellerAendern(\''+a.id+'\',1)">+</button>')+'</td>'+
       '<td class="num">'+(a.min || '')+'</td><td>'+st+'</td>'+
-      '<td style="white-space:nowrap">'+(istTablet()? '' :
+      '<td style="white-space:nowrap">'+((istTablet()||nurLesen())? '' :
         '<button class="mini" onclick="kellerBearbeiten(\''+a.id+'\')">&#9998;</button> '+
         '<button class="mini" onclick="kellerLoeschen(\''+a.id+'\')">&times;</button>')+'</td></tr>';
   }).join('') || '<tr><td colspan="9" style="padding:18px;color:var(--text-hell)">'+
@@ -2609,6 +2624,7 @@ function zeichneKeller(){
 }
 
 function kellerAendern(id, delta){
+  if(nurLesen()) return alert('Dieser Zugang darf nichts buchen.');
   const a = keller.find(x => x.id === id); if(!a) return;
   const alt = a.q;
   a.q = Math.max(0, a.q + delta);
@@ -2616,6 +2632,7 @@ function kellerAendern(id, delta){
   kellerSpeichern();
 }
 function kellerSetzen(id, wert){
+  if(nurLesen()) return alert('Dieser Zugang darf nichts buchen.');
   const a = keller.find(x => x.id === id); if(!a) return;
   const neu = Math.max(0, Math.round(parseFloat(String(wert).replace(',','.')) || 0));
   if(neu === a.q) return;
@@ -2687,7 +2704,7 @@ function kellerCsv(){
 
 function kellerSpeichern(){
   zeichneKeller();
-  if(!cloudAktiv || !angemeldet) return;
+  if(!cloudAktiv || !angemeldet || nurLesen()) return;
   db.collection('stahllager').doc('keller').set({
     artikel: keller, updatedAt: new Date().toISOString(),
     updatedBy: el('benutzer').value.trim() || angemeldet.email, clientId
@@ -2862,7 +2879,7 @@ function archivLauschen(){
 }
 
 function cloudSpeichern(erzwingen){
-  if(!cloudAktiv || !angemeldet) return;
+  if(!cloudAktiv || !angemeldet || nurLesen()) return;
   if(!datenGeladen && !erzwingen) return;
   const jetzt = JSON.stringify({lager, verbrauch});
   if(!erzwingen && jetzt === letzterStand) return;
