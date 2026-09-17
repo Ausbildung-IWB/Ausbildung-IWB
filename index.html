@@ -69,6 +69,7 @@ th.luecke,td.luecke{border:none;background:var(--grau-bg);width:14px;padding:0}
 .fach .mass{font-weight:700;font-size:13px}
 .fach .zeile{display:flex;align-items:baseline;gap:4px;line-height:1.25}
 .fach .anz{font-size:10.5px;color:var(--text-hell);font-variant-numeric:tabular-nums}
+.restpunkt{color:var(--gelb);font-weight:700;margin-left:2px}
 .fach.mehrfach{background:#FFF8E6}.fach.mehrfach:hover{background:#FDEFCB}
 .fach.frei{background:#F0F2F4;color:#9aa5ad;font-style:italic}
 .fach.kritisch{box-shadow:inset 0 0 0 2px var(--rot)}
@@ -142,6 +143,27 @@ code{background:#eef1f4;padding:1px 5px;border-radius:2px;font-size:12.5px}
 .loginkarte input{width:100%;padding:10px}
 .loginkarte button{width:100%;margin-top:20px;padding:11px}
 .loginfehler{background:#FBEEED;color:var(--rot);padding:9px 12px;font-size:13px;margin-top:14px}
+.wahlhuelle{position:fixed;inset:0;background:#0A3760;display:flex;align-items:center;
+  justify-content:center;z-index:190;padding:20px}
+.wahlkarte{background:#fff;border-radius:3px;width:100%;max-width:620px;padding:32px}
+.wahlkarte img{height:34px;margin-bottom:20px}
+.wahlkarte h2{margin:0 0 4px;font-size:20px;color:var(--blau-dunkel)}
+.wahlkarte p.intro{margin:0 0 22px;font-size:13.5px;color:var(--text-hell)}
+.wahlgitter{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.wahlfeld{border:1px solid var(--grau-linie);border-left:5px solid var(--blau);border-radius:3px;
+  padding:18px;cursor:pointer;background:#fff;text-align:left;font:inherit}
+.wahlfeld:hover{background:var(--blau-hell);border-left-color:var(--blau-dunkel)}
+.wahlfeld b{display:block;font-size:15.5px;color:var(--blau-dunkel);margin-bottom:3px}
+.wahlfeld span{font-size:12.5px;color:var(--text-hell);line-height:1.45;display:block}
+.wahlfeld.keller{border-left-color:#7A5C2E}
+.wahlfeld.keller:hover{background:#FBF6EE;border-left-color:#5E4620}
+.standortband{background:var(--blau-hell);border-bottom:1px solid var(--grau-linie);
+  padding:6px 20px;font-size:12.5px;color:var(--blau-dunkel);display:flex;
+  justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.standortband b{font-weight:700}
+.standortband button{background:none;border:1px solid var(--blau);color:var(--blau);
+  font:inherit;font-size:12px;padding:2px 10px;border-radius:2px;cursor:pointer}
+.standortband button:hover{background:var(--blau);color:#fff}
 #cloudStatus{font-variant-numeric:tabular-nums}
 @media print{
   @page{ size: A4 landscape; margin: 8mm; }
@@ -224,10 +246,16 @@ code{background:#eef1f4;padding:1px 5px;border-radius:2px;font-size:12.5px}
     <button data-ansicht="banf">BANF</button>
     <button data-ansicht="verbrauch">Verbrauch</button>
     <button data-ansicht="archiv">Archiv</button>
+    <button data-ansicht="keller" class="nav30">Kellerlager</button>
     <button data-ansicht="daten">Daten</button>
   </nav>
   <img id="kopfLogo" class="firmenlogo" alt="Industriepark Werk Bobingen">
 </header>
+
+<div class="standortband" id="standortBand" style="display:none">
+  <span>Standort: <b id="standortName">&ndash;</b></span>
+  <button onclick="standortWaehlen()">Standort wechseln</button>
+</div>
 
 <main>
 
@@ -263,7 +291,8 @@ code{background:#eef1f4;padding:1px 5px;border-radius:2px;font-size:12.5px}
     <table class="liste"><thead><tr>
       <th>Ma&szlig;</th><th>Werkstoff</th><th>R</th><th>Fach</th><th>Lager</th>
       <th style="text-align:right">Stangen</th><th>&Auml;ndern</th>
-      <th style="text-align:right">Meter</th><th style="text-align:right">Rest</th><th>Status</th>
+      <th>Rest&shy;st&uuml;cke</th><th style="text-align:right">Meter</th>
+      <th style="text-align:right">extern</th><th>Status</th>
     </tr></thead><tbody id="bestandBody"></tbody></table>
   </div>
 </section>
@@ -296,7 +325,9 @@ code{background:#eef1f4;padding:1px 5px;border-radius:2px;font-size:12.5px}
   <p class="sub">Z&auml;hlliste als CSV herunterladen, ausf&uuml;llen lassen, wieder hochladen.</p>
   <div class="karte">
     <h2 style="margin-top:0">1. Z&auml;hlliste erzeugen</h2>
-    <p class="sub">Die Liste enth&auml;lt immer den aktuellen Stand. Spalte <code>Gezaehlt</code> bleibt leer und wird ausgef&uuml;llt.</p>
+    <p class="sub">Die Liste enth&auml;lt immer den aktuellen Stand. Spalte <code>Gezaehlt</code> bleibt leer und wird ausgef&uuml;llt.
+      <br><b>Nur volle Stangen z&auml;hlen</b> &ndash; angebrochene Rest&shy;st&uuml;cke bleiben au&szlig;en vor und werden beim
+      &Uuml;bernehmen nicht ver&auml;ndert.</p>
     <div class="werkzeuge">
       <button class="btn" onclick="zaehllisteCsv()">Z&auml;hlliste herunterladen (.csv)</button>
       <label><input type="checkbox" id="ohneSoll"> ohne Soll-Bestand (Blindz&auml;hlung)</label>
@@ -425,6 +456,8 @@ code{background:#eef1f4;padding:1px 5px;border-radius:2px;font-size:12.5px}
       <option value="Inventur">Inventur</option>
       <option value="Fach">Fach bearbeitet</option>
       <option value="Werkstoff">Werkstoff</option>
+      <option value="Zuschnitt">Zuschnitt</option>
+      <option value="Keller">Kellerlager</option>
       <option value="System">System</option>
     </select>
     <label>von <input type="date" id="aVon"></label>
@@ -438,6 +471,29 @@ code{background:#eef1f4;padding:1px 5px;border-radius:2px;font-size:12.5px}
       <th>Ma&szlig;</th><th>Fach</th><th style="text-align:right">vorher</th>
       <th style="text-align:right">nachher</th><th style="text-align:right">Differenz</th><th>Bemerkung</th>
     </tr></thead><tbody id="archivBody"></tbody></table>
+  </div>
+</section>
+
+<section id="v-keller" class="verstecke">
+  <h1>Kellerlager Geb&auml;ude 30</h1>
+  <p class="sub">Chaoslager &ndash; jeder Platz kann alles aufnehmen, die Liste ist der Suchindex.</p>
+
+  <div class="kennzahlen" id="kKennzahlen"></div>
+
+  <div class="werkzeuge">
+    <input type="text" id="kSuche" placeholder="Suchen, z. B. Papier oder Regal 3" style="width:220px">
+    <select id="kKategorie"><option value="">alle Kategorien</option></select>
+    <label><input type="checkbox" id="kNurKnapp"> nur knappe Best&auml;nde</label>
+    <button class="btn" onclick="kellerNeu()">+ Artikel anlegen</button>
+    <button class="btn sek" onclick="kellerCsv()">Als CSV</button>
+  </div>
+
+  <div class="karte" style="padding:0;overflow:auto;max-height:66vh">
+    <table class="liste"><thead><tr>
+      <th>Artikel</th><th>Kategorie</th><th>Platz</th>
+      <th style="text-align:right">Bestand</th><th>Einheit</th><th>&Auml;ndern</th>
+      <th style="text-align:right">Mindest</th><th>Status</th><th style="width:70px"></th>
+    </tr></thead><tbody id="kellerBody"></tbody></table>
   </div>
 </section>
 
@@ -473,6 +529,7 @@ code{background:#eef1f4;padding:1px 5px;border-radius:2px;font-size:12.5px}
 </main>
 
 <div id="loginBox"></div>
+<div id="wahlBox"></div>
 <div id="dialogBox"></div>
 <div id="druck"></div>
 <footer>Stahllager 1 + 2 &nbsp;&middot;&nbsp; 98 F&auml;cher &nbsp;&middot;&nbsp; interne Anwendung</footer>
@@ -504,7 +561,75 @@ const el = id => document.getElementById(id);
 const mindest = () => parseInt(el('mindest').value||'0',10);
 const stange = () => parseInt(el('stangeLaenge').value||'1300',10);
 const stdWst = () => el('stdWerkstoff').value.trim() || 'S235JR+C';
+const de = (n,k=1) => Number(n).toFixed(k).replace('.',',');
 const istGenug = i => i.q === null;
+const resteVon = i => Array.isArray(i.reste) ? i.reste.filter(x => x > 0).sort((a,b)=>a-b) : [];
+const resteText = i => { const r = resteVon(i); return r.length ? r.join(' / ')+' mm' : ''; };
+const resteMm = i => resteVon(i).reduce((a,b)=>a+b,0);
+
+/* Zuschnitt: sucht das kleinste passende Reststück, sonst wird eine Stange angebrochen.
+   Gibt zurueck, was passiert ist, ohne etwas zu veraendern. */
+function zuschnittPlanen(item, laenge, stueck){
+  const lg = stange();
+  let reste = resteVon(item).slice();
+  let volle = istGenug(item) ? 9999 : item.q;
+  let ausRest = 0, neueStangen = 0, verworfen = [];
+  for(let n = 0; n < stueck; n++){
+    const ix = reste.findIndex(r => r >= laenge);
+    if(ix >= 0){
+      const uebrig = reste[ix] - laenge;
+      reste.splice(ix, 1);
+      if(uebrig >= 50) reste.push(uebrig); else if(uebrig > 0) verworfen.push(uebrig);
+      ausRest++;
+    } else {
+      if(volle <= 0) return {machbar:false, fehlt: stueck - n};
+      volle--; neueStangen++;
+      const uebrig = lg - laenge;
+      if(uebrig >= 50) reste.push(uebrig); else if(uebrig > 0) verworfen.push(uebrig);
+    }
+  }
+  return {machbar:true, reste: reste.sort((a,b)=>a-b), volle, ausRest, neueStangen, verworfen};
+}
+
+function zuschnitt(mass, laenge, stueck){
+  const t = findItem(mass);
+  if(!t) return alert('Maß nicht gefunden.');
+  const lg = stange();
+  if(laenge > lg) return alert('Die Länge ist größer als eine Stange ('+lg+' mm).');
+  const plan = zuschnittPlanen(t.item, laenge, stueck);
+  if(!plan.machbar){
+    alert('Nicht genug Material: Es fehlen noch '+plan.fehlt+' Zuschnitt(e).');
+    return;
+  }
+  const altQ = istGenug(t.item) ? null : t.item.q;
+  const altRest = resteText(t.item) || 'keine';
+  if(!istGenug(t.item)) t.item.q = plan.volle;
+  t.item.reste = plan.reste;
+  if(plan.neueStangen > 0) buche(mass, plan.neueStangen);
+  const info = stueck+' x '+laenge+' mm'+
+    (plan.ausRest? ' · '+plan.ausRest+' aus Reststück':'')+
+    (plan.neueStangen? ' · '+plan.neueStangen+' Stange(n) angebrochen':'')+
+    (plan.verworfen.length? ' · Verschnitt '+plan.verworfen.join('+')+' mm':'')+
+    ' · Reste vorher '+altRest+', jetzt '+(resteText(t.item)||'keine');
+  notiere('Zuschnitt', mass, 'R'+t.fach.r+' / F'+t.fach.f, altQ, istGenug(t.item)?null:t.item.q, info);
+  logge('Zuschnitt '+mass+': '+info);
+  alles();
+}
+
+function zuschnittFragen(mass){
+  const t = findItem(mass); if(!t) return;
+  const lg = stange();
+  const eingabe = prompt('Zuschnitt '+mass+'\n\nBestand: '+(istGenug(t.item)?'genug':t.item.q+' volle Stangen')+
+    (resteText(t.item)? '\nReststücke: '+resteText(t.item) : '\nKeine Reststücke')+
+    '\n\nLänge in mm eingeben, für mehrere Teile "Länge x Stück", z. B. 200 x 3:', '');
+  if(!eingabe) return;
+  const m = eingabe.replace(',','.').match(/^\s*(\d+(?:\.\d+)?)\s*(?:[x*]\s*(\d+))?\s*$/i);
+  if(!m) return alert('Bitte nur Zahlen eingeben, z. B. 200 oder 200 x 3.');
+  const laenge = Math.round(parseFloat(m[1]));
+  const stueck = parseInt(m[2] || '1', 10);
+  if(laenge <= 0 || stueck <= 0) return;
+  zuschnitt(mass, laenge, stueck);
+}
 const breite = m => parseFloat(String(m).split('x')[0]);
 const dicke  = m => parseFloat(String(m).split('x')[1]);
 
@@ -512,12 +637,13 @@ const dicke  = m => parseFloat(String(m).split('x')[1]);
 document.querySelectorAll('nav button').forEach(b => b.onclick = () => {
   document.querySelectorAll('nav button').forEach(x => x.classList.remove('aktiv'));
   b.classList.add('aktiv');
-  ['plan','bestand','stueck','zaehlen','banf','verbrauch','archiv','daten'].forEach(v =>
+  ['plan','bestand','stueck','zaehlen','banf','verbrauch','archiv','keller','daten'].forEach(v =>
     el('v-'+v).classList.toggle('verstecke', v !== b.dataset.ansicht));
   if(b.dataset.ansicht === 'plan') skaliere();
   if(b.dataset.ansicht === 'verbrauch') zeichneVerbrauch();
   if(b.dataset.ansicht === 'banf' && !document.querySelector('#banfBody tr')) banfZeile();
   if(b.dataset.ansicht === 'archiv') zeichneArchiv();
+  if(b.dataset.ansicht === 'keller') zeichneKeller();
 });
 
 /* ---------- Lagerplan ---------- */
@@ -547,7 +673,8 @@ function zeichneRaster(){
              '<span class="balken" style="background:'+farbe+'"></span>';
         f.items.forEach(i => {
           h += '<div class="zeile"><span class="mass">'+i.m+'</span><span class="anz">'+
-               (istGenug(i)?'genug':i.q)+'</span></div>';
+               (istGenug(i)?'genug':i.q)+(resteVon(i).length? '<span class="restpunkt" title="Reststücke: '+
+               resteText(i)+'">&bull;</span>':'')+'</span></div>';
         });
         h += '<span class="nr">F'+f.f+'</span>'+
              (wst.length===1 && wst[0]!==stdWst() ? '<span class="wst">'+wst[0]+'</span>':'')+'</div></td>';
@@ -576,12 +703,14 @@ window.addEventListener('resize', skaliere);
 function zeichneKennzahlen(){
   const items = alleItems(), min = mindest();
   const stueck = items.reduce((s,i)=> s + (istGenug(i)?0:i.q), 0);
-  const meter = (stueck * stange() / 1000);
+  const restMeter = items.reduce((s,i)=> s + resteMm(i), 0) / 1000;
+  const meter = (stueck * stange() / 1000) + restMeter;
   const knapp = items.filter(i => !istGenug(i) && i.q <= min && i.q > 0).length;
   const leer  = items.filter(i => !istGenug(i) && i.q === 0).length;
   el('kennzahlen').innerHTML =
     kz(items.length,'Ma&szlig;e') + kz(stueck,'Stangen') +
     kz(meter.toLocaleString('de-DE',{maximumFractionDigits:0})+' m','Gesamtl&auml;nge') +
+    kz(de(restMeter,1)+' m','davon Reste') +
     kz(lager.filter(f=>f.items.length===0).length,'F&auml;cher frei') +
     kz(knapp,'knapp', knapp>0) + kz(leer,'leer', leer>0);
 }
@@ -597,21 +726,27 @@ function oeffneFach(r,f){
       '<div class="kopf"><div><b>Fach R'+r+' / F'+f+'</b> <span>&nbsp;Lager '+(f<=7?1:2)+
       ' &middot; '+fach.gruppe+'</span></div><button class="zu" onclick="schliesse()">&times;</button></div>'+
       '<div class="rumpf"><table class="edit"><thead><tr>'+
-      '<th style="width:120px">Ma&szlig; (BxD)</th><th style="width:150px">Werkstoff</th>'+
-      '<th style="width:95px">Stangen</th><th style="width:95px">Rest extern</th><th style="width:36px"></th>'+
+      '<th style="width:105px">Ma&szlig; (BxD)</th><th style="width:130px">Werkstoff</th>'+
+      '<th style="width:78px">Stangen</th><th style="width:140px">Rest&shy;st&uuml;cke mm</th>'+
+      '<th style="width:78px">extern</th><th style="width:70px"></th>'+
       '</tr></thead><tbody id="editBody"></tbody></table>'+
       '<div style="margin-top:12px"><button class="btn sek" onclick="editZeile()">+ Ma&szlig; hinzuf&uuml;gen</button></div>'+
       '<p class="sub" style="margin-top:12px">Bestand leer lassen f&uuml;r &bdquo;genug&ldquo; (wird nicht gez&auml;hlt). '+
-      'Ma&szlig; l&ouml;schen: Zeile mit &times; entfernen.</p></div>'+
+      'Rest&shy;st&uuml;cke als L&auml;ngen in mm, mit Komma getrennt. Die Schere entnimmt einen Zuschnitt und '+
+      'verrechnet ihn automatisch mit den Resten.</p></div>'+
       '<div class="fuss"><button class="btn sek" onclick="schliesse()">Abbrechen</button>'+
       '<button class="btn" onclick="fachSpeichern('+r+','+f+')">Speichern</button></div></div></div>';
     el('editBody').innerHTML = zeilen.map((z,ix) =>
       '<tr><td><input type="text" value="'+z.m+'" data-k="m" data-ix="'+ix+'"></td>'+
       '<td><input type="text" value="'+(z.wst||stdWst())+'" data-k="wst" data-ix="'+ix+'"></td>'+
       '<td><input type="text" value="'+(z.q===null?'':z.q)+'" data-k="q" data-ix="'+ix+'" placeholder="genug"></td>'+
+      '<td><input type="text" value="'+(resteVon(z).join(', '))+'" data-k="reste" data-ix="'+ix+
+        '" placeholder="z. B. 340, 780"></td>'+
       '<td><input type="text" value="'+(z.rest||'')+'" data-k="rest" data-ix="'+ix+'" placeholder="0"></td>'+
-      '<td><button class="mini" onclick="editEntfernen('+ix+')">&times;</button></td></tr>').join('') ||
-      '<tr><td colspan="5" class="sub" style="padding:12px">Fach ist leer.</td></tr>';
+      '<td style="white-space:nowrap">'+
+        (z.m? '<button class="mini" title="Zuschnitt entnehmen" onclick="schliesse();zuschnittFragen(\''+z.m+'\')">&#9986;</button> ':'')+
+        '<button class="mini" onclick="editEntfernen('+ix+')">&times;</button></td></tr>').join('') ||
+      '<tr><td colspan="6" class="sub" style="padding:12px">Fach ist leer.</td></tr>';
   };
   window.__zeilen = zeilen; window.__zeichneEdit = zeichne;
   zeichne();
@@ -621,10 +756,12 @@ function editLesen(){
     const z = window.__zeilen[parseInt(inp.dataset.ix,10)];
     if(inp.dataset.k === 'q') z.q = inp.value.trim()==='' ? null : Math.max(0, parseInt(inp.value,10)||0);
     else if(inp.dataset.k === 'rest') z.rest = parseInt(inp.value,10)||0;
+    else if(inp.dataset.k === 'reste') z.reste = inp.value.split(/[,;\s]+/)
+        .map(x => Math.round(parseFloat(x.replace(',','.')))).filter(x => x > 0);
     else z[inp.dataset.k] = inp.value.trim();
   });
 }
-function editZeile(){ editLesen(); window.__zeilen.push({m:'',wst:stdWst(),q:0,rest:0}); window.__zeichneEdit(); }
+function editZeile(){ editLesen(); window.__zeilen.push({m:'',wst:stdWst(),q:0,rest:0,reste:[]}); window.__zeichneEdit(); }
 function editEntfernen(ix){ editLesen(); window.__zeilen.splice(ix,1); window.__zeichneEdit(); }
 function schliesse(){ el('dialogBox').innerHTML=''; }
 
@@ -635,7 +772,8 @@ function fachSpeichern(r,f){
   const ungueltig = window.__zeilen.filter(z => z.m).length - neu.length;
   if(ungueltig){ alert('Bitte Maße im Format 40x12 eintragen. '+ungueltig+' Zeile(n) nicht erkannt.'); return; }
   const alt = fach.items.map(i => i.m+'/'+(i.q===null?'genug':i.q)).join(', ') || 'leer';
-  fach.items = neu.map(z => ({m:z.m.replace(/\s/g,''), q:z.q, rest:z.rest||0, wst:z.wst||stdWst()}));
+  fach.items = neu.map(z => ({m:z.m.replace(/\s/g,''), q:z.q, rest:z.rest||0,
+                              wst:z.wst||stdWst(), reste:(z.reste||[]).filter(x=>x>0)}));
   const jetzt = fach.items.map(i => i.m+'/'+(i.q===null?'genug':i.q)).join(', ') || 'leer';
   if(alt !== jetzt){
     logge('Fach R'+r+'/F'+f+' bearbeitet: '+alt+' → '+jetzt);
@@ -702,9 +840,12 @@ function zeichneBestand(){
     return '<tr><td><b>'+i.m+'</b></td><td style="color:var(--text-hell)">'+(i.wst||'')+'</td>'+
       '<td>'+i.r+'</td><td>'+i.fa+'</td><td>'+(i.fa<=7?'1':'2')+'</td>'+
       '<td class="num"><b>'+(istGenug(i)?'genug':i.q)+'</b></td><td>'+steuer+'</td>'+
-      '<td class="num">'+(istGenug(i)?'–':(i.q*lg/1000).toLocaleString('de-DE',{maximumFractionDigits:1}))+'</td>'+
+      '<td style="white-space:nowrap">'+
+        '<button class="mini" title="Zuschnitt entnehmen" onclick="zuschnittFragen(\''+i.m+'\')">&#9986;</button>'+
+        (resteVon(i).length? ' <span style="color:var(--gelb);font-size:12px">'+resteText(i)+'</span>':'')+'</td>'+
+      '<td class="num">'+(istGenug(i)?'–':((i.q*lg + resteMm(i))/1000).toLocaleString('de-DE',{maximumFractionDigits:1}))+'</td>'+
       '<td class="num">'+(i.rest? i.rest : '')+'</td><td>'+st+'</td></tr>';
-  }).join('') || '<tr><td colspan="10" style="padding:18px;color:var(--text-hell)">Nichts gefunden.</td></tr>';
+  }).join('') || '<tr><td colspan="11" style="padding:18px;color:var(--text-hell)">Nichts gefunden.</td></tr>';
 }
 function schnell(m, delta){ const t = findItem(m); if(t) aendere(t.item, (delta>0?'+':'')+delta); }
 function setze(m, wert){ const t = findItem(m); if(t) aendere(t.item, wert); }
@@ -745,13 +886,36 @@ function pruefen(){
 
   const bedarf = {};
   const zuLang = [];
+  // je Maß simulieren, damit vorhandene Reststücke angerechnet werden
+  const sim = {};
   zeilen.forEach(z => {
-    let stangen, info;
+    const t = findItem(z.mass);
+    if(!sim[z.mass]) sim[z.mass] = t
+      ? {reste: resteVon(t.item).slice(), volle: istGenug(t.item) ? 9999 : t.item.q, genug: istGenug(t.item)}
+      : {reste: [], volle: 0, genug: false};
+    const st = sim[z.mass];
+    let stangen = 0, ausRest = 0, info;
     if(z.laenge > 0){
-      if(z.laenge > lg){ zuLang.push(z.mass+' mit '+z.laenge+' mm'); stangen = z.stk; info = 'Länge > Stange'; }
-      else { const proStange = Math.floor(lg / z.laenge);
-             stangen = Math.ceil(z.stk / proStange);
-             info = z.stk+' Teile à '+z.laenge+' mm → '+proStange+' je Stange'; }
+      if(z.laenge > lg){ zuLang.push(z.mass+' mit '+z.laenge+' mm'); stangen = z.stk; info = 'Länge größer als eine Stange'; }
+      else {
+        for(let n = 0; n < z.stk; n++){
+          const ix = st.reste.findIndex(r => r >= z.laenge);
+          if(ix >= 0){
+            const uebrig = st.reste[ix] - z.laenge;
+            st.reste.splice(ix,1);
+            if(uebrig >= 50) st.reste.push(uebrig);
+            ausRest++;
+          } else {
+            st.volle--; stangen++;
+            const uebrig = lg - z.laenge;
+            if(uebrig >= 50) st.reste.push(uebrig);
+          }
+        }
+        st.reste.sort((a,b)=>a-b);
+        info = z.stk+' Teile à '+z.laenge+' mm'+
+               (ausRest? ' · '+ausRest+' aus Reststück':'')+
+               (stangen? ' · '+stangen+' neue Stange(n)':'');
+      }
     } else { stangen = z.stk; info = 'ohne Länge: 1 Stück = 1 Stange'; }
     if(!bedarf[z.mass]) bedarf[z.mass] = {stangen:0, zeilen:[]};
     bedarf[z.mass].stangen += stangen;
@@ -1141,7 +1305,6 @@ function demoDatenErzeugen(){
 }
 
 const monKurz = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
-const de = (n,k=1) => Number(n).toFixed(k).replace('.',',');
 const KURSMONATE = [3,4,9,10];
 
 function monatsReihe(anzahl){
@@ -1579,7 +1742,7 @@ function drucken(){
 /* ---------- Daten ---------- */
 function exportJson(){
   lade(new Blob([JSON.stringify({stand:new Date().toISOString(), stange:stange(),
-    werkstoff:stdWst(), lager, protokoll, verbrauch, istDemo, archiv}, null, 2)], {type:'application/json'}),
+    werkstoff:stdWst(), lager, protokoll, verbrauch, istDemo, archiv, keller}, null, 2)], {type:'application/json'}),
     'Stahllager_Bestand_'+datum()+'.json');
   logge('Bestand gesichert');
 }
@@ -1605,6 +1768,7 @@ el('importDatei').addEventListener('change', e => {
       if(!obj.lager) throw new Error('Format');
       lager = obj.lager; protokoll = obj.protokoll || [];
       verbrauch = obj.verbrauch || []; istDemo = !!obj.istDemo; archiv = obj.archiv || [];
+      keller = obj.keller || [];
       if(obj.stange) el('stangeLaenge').value = obj.stange;
       if(obj.werkstoff) el('stdWerkstoff').value = obj.werkstoff;
       datenGeladen = true;
@@ -1619,6 +1783,187 @@ el('importDatei').addEventListener('change', e => {
   e.target.value='';
 });
 
+/* ---------- Standorte ---------- */
+let standort = null;
+let keller = [];   // {id, name, kat, platz, q, einheit, min, notiz}
+
+const STANDORTE = {
+  '649': {name:'Ausbildung Geb. 649', beschreibung:'Stahllager 1 + 2 &middot; Flach- und Vierkantstahl'},
+  '30':  {name:'Gebäude 30 &ndash; Keller', beschreibung:'Chaoslager &middot; Verbrauchsmaterial und Sonstiges'}
+};
+
+function standortWaehlen(){
+  el('wahlBox').innerHTML =
+    '<div class="wahlhuelle"><div class="wahlkarte">'+
+    '<img src="'+LOGO+'" alt="IWB">'+
+    '<h2>Standort wählen</h2>'+
+    '<p class="intro">Welches Lager möchtest du öffnen?</p>'+
+    '<div class="wahlgitter">'+
+      '<button class="wahlfeld" onclick="standortSetzen(\'649\')">'+
+        '<b>Ausbildung Geb. 649</b><span>Stahllager 1 + 2 · Flach- und Vierkantstahl, '+
+        'Stücklisten, Bestellanforderung</span></button>'+
+      '<button class="wahlfeld keller" onclick="standortSetzen(\'30\')">'+
+        '<b>Gebäude 30 – Keller</b><span>Chaoslager · vom Toilettenpapier bis zum Ordner, '+
+        'freie Platzvergabe</span></button>'+
+    '</div></div></div>';
+}
+
+function standortSetzen(id){
+  standort = id;
+  el('wahlBox').innerHTML = '';
+  el('standortBand').style.display = 'flex';
+  el('standortName').innerHTML = STANDORTE[id].name;
+  const stahlAnsichten = ['plan','bestand','stueck','zaehlen','banf','verbrauch'];
+  document.querySelectorAll('nav button').forEach(b => {
+    const v = b.dataset.ansicht;
+    const sichtbar = id === '649' ? v !== 'keller' : !stahlAnsichten.includes(v);
+    b.style.display = sichtbar ? '' : 'none';
+  });
+  const ziel = id === '649' ? 'plan' : 'keller';
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('aktiv'));
+  const knopf = document.querySelector('nav button[data-ansicht="'+ziel+'"]');
+  if(knopf) knopf.classList.add('aktiv');
+  ['plan','bestand','stueck','zaehlen','banf','verbrauch','archiv','keller','daten'].forEach(v =>
+    el('v-'+v).classList.toggle('verstecke', v !== ziel));
+  if(id === '649') skaliere(); else zeichneKeller();
+}
+
+/* ---------- Kellerlager ---------- */
+const kNeueId = () => 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2,5);
+
+function zeichneKeller(){
+  const suche = el('kSuche').value.trim().toLowerCase();
+  const kat = el('kKategorie').value;
+  const nurKnapp = el('kNurKnapp').checked;
+
+  const kategorien = [...new Set(keller.map(a => a.kat).filter(Boolean))].sort();
+  const gewaehlt = el('kKategorie').value;
+  el('kKategorie').innerHTML = '<option value="">alle Kategorien</option>' +
+    kategorien.map(k => '<option'+(k===gewaehlt?' selected':'')+'>'+k+'</option>').join('');
+
+  let liste = keller.slice();
+  if(suche) liste = liste.filter(a =>
+    (a.name+' '+a.kat+' '+a.platz+' '+(a.notiz||'')).toLowerCase().includes(suche));
+  if(kat) liste = liste.filter(a => a.kat === kat);
+  if(nurKnapp) liste = liste.filter(a => a.min > 0 && a.q <= a.min);
+  liste.sort((a,b) => (a.platz||'').localeCompare(b.platz||'', 'de', {numeric:true}) ||
+                      a.name.localeCompare(b.name,'de'));
+
+  const knapp = keller.filter(a => a.min > 0 && a.q <= a.min).length;
+  const leer  = keller.filter(a => a.q === 0).length;
+  el('kKennzahlen').innerHTML =
+    kz(keller.length,'Artikel') + kz(kategorien.length,'Kategorien') +
+    kz([...new Set(keller.map(a=>a.platz).filter(Boolean))].length,'Pl&auml;tze') +
+    kz(knapp,'knapp', knapp>0) + kz(leer,'leer', leer>0);
+
+  el('kellerBody').innerHTML = liste.map(a => {
+    const st = a.q === 0 ? '<span class="pill krit">leer</span>'
+      : (a.min > 0 && a.q <= a.min) ? '<span class="pill warn">nachbestellen</span>'
+      : '<span class="pill ok">ok</span>';
+    return '<tr><td><b>'+a.name+'</b>'+(a.notiz? '<br><span class="sub">'+a.notiz+'</span>':'')+'</td>'+
+      '<td style="color:var(--text-hell)">'+(a.kat||'')+'</td>'+
+      '<td>'+(a.platz||'')+'</td>'+
+      '<td class="num"><b>'+a.q+'</b></td><td style="color:var(--text-hell)">'+(a.einheit||'')+'</td>'+
+      '<td style="white-space:nowrap">'+
+        '<button class="mini" onclick="kellerAendern(\''+a.id+'\',-1)">&minus;</button> '+
+        '<input class="menge" type="number" value="'+a.q+'" onchange="kellerSetzen(\''+a.id+'\',this.value)"> '+
+        '<button class="mini" onclick="kellerAendern(\''+a.id+'\',1)">+</button></td>'+
+      '<td class="num">'+(a.min || '')+'</td><td>'+st+'</td>'+
+      '<td style="white-space:nowrap"><button class="mini" onclick="kellerBearbeiten(\''+a.id+'\')">&#9998;</button> '+
+      '<button class="mini" onclick="kellerLoeschen(\''+a.id+'\')">&times;</button></td></tr>';
+  }).join('') || '<tr><td colspan="9" style="padding:18px;color:var(--text-hell)">'+
+    (keller.length? 'Nichts gefunden.' : 'Noch keine Artikel. Über „+ Artikel anlegen“ den ersten eintragen.')+'</td></tr>';
+}
+
+function kellerAendern(id, delta){
+  const a = keller.find(x => x.id === id); if(!a) return;
+  const alt = a.q;
+  a.q = Math.max(0, a.q + delta);
+  notiere('Keller', a.name, a.platz || '', alt, a.q, '');
+  kellerSpeichern();
+}
+function kellerSetzen(id, wert){
+  const a = keller.find(x => x.id === id); if(!a) return;
+  const neu = Math.max(0, Math.round(parseFloat(String(wert).replace(',','.')) || 0));
+  if(neu === a.q) return;
+  const alt = a.q; a.q = neu;
+  notiere('Keller', a.name, a.platz || '', alt, a.q, '');
+  kellerSpeichern();
+}
+function kellerLoeschen(id){
+  const a = keller.find(x => x.id === id); if(!a) return;
+  if(!confirm('„'+a.name+'“ wirklich löschen?')) return;
+  keller = keller.filter(x => x.id !== id);
+  notiere('Keller', a.name, a.platz || '', a.q, null, 'Artikel gelöscht');
+  kellerSpeichern();
+}
+function kellerNeu(){ kellerFormular(null); }
+function kellerBearbeiten(id){ kellerFormular(keller.find(x => x.id === id)); }
+
+function kellerFormular(a){
+  const neu = !a;
+  a = a || {id:kNeueId(), name:'', kat:'', platz:'', q:0, einheit:'Stück', min:0, notiz:''};
+  el('dialogBox').innerHTML =
+    '<div class="overlay" onclick="if(event.target===this)schliesse()"><div class="dialog" style="max-width:560px">'+
+    '<div class="kopf"><div><b>'+(neu? 'Neuer Artikel' : 'Artikel bearbeiten')+'</b>'+
+    '<span>&nbsp;Gebäude 30 · Keller</span></div>'+
+    '<button class="zu" onclick="schliesse()">&times;</button></div>'+
+    '<div class="rumpf"><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'+
+      '<label style="grid-column:1/3">Bezeichnung<input type="text" id="kName" value="'+a.name+'" placeholder="z. B. Toilettenpapier 3-lagig"></label>'+
+      '<label>Kategorie<input type="text" id="kKat" value="'+a.kat+'" placeholder="z. B. Hygiene, Büro"></label>'+
+      '<label>Platz<input type="text" id="kPlatz" value="'+a.platz+'" placeholder="z. B. Regal 3 / Fach B"></label>'+
+      '<label>Bestand<input type="number" id="kQ" value="'+a.q+'" min="0"></label>'+
+      '<label>Einheit<input type="text" id="kEinheit" value="'+(a.einheit||'')+'" placeholder="Stück, Pack, Karton"></label>'+
+      '<label>Mindestbestand<input type="number" id="kMin" value="'+(a.min||0)+'" min="0"></label>'+
+      '<label style="grid-column:1/3">Notiz<input type="text" id="kNotiz" value="'+(a.notiz||'')+'" placeholder="optional"></label>'+
+    '</div></div>'+
+    '<div class="fuss"><button class="btn sek" onclick="schliesse()">Abbrechen</button>'+
+    '<button class="btn" onclick="kellerSpeichernForm(\''+a.id+'\','+(neu?'true':'false')+')">Speichern</button></div>'+
+    '</div></div>';
+  setTimeout(() => el('kName').focus(), 50);
+}
+
+function kellerSpeichernForm(id, neu){
+  const name = el('kName').value.trim();
+  if(!name){ alert('Bitte eine Bezeichnung eingeben.'); return; }
+  const daten = {id, name, kat: el('kKat').value.trim(), platz: el('kPlatz').value.trim(),
+    q: Math.max(0, parseInt(el('kQ').value,10) || 0), einheit: el('kEinheit').value.trim(),
+    min: Math.max(0, parseInt(el('kMin').value,10) || 0), notiz: el('kNotiz').value.trim()};
+  if(neu){
+    keller.push(daten);
+    notiere('Keller', name, daten.platz, null, daten.q, 'Artikel angelegt');
+  } else {
+    const ix = keller.findIndex(x => x.id === id);
+    const alt = keller[ix];
+    notiere('Keller', name, daten.platz, alt.q, daten.q,
+            alt.name !== name ? 'umbenannt von '+alt.name : 'bearbeitet');
+    keller[ix] = daten;
+  }
+  schliesse();
+  kellerSpeichern();
+}
+
+function kellerCsv(){
+  if(!keller.length){ alert('Noch keine Artikel vorhanden.'); return; }
+  const kopf = 'Artikel;Kategorie;Platz;Bestand;Einheit;Mindestbestand;Notiz\n';
+  const zeilen = keller.map(a => [a.name, a.kat, a.platz, a.q, a.einheit, a.min,
+    String(a.notiz||'').replace(/;/g,',')].join(';')).join('\n');
+  lade(new Blob(['\ufeff'+kopf+zeilen], {type:'text/csv;charset=utf-8'}),
+       'Kellerlager_Geb30_'+datum()+'.csv');
+}
+
+function kellerSpeichern(){
+  zeichneKeller();
+  if(!cloudAktiv || !angemeldet) return;
+  db.collection('stahllager').doc('keller').set({
+    artikel: keller, updatedAt: new Date().toISOString(),
+    updatedBy: el('benutzer').value.trim() || angemeldet.email, clientId
+  }).catch(e => cloudStatus('Speichern fehlgeschlagen: '+e.code, '#B3261E'));
+}
+
+['kSuche','kKategorie','kNurKnapp'].forEach(id =>
+  el(id).addEventListener('input', zeichneKeller));
+
 /* ---------- Firebase ---------- */
 let db = null, fbAuth = null, cloudAktiv = false, angemeldet = null;
 const clientId = Math.random().toString(36).slice(2,10);
@@ -1629,7 +1974,7 @@ function cloudStatus(text, farbe){
 }
 
 function firebaseStarten(){
-  if(!FIREBASE_KONFIG.apiKey){ cloudStatus('Lokaler Modus', '#E4B23C'); return; }
+  if(!FIREBASE_KONFIG.apiKey){ cloudStatus('Lokaler Modus', '#E4B23C'); standortWaehlen(); return; }
   cloudStatus('verbinde &hellip;', '#E4B23C');
   const quellen = [
     'https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js',
@@ -1661,6 +2006,7 @@ function firebaseBereit(){
         if(!el('benutzer').value.trim()) el('benutzer').value = nutzer.email.split('@')[0];
         cloudStatus('verbunden als '+nutzer.email, '#7ED957');
         datenLauschen();
+        if(!standort) standortWaehlen();
       } else {
         angemeldet = null;
         cloudStatus('nicht angemeldet', '#E4B23C');
@@ -1729,6 +2075,14 @@ function datenLauschen(){
     }
     ersterEmpfang = false;
   }, () => cloudStatus('Verbindung unterbrochen', '#B3261E'));
+
+  db.collection('stahllager').doc('keller').onSnapshot(sn => {
+    if(!sn.exists) return;
+    const d = sn.data();
+    if(d.clientId === clientId) return;
+    keller = d.artikel || [];
+    if(standort === '30') zeichneKeller();
+  }, () => {});
 
   db.collection('archiv').orderBy('t','desc').limit(500).onSnapshot(s => {
     const aus = [];
