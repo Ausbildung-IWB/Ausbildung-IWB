@@ -2544,7 +2544,31 @@ function anmelden(){
 
 function abmelden(){ if(fbAuth) fbAuth.signOut(); }
 
+let abosGestartet = false;
+
 function datenLauschen(){
+  // Zuerst die Rolle klaeren - danach nur abonnieren, was erlaubt ist
+  db.collection('stahllager').doc('rollen').onSnapshot(sn => {
+    rollenTabelle = (sn.exists && sn.data().tabelle) || {};
+    const meine = rollenTabelle[(angemeldet.email||'').toLowerCase()] || 'admin';
+    if(meine !== rolle){ rolle = meine; rolleAnwenden(); }
+    rollenZeichnen();
+    if(!abosGestartet){ abosGestartet = true; abosStarten(); }
+  }, () => { if(!abosGestartet){ abosGestartet = true; abosStarten(); } });
+
+  db.collection('stahllager').doc('personen').onSnapshot(sn => {
+    personen = (sn.exists && sn.data().namen) || [];
+    rollenZeichnen();
+  }, () => {});
+}
+
+function abosStarten(){
+  if(rolle !== 'tablet-keller') bestandLauschen();
+  if(rolle !== 'tablet-stahl')  kellerLauschen();
+  if(rolle === 'admin')         archivLauschen();
+}
+
+function bestandLauschen(){
   db.collection('stahllager').doc('bestand').onSnapshot(schnapp => {
     if(!schnapp.exists){
       cloudStatus('keine Daten in der Datenbank', '#E4B23C');
@@ -2570,18 +2594,9 @@ function datenLauschen(){
     ersterEmpfang = false;
   }, () => cloudStatus('Verbindung unterbrochen', '#B3261E'));
 
-  db.collection('stahllager').doc('rollen').onSnapshot(sn => {
-    rollenTabelle = (sn.exists && sn.data().tabelle) || {};
-    const meine = rollenTabelle[(angemeldet.email||'').toLowerCase()];
-    if(meine && meine !== rolle){ rolle = meine; rolleAnwenden(); }
-    rollenZeichnen();
-  }, () => {});
+}
 
-  db.collection('stahllager').doc('personen').onSnapshot(sn => {
-    personen = (sn.exists && sn.data().namen) || [];
-    rollenZeichnen();
-  }, () => {});
-
+function kellerLauschen(){
   db.collection('stahllager').doc('keller').onSnapshot(sn => {
     if(!sn.exists) return;
     const d = sn.data();
@@ -2590,6 +2605,9 @@ function datenLauschen(){
     if(standort === '30') zeichneKeller();
   }, () => {});
 
+}
+
+function archivLauschen(){
   db.collection('archiv').orderBy('t','desc').limit(500).onSnapshot(s => {
     const aus = [];
     s.forEach(dok => aus.push(dok.data()));
