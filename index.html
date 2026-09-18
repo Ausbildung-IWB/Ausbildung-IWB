@@ -901,6 +901,12 @@ body.vollbild .karte{margin-bottom:12px}
       dabei &uuml;berschrieben. Einmal t&auml;glich beim ersten Start legt die Anwendung
       selbstst&auml;ndig eine an.</p>
     <div id="backupListe"></div>
+    <div class="hinweis" style="margin-top:14px" id="umzugKarte">
+      <b>Einmalige &Uuml;bernahme.</b> Falls noch Daten aus der fr&uuml;heren Struktur
+      (ein Sammeldokument) vorliegen, werden sie hiermit in die neue Form &uuml;berf&uuml;hrt.
+      Bestehende Artikel werden dabei nicht &uuml;berschrieben.
+      <div style="margin-top:9px"><button class="btn sek" onclick="umzugStarten()">Alte Daten &uuml;bernehmen</button></div>
+    </div>
     <div class="werkzeuge" style="margin-top:12px">
       <button class="btn" onclick="backupJetzt()">Jetzt sichern</button>
       <button class="btn sek" onclick="exportJson()">Zus&auml;tzlich als Datei</button>
@@ -2571,6 +2577,67 @@ function codePruefen(zweck){
 }
 
 /* --- Sicherungen --- */
+function umzugStarten(){
+  if(!cloudAktiv || !angemeldet) return alert('Dafür wird eine Verbindung zur Datenbank gebraucht.');
+  if(rolle !== 'admin') return alert('Das darf nur ein Konto mit vollem Zugriff.');
+  cloudStatus('übernehme alte Daten …', '#E4B23C');
+  Promise.all([
+    db.collection('lager').doc('artikel').get(),
+    db.collection('lager').doc('bestand').get(),
+    db.collection('stahllager').doc('keller').get()
+  ]).then(([sa, sb, sk]) => {
+    const alteArtikel = sa.exists ? (sa.data().artikel || []) : [];
+    const alteBestaende = sb.exists ? (sb.data().bestand || {}) : {};
+    const alteBewegungen = sb.exists ? (sb.data().bewegungen || []) : [];
+    const alterKeller = sk.exists ? (sk.data().artikel || []) : [];
+
+    let nr = 0;
+    artikel.forEach(a => { const m = String(a.nr).match(/(\d+)\s*$/); if(m) nr = Math.max(nr, +m[1]); });
+    const neueNr = () => 'A-' + String(++nr).padStart(4,'0');
+
+    const stapel = db.batch();
+    let neuA = 0, neuB = 0;
+
+    alteArtikel.forEach(a => {
+      if(artFind(a.nr)) return;
+      artikel.push(a); neuA++;
+      stapel.set(db.collection('artikel').doc(a.nr), a);
+    });
+    Object.entries(alteBestaende).forEach(([ort, eintraege]) => {
+      Object.entries(eintraege).forEach(([anr, b]) => {
+        if(ortBestand(ort, anr)) return;
+        bestand[ort] = bestand[ort] || {};
+        bestand[ort][anr] = {q:b.q||0, platz:b.platz||'', min:b.min||0};
+        neuB++;
+        stapel.set(db.collection('bestand').doc(bestandId(ort, anr)),
+                   {ort, nr:anr, ...bestand[ort][anr]});
+      });
+    });
+    // Kellerliste der ersten Fassung
+    alterKeller.forEach(k => {
+      if(artikel.some(a => a.name === k.name)) return;
+      const n = neueNr();
+      const a = {nr:n, name:k.name, kat:k.kat||'', einheit:k.einheit||'Stück', preis:0, notiz:k.notiz||'', preise:[]};
+      artikel.push(a); neuA++;
+      stapel.set(db.collection('artikel').doc(n), a);
+      bestand.geb30 = bestand.geb30 || {};
+      bestand.geb30[n] = {q:k.q||0, platz:k.platz||'', min:k.min||0};
+      neuB++;
+      stapel.set(db.collection('bestand').doc(bestandId('geb30', n)), {ort:'geb30', nr:n, ...bestand.geb30[n]});
+    });
+
+    return stapel.commit().then(() => {
+      alteBewegungen.slice(-500).forEach(bw => db.collection('bewegungen').add(bw).catch(()=>{}));
+      bewegungen = bewegungen.concat(alteBewegungen);
+      logge('Übernahme: '+neuA+' Artikel, '+neuB+' Bestände');
+      notiere('System','','',null,null,'Alte Daten übernommen: '+neuA+' Artikel, '+neuB+' Bestände');
+      cloudStatus('Übernahme abgeschlossen', '#7ED957');
+      alert('Übernommen: '+neuA+' Artikel und '+neuB+' Standortbestände.');
+      zeichneArtikel();
+    });
+  }).catch(e => { cloudStatus('Übernahme fehlgeschlagen', '#B3261E'); alert('Fehler: '+(e.code||e)); });
+}
+
 function backupsZeichnen(){
   const feld = el('backupListe'); if(!feld) return;
   feld.innerHTML = [1,2,3].map(nr => {
@@ -3167,9 +3234,10 @@ function artBuchen(nr, delta){
   const b = ortBestand(standort, nr); if(!b) return;
   const alt = b.q;
   b.q = Math.max(0, b.q + delta);
-  if(b.q < alt) bewegungen.push({d:new Date().toISOString().slice(0,10), nr, n:alt-b.q, ort:standort});
+  if(b.q < alt) bewegungSchreiben({d:new Date().toISOString().slice(0,10), nr, n:alt-b.q, ort:standort});
   const a = artFind(nr);
   notiere('Bestand', nr+' '+(a?a.name:''), ortName(standort)+(b.platz? ' / '+b.platz:''), alt, b.q, '');
+  bestandSchreiben(standort, nr);
   artSpeichern();
 }
 function artSetzen(nr, wert){
@@ -3178,9 +3246,10 @@ function artSetzen(nr, wert){
   const neu = Math.max(0, Math.round(parseFloat(String(wert).replace(',','.')) || 0));
   if(neu === b.q) return;
   const alt = b.q; b.q = neu;
-  if(neu < alt) bewegungen.push({d:new Date().toISOString().slice(0,10), nr, n:alt-neu, ort:standort});
+  if(neu < alt) bewegungSchreiben({d:new Date().toISOString().slice(0,10), nr, n:alt-neu, ort:standort});
   const a = artFind(nr);
   notiere('Bestand', nr+' '+(a?a.name:''), ortName(standort), alt, neu, '');
+  bestandSchreiben(standort, nr);
   artSpeichern();
 }
 function artHierRein(nr){
@@ -3188,6 +3257,7 @@ function artHierRein(nr){
   bestand[standort][nr] = {q:0, platz:'', min:0};
   const a = artFind(nr);
   notiere('Stammdaten', nr+' '+(a?a.name:''), ortName(standort), null, 0, 'Artikel hier aufgenommen');
+  bestandSchreiben(standort, nr);
   artSpeichern();
 }
 function artHierWeg(nr){
@@ -3196,6 +3266,7 @@ function artHierWeg(nr){
   const b = ortBestand(standort, nr);
   delete bestand[standort][nr];
   notiere('Stammdaten', nr+' '+(a?a.name:''), ortName(standort), b? b.q:null, null, 'hier ausgelagert');
+  bestandSchreiben(standort, nr);
   artSpeichern();
 }
 
@@ -3287,6 +3358,8 @@ function artSpeichernForm(nr, neu){
   notiere('Stammdaten', nummer+' '+name, ortName(standort),
           vorher? vorher.q : null, bestand[standort][nummer].q,
           neu? 'Artikel angelegt' : 'Artikel bearbeitet');
+  stammSchreiben(nummer);
+  bestandSchreiben(standort, nummer);
   schliesse(); artSpeichern();
 }
 
@@ -3298,6 +3371,7 @@ function artLoeschen(nr){
   artikel = artikel.filter(x => x.nr !== nr);
   orte.forEach(o => delete bestand[o][nr]);
   notiere('Stammdaten', nr+' '+(a?a.name:''), '', null, null, 'aus dem Stamm gelöscht');
+  stammLoeschen(nr, orte);
   schliesse(); artSpeichern();
 }
 
@@ -3315,14 +3389,44 @@ function artCsv(){
        'Artikelbestand_'+datum()+'.csv');
 }
 
-function artSpeichern(){
-  zeichneArtikel();
+/* Ab hier wird gezielt geschrieben: ein Dokument je Artikel und je
+   Standort-Bestand. Damit ueberschreiben sich gleichzeitige Buchungen nicht mehr. */
+const bestandId = (ort, nr) => ort + '__' + nr;
+
+function schreibFehler(e){ cloudStatus('Speichern fehlgeschlagen: '+(e.code||e), '#B3261E'); }
+
+function stammSchreiben(nr){
   if(!cloudAktiv || !angemeldet || nurLesen()) return;
-  db.collection('lager').doc('artikel').set({artikel, clientId,
-    updatedAt:new Date().toISOString(), updatedBy: el('benutzer').value.trim()||angemeldet.email}).catch(()=>{});
-  db.collection('lager').doc('bestand').set({bestand, bewegungen, clientId,
-    updatedAt:new Date().toISOString()}).catch(e => cloudStatus('Speichern fehlgeschlagen: '+e.code,'#B3261E'));
+  const a = artFind(nr); if(!a) return;
+  db.collection('artikel').doc(nr).set({...a,
+    updatedAt:new Date().toISOString(),
+    updatedBy: el('benutzer').value.trim() || angemeldet.email}).catch(schreibFehler);
 }
+
+function bestandSchreiben(ort, nr){
+  if(!cloudAktiv || !angemeldet || nurLesen()) return;
+  const b = ortBestand(ort, nr);
+  const dok = db.collection('bestand').doc(bestandId(ort, nr));
+  if(!b){ dok.delete().catch(schreibFehler); return; }
+  dok.set({ort, nr, q:b.q, platz:b.platz||'', min:b.min||0,
+    updatedAt:new Date().toISOString(),
+    updatedBy: el('benutzer').value.trim() || angemeldet.email}).catch(schreibFehler);
+}
+
+function bewegungSchreiben(bw){
+  bewegungen.push(bw);
+  if(!cloudAktiv || !angemeldet || nurLesen()) return;
+  db.collection('bewegungen').add(bw).catch(()=>{});
+}
+
+function stammLoeschen(nr, orte){
+  if(!cloudAktiv || !angemeldet || nurLesen()) return;
+  db.collection('artikel').doc(nr).delete().catch(schreibFehler);
+  orte.forEach(o => db.collection('bestand').doc(bestandId(o, nr)).delete().catch(()=>{}));
+}
+
+/* Nur noch neu zeichnen - das Schreiben passiert an der jeweiligen Stelle */
+function artSpeichern(){ zeichneArtikel(); }
 
 /* --- Bestellanforderung --- */
 function zeichneABanf(){
@@ -3452,6 +3556,11 @@ function abDrucken(){
 let avZeitraum = 1;
 function zeichneAVerbrauch(){
   preisSpaltenSetzen();
+  if(!bewegungenGeladen && cloudAktiv && angemeldet){
+    el('avKennzahlen').innerHTML = '<p class="sub" style="margin:0">Verbrauchsdaten werden geladen …</p>';
+    bewegungenLaden().then(zeichneAVerbrauch);
+    return;
+  }
   const orte = el('avUmfang').value === 'alle' ? ALLGEMEIN : [standort];
   const monate = monatsReihe(24);
   const grenze = new Date(); grenze.setMonth(grenze.getMonth() - avZeitraum);
@@ -3816,21 +3925,33 @@ function abosStarten(){
 }
 
 function artikelLauschen(){
-  db.collection('lager').doc('artikel').onSnapshot(sn => {
-    if(!sn.exists) return;
-    const d = sn.data();
-    if(d.clientId === clientId) return;
-    artikel = d.artikel || [];
+  db.collection('artikel').onSnapshot(s => {
+    artikel = [];
+    s.forEach(d => artikel.push(d.data()));
     if(standort && standort !== 'stahl') zeichneArtikel();
-  }, () => {});
-  db.collection('lager').doc('bestand').onSnapshot(sn => {
-    if(!sn.exists) return;
-    const d = sn.data();
-    if(d.clientId === clientId) return;
-    bestand = d.bestand || {};
-    bewegungen = d.bewegungen || [];
+  }, e => cloudStatus('Artikel nicht lesbar: '+e.code, '#B3261E'));
+
+  db.collection('bestand').onSnapshot(s => {
+    bestand = {};
+    s.forEach(d => {
+      const b = d.data();
+      if(!b.ort || !b.nr) return;
+      bestand[b.ort] = bestand[b.ort] || {};
+      bestand[b.ort][b.nr] = {q:b.q||0, platz:b.platz||'', min:b.min||0};
+    });
     if(standort && standort !== 'stahl') zeichneArtikel();
-  }, () => {});
+  }, e => cloudStatus('Bestände nicht lesbar: '+e.code, '#B3261E'));
+}
+
+/* Bewegungen werden erst geladen, wenn die Verbrauchsansicht geöffnet wird.
+   Das spart bei jedem Seitenaufruf mehrere tausend Lesezugriffe. */
+let bewegungenGeladen = false;
+function bewegungenLaden(){
+  if(bewegungenGeladen || !cloudAktiv || !angemeldet) return Promise.resolve();
+  bewegungenGeladen = true;
+  return db.collection('bewegungen').orderBy('d','desc').limit(5000).get()
+    .then(s => { bewegungen = []; s.forEach(d => bewegungen.push(d.data())); })
+    .catch(() => {});
 }
 
 function bestandLauschen(){
