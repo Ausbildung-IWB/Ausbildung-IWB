@@ -896,6 +896,25 @@ body.vollbild .karte{margin-bottom:12px}
   </div>
 
   <div class="karte">
+    <h2 style="margin-top:0">Tagesbericht per E-Mail</h2>
+    <p class="sub">Einmal t&auml;glich wird der komplette Bestand als CSV an die hinterlegten
+      Adressen geschickt &ndash; als Sicherung au&szlig;erhalb der Datenbank. Der Versand l&auml;uft
+      &uuml;ber ein kleines Google-Script, das du einmalig einrichtest.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px">
+      <label>Adresse des Versand-Scripts
+        <input type="text" id="mailUrl" placeholder="https://script.google.com/macros/s/.../exec"></label>
+      <label>Empf&auml;nger (mit Komma trennen)
+        <input type="text" id="mailAn" placeholder="d.omowanile@iwb-is.de, einkauf@iwb-is.de"></label>
+    </div>
+    <div class="werkzeuge" style="margin-top:12px">
+      <label><input type="checkbox" id="mailAuto"> t&auml;glich automatisch senden</label>
+      <button class="btn" onclick="tagesberichtSenden(false)">Jetzt senden</button>
+      <button class="btn sek" onclick="mailEinstellungenSpeichern()">Einstellungen speichern</button>
+    </div>
+    <div id="mailStatus"></div>
+  </div>
+
+  <div class="karte">
     <h2 style="margin-top:0">Automatische Sicherungen</h2>
     <p class="sub">Es werden immer die letzten drei Sicherungen aufbewahrt. Die &auml;lteste wird
       dabei &uuml;berschrieben. Einmal t&auml;glich beim ersten Start legt die Anwendung
@@ -2459,7 +2478,8 @@ let rollenOrte = {};   // { email: ['geb30','feuerwehr'] }
 let backups = [];          // [{slot, stand, von, groesse}]
 let codeSichtbar = false;
 
-function zeichneVerwaltung(){ rollenZeichnen(); personenZeichnen(); backupsZeichnen(); codeZeichnen(); }
+function zeichneVerwaltung(){ rollenZeichnen(); personenZeichnen(); backupsZeichnen();
+  codeZeichnen(); mailEinstellungenZeichnen(); }
 
 /* --- Rollen --- */
 function rollenZeichnen(){
@@ -2642,32 +2662,141 @@ function backupsZeichnen(){
   const feld = el('backupListe'); if(!feld) return;
   feld.innerHTML = [1,2,3].map(nr => {
     const b = backups.find(x => x.slot === nr);
-    if(!b) return '<div class="bslot leer"><div><b>Platz '+nr+'</b>'+
-      '<div class="details">noch nicht belegt</div></div></div>';
+    if(!b) return '<div class="bslot leer"><div><b>'+SLOT_ART[nr]+'ssicherung '+
+      (nr<=3? nr:'')+'</b><div class="details">noch nicht belegt</div></div></div>';
     return '<div class="bslot"><div><b>'+new Date(b.stand).toLocaleString('de-DE')+'</b>'+
-      '<div class="details">Platz '+nr+' &middot; von '+(b.von||'unbekannt')+
-      ' &middot; '+(b.faecher||0)+' F&auml;cher, '+(b.artikel||0)+' Keller-Artikel</div></div>'+
+      '<div class="details">'+(b.art || SLOT_ART[nr])+'ssicherung &middot; von '+(b.von||'unbekannt')+
+      ' &middot; '+(b.faecher||0)+' Stahl-F&auml;cher, '+(b.artikel||0)+' Artikel</div></div>'+
       '<button class="btn sek" onclick="backupZurueck('+nr+')">Wiederherstellen</button></div>';
   }).join('');
 }
 
-function backupJetzt(automatisch){
+const SLOT_ART = {1:'Tag', 2:'Tag', 3:'Tag', 4:'Woche', 5:'Monat'};
+
+/* ---------- Tagesbericht ---------- */
+let mailEinst = {url:'', an:'', auto:false, zuletzt:''};
+
+function mailEinstellungenZeichnen(){
+  if(!el('mailUrl')) return;
+  el('mailUrl').value = mailEinst.url || '';
+  el('mailAn').value  = mailEinst.an || '';
+  el('mailAuto').checked = !!mailEinst.auto;
+  el('mailStatus').innerHTML = mailEinst.zuletzt
+    ? '<div class="hinweis gruen" style="margin:12px 0 0">Zuletzt gesendet: '+
+      new Date(mailEinst.zuletzt).toLocaleString('de-DE')+'</div>'
+    : '<div class="hinweis" style="margin:12px 0 0">Noch kein Bericht versendet.</div>';
+}
+
+function mailEinstellungenSpeichern(){
+  mailEinst.url = el('mailUrl').value.trim();
+  mailEinst.an  = el('mailAn').value.trim();
+  mailEinst.auto = el('mailAuto').checked;
+  if(cloudAktiv && angemeldet)
+    db.collection('stahllager').doc('mail').set({...mailEinst, clientId}).catch(()=>{});
+  logge('Einstellungen für den Tagesbericht gespeichert');
+  mailEinstellungenZeichnen();
+}
+
+function berichtCsv(){
+  const zeilen = [];
+  zeilen.push('Standort;Nummer;Artikel;Kategorie;Einheit;Bestand;Platz;Mindestbestand;Preis;Wert;Status');
+  ALLGEMEIN.forEach(o => {
+    Object.entries(bestand[o]||{}).forEach(([nr,b]) => {
+      const a = artFind(nr) || {name:'(unbekannt)', kat:'', einheit:'', preis:0};
+      const st = b.q === 0 ? 'leer' : (b.min>0 && b.q<=b.min ? 'nachbestellen' : 'ok');
+      zeilen.push([ORTE[o].name, nr, a.name, a.kat, a.einheit, b.q, b.platz||'',
+        b.min||0, de(a.preis||0,2), de(b.q*(a.preis||0),2), st].join(';'));
+    });
+  });
+  // Stahllager als eigener Block
+  alleItems().forEach(i => {
+    zeilen.push([ORTE.stahl.name, '', i.m, i.gruppe, 'Stangen',
+      istGenug(i)? 'genug' : i.q, 'R'+i.r+'/F'+i.fa, '', '', '', ''].join(';'));
+  });
+  return zeilen.join('\n');
+}
+
+function berichtZusammenfassung(){
+  let knapp = 0, leer = 0, wert = 0, pos = 0;
+  ALLGEMEIN.forEach(o => Object.entries(bestand[o]||{}).forEach(([nr,b]) => {
+    pos++;
+    const a = artFind(nr) || {preis:0};
+    wert += b.q * (a.preis||0);
+    if(b.q === 0) leer++; else if(b.min>0 && b.q<=b.min) knapp++;
+  }));
+  return {pos, knapp, leer, wert};
+}
+
+function tagesberichtSenden(automatisch){
+  if(!mailEinst.url){ if(!automatisch) alert('Bitte zuerst die Adresse des Versand-Scripts eintragen.'); return; }
+  if(!mailEinst.an){ if(!automatisch) alert('Bitte mindestens einen Empfänger eintragen.'); return; }
+  const z = berichtZusammenfassung();
+  const heute = new Date().toLocaleDateString('de-DE');
+  const text =
+    'Bestandsbericht vom '+heute+'\n\n'+
+    z.pos+' Positionen im allgemeinen Lager\n'+
+    z.knapp+' Artikel unter Mindestbestand\n'+
+    z.leer+' Artikel komplett leer\n'+
+    'Lagerwert: '+de(z.wert,2)+' EUR\n\n'+
+    'Die vollständige Liste liegt als CSV im Anhang.';
+  const nutzlast = {
+    an: mailEinst.an,
+    betreff: 'Bestandsbericht Lager '+heute,
+    text,
+    dateiname: 'Bestand_'+datum()+'.csv',
+    csv: berichtCsv()
+  };
+  if(el('mailStatus')) el('mailStatus').innerHTML =
+    '<div class="hinweis" style="margin:12px 0 0">Bericht wird gesendet …</div>';
+  fetch(mailEinst.url, {method:'POST', mode:'no-cors',
+    headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(nutzlast)})
+    .then(() => {
+      mailEinst.zuletzt = new Date().toISOString();
+      if(cloudAktiv && angemeldet)
+        db.collection('stahllager').doc('mail').set({...mailEinst, clientId}).catch(()=>{});
+      logge('Tagesbericht an '+mailEinst.an+' gesendet');
+      notiere('System','','',null,null,'Tagesbericht versendet ('+z.pos+' Positionen)');
+      mailEinstellungenZeichnen();
+      if(!automatisch) alert('Bericht wurde abgeschickt.');
+    })
+    .catch(e => {
+      if(el('mailStatus')) el('mailStatus').innerHTML =
+        '<div class="hinweis rot" style="margin:12px 0 0">Versand fehlgeschlagen. '+
+        'Bitte die Adresse des Scripts prüfen.</div>';
+      if(!automatisch) alert('Versand fehlgeschlagen: '+e);
+    });
+}
+
+function tagesberichtPruefen(){
+  if(rolle !== 'admin' || !mailEinst.auto || !mailEinst.url) return;
+  const heute = new Date().toISOString().slice(0,10);
+  if((mailEinst.zuletzt||'').slice(0,10) >= heute) return;
+  setTimeout(() => tagesberichtSenden(true), 12000);
+}
+
+function backupJetzt(automatisch, artWunsch){
   if(!cloudAktiv || !angemeldet){ if(!automatisch) alert('Sicherungen brauchen eine Verbindung zur Datenbank.'); return; }
-  const belegt = backups.map(b => b.slot);
   let slot;
-  if(belegt.length < 3) slot = [1,2,3].find(n => !belegt.includes(n));
-  else slot = backups.slice().sort((a,b) => a.stand.localeCompare(b.stand))[0].slot;
+  if(artWunsch === 'Woche') slot = 4;
+  else if(artWunsch === 'Monat') slot = 5;
+  else {
+    const taeglich = backups.filter(b => b.slot <= 3);
+    const belegt = taeglich.map(b => b.slot);
+    if(belegt.length < 3) slot = [1,2,3].find(n => !belegt.includes(n));
+    else slot = taeglich.slice().sort((a,b) => a.stand.localeCompare(b.stand))[0].slot;
+  }
   const inhalt = {
     stand: new Date().toISOString(),
     von: el('benutzer').value.trim() || (angemeldet.email||''),
-    faecher: lager.length, artikel: keller.length,
+    faecher: lager.length, artikel: artikel.length, art: SLOT_ART[slot],
     lager, keller, verbrauch, personen, rollenTabelle, rollenOrte,
     artikel, bestand, bewegungen,
     stange: stange(), werkstoff: stdWst(), slot, clientId
   };
   db.collection('backups').doc('slot'+slot).set(inhalt).then(() => {
     backups = backups.filter(b => b.slot !== slot);
-    backups.push({slot, stand:inhalt.stand, von:inhalt.von, faecher:inhalt.faecher, artikel:inhalt.artikel});
+    backups.push({slot, stand:inhalt.stand, von:inhalt.von, faecher:inhalt.faecher,
+                  artikel:inhalt.artikel, art:inhalt.art});
     backupsZeichnen();
     if(!automatisch){
       logge('Sicherung auf Platz '+slot+' abgelegt');
@@ -2716,9 +2845,20 @@ let sicherungGeprueft = false;
 function tagessicherung(){
   if(sicherungGeprueft || rolle !== 'admin') return;
   sicherungGeprueft = true;
-  const heute = new Date().toISOString().slice(0,10);
-  const neueste = backups.map(b => b.stand).sort().pop();
-  if(!neueste || neueste.slice(0,10) < heute) setTimeout(() => backupJetzt(true), 3000);
+  const jetzt = new Date();
+  const heute = jetzt.toISOString().slice(0,10);
+  const taeglich = backups.filter(b => b.slot <= 3).map(b => b.stand).sort().pop();
+  if(!taeglich || taeglich.slice(0,10) < heute) setTimeout(() => backupJetzt(true), 3000);
+
+  const woche = backups.find(b => b.slot === 4);
+  const vor7 = new Date(jetzt.getTime() - 7*86400000).toISOString();
+  if(!woche || woche.stand < vor7) setTimeout(() => backupJetzt(true, 'Woche'), 6000);
+
+  const monat = backups.find(b => b.slot === 5);
+  const vor30 = new Date(jetzt.getTime() - 30*86400000).toISOString();
+  if(!monat || monat.stand < vor30) setTimeout(() => backupJetzt(true, 'Monat'), 9000);
+
+  tagesberichtPruefen();
 }
 
 /* ---------- Handy-Suche ---------- */
@@ -3911,6 +4051,11 @@ function datenLauschen(){
     rollenZeichnen();
     if(!abosGestartet){ abosGestartet = true; abosStarten(); }
   }, () => { if(!abosGestartet){ abosGestartet = true; abosStarten(); } });
+
+  db.collection('stahllager').doc('mail').onSnapshot(sn => {
+    if(sn.exists) mailEinst = {...mailEinst, ...sn.data()};
+    mailEinstellungenZeichnen();
+  }, () => {});
 
   db.collection('stahllager').doc('personen').onSnapshot(sn => {
     personen = (sn.exists && sn.data().namen) || [];
