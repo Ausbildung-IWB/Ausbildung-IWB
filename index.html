@@ -132,6 +132,16 @@ svg.chart text{font-family:inherit}
   font-size:12.5px;border-radius:2px;display:inline-block;margin-bottom:12px}
 code{background:#eef1f4;padding:1px 5px;border-radius:2px;font-size:12.5px}
 #kopfbereich{position:sticky;top:0;z-index:60;box-shadow:0 2px 8px rgba(10,40,70,.10)}
+.menuknopf{display:none;background:none;border:1px solid var(--grau-linie);border-radius:3px;
+  width:42px;height:38px;flex-direction:column;justify-content:center;align-items:center;gap:4px;
+  cursor:pointer;padding:0;margin-left:10px}
+.menuknopf span{display:block;width:20px;height:2px;background:var(--blau-dunkel);border-radius:1px;
+  transition:transform .2s,opacity .2s}
+.menuknopf.offen span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+.menuknopf.offen span:nth-child(2){opacity:0}
+.menuknopf.offen span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+.menuschatten{display:none;position:fixed;inset:0;background:rgba(10,35,60,.45);z-index:95}
+.menuschatten.offen{display:block}
 table.liste th{z-index:2}
 #druck{display:none}
 .loginhuelle{position:fixed;inset:0;background:#0A3760;display:flex;align-items:center;
@@ -189,6 +199,26 @@ table.liste th{z-index:2}
 .bslot.leer{border-left-color:var(--grau-linie);color:var(--text-hell)}
 .bslot b{font-size:14px}
 .bslot .details{font-size:12.5px;color:var(--text-hell)}
+.fab{position:fixed;right:18px;bottom:18px;z-index:70;background:var(--gruen);color:#fff;
+  border:none;border-radius:40px;padding:17px 26px;font:inherit;font-size:16.5px;font-weight:600;
+  box-shadow:0 5px 18px rgba(0,0,0,.28);cursor:pointer;display:none;align-items:center;gap:9px}
+.fab:active{background:#4a8526}
+.fab span{font-size:21px;line-height:1}
+.absuche{width:100%;font-size:17px;padding:13px}
+.abliste{max-height:46vh;overflow:auto;margin-top:12px}
+.abzeile{display:flex;justify-content:space-between;align-items:center;gap:12px;width:100%;
+  background:#fff;border:1px solid var(--grau-linie);border-left:4px solid var(--blau);
+  border-radius:3px;padding:14px;margin-bottom:8px;font:inherit;text-align:left;cursor:pointer}
+.abzeile:active{background:var(--blau-hell)}
+.abzeile b{font-size:17px;display:block}
+.abzeile .ort{font-size:12.5px;color:var(--text-hell)}
+.abzeile .best{font-size:19px;font-weight:700;color:var(--blau-dunkel);white-space:nowrap}
+.abmenge{display:flex;align-items:center;justify-content:center;gap:14px;margin:18px 0}
+.abmenge button{width:62px;height:62px;font-size:29px;border:1px solid var(--grau-linie);
+  background:#fff;border-radius:6px;cursor:pointer;color:var(--blau)}
+.abmenge button:active{background:var(--blau);color:#fff}
+.abmenge input{width:110px;text-align:center;font-size:34px;font-weight:700;padding:10px;
+  border:2px solid var(--grau-linie);border-radius:5px}
 .zaehler{max-width:620px;margin:0 auto}
 .zfortschritt{height:6px;background:var(--grau-linie);border-radius:3px;overflow:hidden;margin-bottom:16px}
 .zfortschritt div{height:100%;background:var(--blau);transition:width .25s}
@@ -324,6 +354,9 @@ table.liste th{z-index:2}
     <button data-ansicht="daten">Daten</button>
   </nav>
   <img id="kopfLogo" class="firmenlogo" alt="Industriepark Werk Bobingen">
+  <button class="menuknopf" onclick="menuUm()" aria-label="Men&uuml;">
+    <span></span><span></span><span></span>
+  </button>
 </header>
 
 <div class="tabletband" id="leseBand" style="display:none;background:#3A5A78">
@@ -708,10 +741,12 @@ table.liste th{z-index:2}
 
 </main>
 
+<div class="menuschatten" id="menuSchatten" onclick="menuZu()"></div>
 <div id="loginBox"></div>
 <div id="wahlBox"></div>
 <div id="standbyBox"></div>
 <div id="dialogBox"></div>
+<button class="fab" id="fabAusbuchen" onclick="ausbuchen()"><span>&minus;</span> Ausbuchen</button>
 <div id="druck"></div>
 <footer>Stahllager 1 + 2 &nbsp;&middot;&nbsp; 98 F&auml;cher &nbsp;&middot;&nbsp; interne Anwendung</footer>
 
@@ -817,18 +852,8 @@ const breite = m => parseFloat(String(m).split('x')[0]);
 const dicke  = m => parseFloat(String(m).split('x')[1]);
 
 /* ---------- Navigation ---------- */
-document.querySelectorAll('nav button').forEach(b => b.onclick = () => {
-  document.querySelectorAll('nav button').forEach(x => x.classList.remove('aktiv'));
-  b.classList.add('aktiv');
-  ['plan','bestand','stueck','zaehlen','banf','verbrauch','archiv','keller','verwaltung','daten'].forEach(v =>
-    el('v-'+v).classList.toggle('verstecke', v !== b.dataset.ansicht));
-  if(b.dataset.ansicht === 'plan') skaliere();
-  if(b.dataset.ansicht === 'verbrauch') zeichneVerbrauch();
-  if(b.dataset.ansicht === 'banf' && !document.querySelector('#banfBody tr')) banfZeile();
-  if(b.dataset.ansicht === 'archiv') zeichneArchiv();
-  if(b.dataset.ansicht === 'keller') zeichneKeller();
-  if(b.dataset.ansicht === 'verwaltung') zeichneVerwaltung();
-});
+document.querySelectorAll('nav button').forEach(b =>
+  b.onclick = () => ansichtOeffnen(b.dataset.ansicht));
 
 /* ---------- Lagerplan ---------- */
 function zeichneRaster(){
@@ -1972,6 +1997,148 @@ el('importDatei').addEventListener('change', e => {
   e.target.value='';
 });
 
+/* ---------- Menü (Handy) ---------- */
+function menuUm(){
+  const auf = !document.querySelector('nav').classList.contains('offen');
+  document.querySelector('nav').classList.toggle('offen', auf);
+  el('menuSchatten').classList.toggle('offen', auf);
+  document.querySelector('.menuknopf').classList.toggle('offen', auf);
+}
+function menuZu(){
+  const n = document.querySelector('nav'); if(!n) return;
+  n.classList.remove('offen');
+  el('menuSchatten').classList.remove('offen');
+  const k = document.querySelector('.menuknopf'); if(k) k.classList.remove('offen');
+}
+
+/* ---------- Ausbuchen am Tablet ---------- */
+function ausbuchen(){
+  if(nurLesen()) return alert('Dieser Zugang darf nichts buchen.');
+  if(!el('benutzer').value.trim()){ namenAbfragen(); return; }
+  if(standort === '30') ausbuchenKeller(); else ausbuchenStahl();
+}
+
+function ausbuchenStahl(){
+  el('dialogBox').innerHTML =
+    '<div class="overlay" onclick="if(event.target===this)schliesse()"><div class="dialog" style="max-width:600px">'+
+    '<div class="kopf"><div><b>Material ausbuchen</b><span>&nbsp;'+
+      (el('benutzer').value.trim()||'')+'</span></div>'+
+    '<button class="zu" onclick="schliesse()">&times;</button></div>'+
+    '<div class="rumpf">'+
+      '<input type="text" class="absuche" id="abSuche" placeholder="Ma&szlig; suchen, z. B. 40x12" '+
+      'oninput="abTreffer()" inputmode="text">'+
+      '<div class="abliste" id="abListe"></div>'+
+    '</div></div></div>';
+  abTreffer();
+  setTimeout(() => { const f = el('abSuche'); if(f) f.focus(); }, 60);
+}
+
+function abTreffer(){
+  const q = (el('abSuche').value || '').trim().toLowerCase().replace(/\s/g,'');
+  const liste = alleItems()
+    .filter(i => !istGenug(i) && (!q || i.m.toLowerCase().includes(q)))
+    .sort((a,b) => breite(a.m)-breite(b.m) || dicke(a.m)-dicke(b.m))
+    .slice(0, 40);
+  el('abListe').innerHTML = liste.length
+    ? liste.map(i => '<button class="abzeile" style="border-left-color:'+i.farbe+'" '+
+        'onclick="abMenge(\''+i.m+'\')"><div><b>'+i.m+'</b>'+
+        '<span class="ort">Reihe '+i.r+' &middot; Fach '+i.fa+
+        (resteVon(i).length? ' &middot; Rest '+resteText(i):'')+'</span></div>'+
+        '<span class="best">'+i.q+'</span></button>').join('')
+    : '<p class="sub">Kein Maß gefunden.</p>';
+}
+
+function abMenge(mass){
+  const t = findItem(mass); if(!t) return;
+  el('dialogBox').innerHTML =
+    '<div class="overlay" onclick="if(event.target===this)schliesse()"><div class="dialog" style="max-width:520px">'+
+    '<div class="kopf"><div><b>'+mass+'</b><span>&nbsp;Reihe '+t.fach.r+' &middot; Fach '+t.fach.f+
+      ' &middot; Bestand '+t.item.q+'</span></div>'+
+    '<button class="zu" onclick="schliesse()">&times;</button></div>'+
+    '<div class="rumpf" style="text-align:center">'+
+      '<p class="sub" style="margin:0">Wie viele ganze Stangen werden entnommen?</p>'+
+      '<div class="abmenge">'+
+        '<button onclick="abPlus(-1)">&minus;</button>'+
+        '<input type="number" id="abZahl" value="1" min="1" max="'+t.item.q+'">'+
+        '<button onclick="abPlus(1)">+</button>'+
+      '</div>'+
+      '<p class="sub" style="margin:0 0 6px">oder stattdessen ein Stück absägen:</p>'+
+      '<button class="btn sek" onclick="schliesse();zuschnittFragen(\''+mass+'\')">'+
+        'Zuschnitt in mm &hellip;</button>'+
+    '</div>'+
+    '<div class="fuss"><button class="btn sek" onclick="ausbuchenStahl()">Zur&uuml;ck</button>'+
+    '<button class="btn gruen" onclick="abBuchen(\''+mass+'\')">Ausbuchen</button></div></div></div>';
+  setTimeout(() => { const f = el('abZahl'); if(f){ f.focus(); f.select(); } }, 60);
+}
+function abPlus(d){
+  const f = el('abZahl');
+  f.value = Math.max(1, (parseInt(f.value,10)||1) + d);
+}
+function abBuchen(mass){
+  const t = findItem(mass); if(!t) return;
+  const n = Math.max(1, parseInt(el('abZahl').value,10) || 1);
+  if(n > t.item.q) return alert('So viele sind nicht vorhanden. Bestand: '+t.item.q);
+  schliesse();
+  aendere(t.item, '-'+n);
+  alert(n+' x '+mass+' ausgebucht.\nNeuer Bestand: '+t.item.q);
+}
+
+function ausbuchenKeller(){
+  el('dialogBox').innerHTML =
+    '<div class="overlay" onclick="if(event.target===this)schliesse()"><div class="dialog" style="max-width:600px">'+
+    '<div class="kopf"><div><b>Entnahme buchen</b><span>&nbsp;'+
+      (el('benutzer').value.trim()||'')+'</span></div>'+
+    '<button class="zu" onclick="schliesse()">&times;</button></div>'+
+    '<div class="rumpf">'+
+      '<input type="text" class="absuche" id="abSuche" placeholder="Artikel suchen" '+
+      'oninput="abTrefferKeller()">'+
+      '<div class="abliste" id="abListe"></div>'+
+    '</div></div></div>';
+  abTrefferKeller();
+  setTimeout(() => { const f = el('abSuche'); if(f) f.focus(); }, 60);
+}
+function abTrefferKeller(){
+  const q = (el('abSuche').value || '').trim().toLowerCase();
+  const liste = keller
+    .filter(a => !q || (a.name+' '+a.kat+' '+a.platz).toLowerCase().includes(q))
+    .sort((a,b) => a.name.localeCompare(b.name,'de')).slice(0, 40);
+  el('abListe').innerHTML = liste.length
+    ? liste.map(a => '<button class="abzeile" onclick="abMengeKeller(\''+a.id+'\')">'+
+        '<div><b>'+a.name+'</b><span class="ort">'+(a.platz||'ohne Platz')+
+        (a.kat? ' &middot; '+a.kat:'')+'</span></div>'+
+        '<span class="best">'+a.q+'<span style="font-size:12px;font-weight:400"> '+
+        (a.einheit||'')+'</span></span></button>').join('')
+    : '<p class="sub">Kein Artikel gefunden.</p>';
+}
+function abMengeKeller(id){
+  const a = keller.find(x => x.id === id); if(!a) return;
+  el('dialogBox').innerHTML =
+    '<div class="overlay" onclick="if(event.target===this)schliesse()"><div class="dialog" style="max-width:520px">'+
+    '<div class="kopf"><div><b>'+a.name+'</b><span>&nbsp;'+(a.platz||'')+
+      ' &middot; Bestand '+a.q+' '+(a.einheit||'')+'</span></div>'+
+    '<button class="zu" onclick="schliesse()">&times;</button></div>'+
+    '<div class="rumpf" style="text-align:center">'+
+      '<p class="sub" style="margin:0">Wie viel wird entnommen?</p>'+
+      '<div class="abmenge">'+
+        '<button onclick="abPlus(-1)">&minus;</button>'+
+        '<input type="number" id="abZahl" value="1" min="1">'+
+        '<button onclick="abPlus(1)">+</button>'+
+      '</div>'+
+      '<button class="btn sek" onclick="abBuchenKeller(\''+id+'\',1)">Zugang statt Entnahme</button>'+
+    '</div>'+
+    '<div class="fuss"><button class="btn sek" onclick="ausbuchenKeller()">Zur&uuml;ck</button>'+
+    '<button class="btn gruen" onclick="abBuchenKeller(\''+id+'\',-1)">Entnehmen</button></div></div></div>';
+  setTimeout(() => { const f = el('abZahl'); if(f){ f.focus(); f.select(); } }, 60);
+}
+function abBuchenKeller(id, richtung){
+  const a = keller.find(x => x.id === id); if(!a) return;
+  const n = Math.max(1, parseInt(el('abZahl').value,10) || 1);
+  if(richtung < 0 && n > a.q) return alert('So viel ist nicht vorhanden. Bestand: '+a.q);
+  schliesse();
+  kellerAendern(id, richtung * n);
+  alert((richtung<0? n+' entnommen.' : n+' zugebucht.')+'\nNeuer Bestand: '+a.q+' '+(a.einheit||''));
+}
+
 /* ---------- Verwaltung ---------- */
 const CODE_START = 'IWB-Lager-4719';
 let sperrcode = CODE_START;
@@ -2441,16 +2608,31 @@ function erlaubteAnsichten(){
   return null;   // admin: alles
 }
 
-function sichtbarkeitSetzen(){
+const STAHL_ANSICHTEN = ['plan','bestand','stueck','zaehlen','banf','verbrauch'];
+
+function ansichtErlaubt(v){
   const erlaubt = erlaubteAnsichten();
+  if(erlaubt && !erlaubt.includes(v)) return false;
+  if(standort === '649' && v === 'keller') return false;
+  if(standort === '30'  && STAHL_ANSICHTEN.includes(v)) return false;
+  return true;
+}
+
+function sichtbarkeitSetzen(){
   document.querySelectorAll('nav button').forEach(b => {
-    if(!erlaubt) return;
-    if(!erlaubt.includes(b.dataset.ansicht)) b.style.display = 'none';
+    b.style.display = ansichtErlaubt(b.dataset.ansicht) ? '' : 'none';
   });
+  // Steht man auf einem nicht mehr erlaubten Reiter, zum ersten erlaubten springen
+  const offen = [...document.querySelectorAll('nav button')].find(b => b.classList.contains('aktiv'));
+  if(offen && !ansichtErlaubt(offen.dataset.ansicht)){
+    const ziel = [...document.querySelectorAll('nav button')].find(b => ansichtErlaubt(b.dataset.ansicht));
+    if(ziel) ansichtOeffnen(ziel.dataset.ansicht);
+  }
   document.querySelectorAll('.nurAdmin').forEach(e => {
     e.style.display = (istTablet() || nurLesen()) ? 'none' : '';
   });
   el('leseBand').style.display = nurLesen() ? 'flex' : 'none';
+  el('fabAusbuchen').style.display = (istTablet() && !nurLesen()) ? 'flex' : 'none';
   // Am Tablet nur buchen, nicht umbauen
   const aus = istTablet() ? 'none' : '';
   ['btnWerkstoffGlobal','btnKellerCsv'].forEach(id => { const e = el(id); if(e) e.style.display = aus; });
@@ -2559,19 +2741,24 @@ function standortSetzen(id){
   el('wahlBox').innerHTML = '';
   el('standortBand').style.display = 'flex';
   el('standortName').innerHTML = STANDORTE[id].name;
-  const stahlAnsichten = ['plan','bestand','stueck','zaehlen','banf','verbrauch'];
-  document.querySelectorAll('nav button').forEach(b => {
-    const v = b.dataset.ansicht;
-    const sichtbar = id === '649' ? v !== 'keller' : !stahlAnsichten.includes(v);
-    b.style.display = sichtbar ? '' : 'none';
-  });
-  const ziel = id === '649' ? 'plan' : 'keller';
-  document.querySelectorAll('nav button').forEach(b => b.classList.remove('aktiv'));
-  const knopf = document.querySelector('nav button[data-ansicht="'+ziel+'"]');
-  if(knopf) knopf.classList.add('aktiv');
-  ['plan','bestand','stueck','zaehlen','banf','verbrauch','archiv','keller','verwaltung','daten'].forEach(v =>
-    el('v-'+v).classList.toggle('verstecke', v !== ziel));
-  if(id === '649') skaliere(); else zeichneKeller();
+  sichtbarkeitSetzen();
+  ansichtOeffnen(id === '649' ? 'plan' : 'keller');
+}
+
+const ALLE_ANSICHTEN = ['plan','bestand','stueck','zaehlen','banf','verbrauch',
+                        'archiv','keller','verwaltung','daten'];
+
+function ansichtOeffnen(ziel){
+  document.querySelectorAll('nav button').forEach(b =>
+    b.classList.toggle('aktiv', b.dataset.ansicht === ziel));
+  ALLE_ANSICHTEN.forEach(v => el('v-'+v).classList.toggle('verstecke', v !== ziel));
+  if(ziel === 'plan') skaliere();
+  if(ziel === 'keller') zeichneKeller();
+  if(ziel === 'archiv') zeichneArchiv();
+  if(ziel === 'verwaltung') zeichneVerwaltung();
+  if(ziel === 'verbrauch') zeichneVerbrauch();
+  if(ziel === 'banf' && !document.querySelector('#banfBody tr')) banfZeile();
+  menuZu();
 }
 
 /* ---------- Kellerlager ---------- */
