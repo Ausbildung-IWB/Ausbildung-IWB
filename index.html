@@ -199,6 +199,18 @@ table.liste th{z-index:2}
 .bslot.leer{border-left-color:var(--grau-linie);color:var(--text-hell)}
 .bslot b{font-size:14px}
 .bslot .details{font-size:12.5px;color:var(--text-hell)}
+#vollbildLeiste{display:none;position:fixed;top:10px;right:10px;z-index:80;
+  background:rgba(10,55,96,.93);color:#fff;border-radius:30px;padding:6px 8px 6px 18px;
+  align-items:center;gap:10px;font-size:13.5px;box-shadow:0 3px 14px rgba(0,0,0,.3)}
+#vollbildLeiste #vbOrt{opacity:.75}
+#vollbildLeiste #vbPerson{font-weight:700}
+#vollbildLeiste button{background:rgba(255,255,255,.16);border:none;color:#fff;
+  width:32px;height:32px;border-radius:50%;font-size:15px;cursor:pointer;line-height:1}
+#vollbildLeiste button:active{background:rgba(255,255,255,.34)}
+body.vollbild #kopfbereich{display:none}
+body.vollbild #vollbildLeiste{display:flex}
+body.vollbild main{padding-top:62px}
+body.vollbild .karte{margin-bottom:12px}
 .fab{position:fixed;right:18px;bottom:18px;z-index:70;background:var(--gruen);color:#fff;
   border:none;border-radius:40px;padding:17px 26px;font:inherit;font-size:16.5px;font-weight:600;
   box-shadow:0 5px 18px rgba(0,0,0,.28);cursor:pointer;display:none;align-items:center;gap:9px}
@@ -364,6 +376,7 @@ table.liste th{z-index:2}
 </div>
 <div class="tabletband" id="tabletBand" style="display:none">
   <span>Tablet-Betrieb &middot; angemeldet: <b id="tabletPerson">&ndash;</b></span>
+  <button onclick="vollbildAn()">Vollbild</button>
   <button onclick="standbyAn()">Sperren</button>
   <button onclick="abmelden()">Abmelden</button>
 </div>
@@ -746,6 +759,12 @@ table.liste th{z-index:2}
 <div id="wahlBox"></div>
 <div id="standbyBox"></div>
 <div id="dialogBox"></div>
+<div id="vollbildLeiste">
+  <span id="vbOrt">&ndash;</span>
+  <span id="vbPerson"></span>
+  <button onclick="standbyAn()" title="Sperren">&#128274;</button>
+  <button onclick="vollbildAus()" title="Vollbild verlassen">&times;</button>
+</div>
 <button class="fab" id="fabAusbuchen" onclick="ausbuchen()"><span>&minus;</span> Ausbuchen</button>
 <div id="druck"></div>
 <footer>Stahllager 1 + 2 &nbsp;&middot;&nbsp; 98 F&auml;cher &nbsp;&middot;&nbsp; interne Anwendung</footer>
@@ -1997,6 +2016,38 @@ el('importDatei').addEventListener('change', e => {
   e.target.value='';
 });
 
+/* ---------- Vollbild am Tablet ---------- */
+function vollbildAn(){
+  document.body.classList.add('vollbild');
+  vollbildBeschriften();
+  const w = document.documentElement;
+  const f = w.requestFullscreen || w.webkitRequestFullscreen || w.msRequestFullscreen;
+  if(f) { try { f.call(w); } catch(e){} }
+  setTimeout(skaliere, 300);
+}
+
+function vollbildAus(){
+  document.body.classList.remove('vollbild');
+  const d = document;
+  const x = d.exitFullscreen || d.webkitExitFullscreen || d.msExitFullscreen;
+  if(x && (d.fullscreenElement || d.webkitFullscreenElement)) { try { x.call(d); } catch(e){} }
+  setTimeout(skaliere, 300);
+}
+
+function vollbildBeschriften(){
+  const o = el('vbOrt'), pn = el('vbPerson');
+  if(o) o.innerHTML = standort === '30' ? 'Keller Geb. 30' : 'Stahllager Geb. 649';
+  if(pn) pn.textContent = el('benutzer').value.trim() || '';
+}
+
+// Verlaesst jemand das Vollbild ueber die Gerätetaste, Ansicht mitziehen
+['fullscreenchange','webkitfullscreenchange'].forEach(e =>
+  document.addEventListener(e, () => {
+    const drin = !!(document.fullscreenElement || document.webkitFullscreenElement);
+    if(!drin) document.body.classList.remove('vollbild');
+    setTimeout(skaliere, 200);
+  }));
+
 /* ---------- Menü (Handy) ---------- */
 function menuUm(){
   const auf = !document.querySelector('nav').classList.contains('offen');
@@ -2641,6 +2692,7 @@ function sichtbarkeitSetzen(){
 /* --- Standby --- */
 function standbyAn(){
   if(!istTablet()) return;
+  menuZu();
   standbyAktiv = true;
   const jetzt = new Date();
   el('standbyBox').innerHTML =
@@ -2684,6 +2736,7 @@ function namenAbfragen(){
 function personSetzen(name){
   el('benutzer').value = name;
   el('tabletPerson').textContent = name;
+  vollbildBeschriften();
   el('standbyBox').innerHTML = '';
   standbyAktiv = false;
   standbyNeuStarten();
@@ -2742,6 +2795,7 @@ function standortSetzen(id){
   el('standortBand').style.display = 'flex';
   el('standortName').innerHTML = STANDORTE[id].name;
   sichtbarkeitSetzen();
+  vollbildBeschriften();
   ansichtOeffnen(id === '649' ? 'plan' : 'keller');
 }
 
