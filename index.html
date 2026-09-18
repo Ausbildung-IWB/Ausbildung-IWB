@@ -132,9 +132,9 @@ svg.chart text{font-family:inherit}
   font-size:12.5px;border-radius:2px;display:inline-block;margin-bottom:12px}
 code{background:#eef1f4;padding:1px 5px;border-radius:2px;font-size:12.5px}
 #kopfbereich{position:sticky;top:0;z-index:60;box-shadow:0 2px 8px rgba(10,40,70,.10)}
-.menuknopf{display:none;background:none;border:1px solid var(--grau-linie);border-radius:3px;
+.menuknopf{display:none;order:-1;margin-left:0;margin-right:2px;background:none;border:1px solid var(--grau-linie);border-radius:3px;
   width:42px;height:38px;flex-direction:column;justify-content:center;align-items:center;gap:4px;
-  cursor:pointer;padding:0;margin-left:10px}
+  cursor:pointer;padding:0}
 .menuknopf span{display:block;width:20px;height:2px;background:var(--blau-dunkel);border-radius:1px;
   transition:transform .2s,opacity .2s}
 .menuknopf.offen span:nth-child(1){transform:translateY(6px) rotate(45deg)}
@@ -179,6 +179,16 @@ table.liste th{z-index:2}
   padding:16px 14px;border-radius:3px;cursor:pointer;text-align:left}
 .namenknopf:hover,.namenknopf:active{background:var(--blau);color:#fff;border-left-color:var(--blau-dunkel)}
 .namenknopf.andere{border-left-color:var(--text-hell);font-weight:400;color:var(--text-hell)}
+.preisSpalte.verstecke{display:none}
+.ortgitter{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:13px}
+.ortfeld{border:1px solid var(--grau-linie);border-left:6px solid var(--blau);border-radius:3px;
+  padding:17px;cursor:pointer;background:#fff;text-align:left;font:inherit}
+.ortfeld:hover{background:var(--blau-hell)}
+.ortfeld b{display:block;font-size:15.5px;color:var(--blau-dunkel);margin-bottom:3px}
+.ortfeld span{font-size:12.5px;color:var(--text-hell);line-height:1.45;display:block}
+.ortfeld .zahlen{font-size:11.5px;color:var(--text-hell);margin-top:7px;display:block}
+.ortkuerzel{display:inline-block;font-size:10.5px;padding:1px 7px;border-radius:9px;
+  background:var(--blau-hell);color:var(--blau-dunkel);margin-right:4px;font-weight:600}
 .rollenbox{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:10px;margin-top:12px}
 .rollenbox div{background:var(--blau-hell);border-left:3px solid var(--blau);padding:10px 13px;border-radius:2px}
 .rollenbox b{display:block;font-size:13.5px;color:var(--blau-dunkel);margin-bottom:3px}
@@ -346,8 +356,8 @@ body.vollbild .karte{margin-bottom:12px}
   .mini{width:32px;height:32px;font-size:17px}
   input.menge{width:52px;padding:6px}
   input[type=text],input[type=number],select{padding:9px}
-  .planbox{display:none}
   #handySuche{display:block}
+  .planbox{padding:6px}
   table.liste{font-size:12.5px}
   table.liste th{font-size:10px;padding:6px 5px}
   table.liste td{padding:6px 5px}
@@ -436,6 +446,9 @@ body.vollbild .karte{margin-bottom:12px}
 </div>
 
 <header>
+  <button class="menuknopf" onclick="menuUm()" aria-label="Men&uuml;">
+    <span></span><span></span><span></span>
+  </button>
   <div class="logo">
     <div class="txt"><strong>Stahllager</strong><span>Bestand &amp; Materialpr&uuml;fung</span></div>
   </div>
@@ -447,14 +460,13 @@ body.vollbild .karte{margin-bottom:12px}
     <button data-ansicht="banf">BANF</button>
     <button data-ansicht="verbrauch">Verbrauch</button>
     <button data-ansicht="archiv">Archiv</button>
-    <button data-ansicht="keller" class="nav30">Kellerlager</button>
+    <button data-ansicht="artikel">Bestand</button>
+    <button data-ansicht="abanf">Bestellanforderung</button>
+    <button data-ansicht="averbrauch">Verbrauch</button>
     <button data-ansicht="verwaltung">Verwaltung</button>
     <button data-ansicht="daten">Daten</button>
   </nav>
   <img id="kopfLogo" class="firmenlogo" alt="Industriepark Werk Bobingen">
-  <button class="menuknopf" onclick="menuUm()" aria-label="Men&uuml;">
-    <span></span><span></span><span></span>
-  </button>
 </header>
 
 <div class="tabletband" id="leseBand" style="display:none;background:#3A5A78">
@@ -731,6 +743,90 @@ body.vollbild .karte{margin-bottom:12px}
   </div>
 </section>
 
+<section id="v-artikel" class="verstecke">
+  <h1 id="artKopf">Bestand</h1>
+  <p class="sub">Gemeinsamer Artikelstamm &ndash; Nummer, Name, Kategorie und Preis gelten f&uuml;r alle
+    Standorte. Bestand, Platz und Mindestbestand geh&ouml;ren zum jeweiligen Lager.</p>
+  <div class="kennzahlen" id="artKennzahlen"></div>
+  <div class="werkzeuge">
+    <input type="text" id="artSuche" placeholder="Nummer, Name oder Platz" style="width:230px">
+    <select id="artKat"><option value="">alle Kategorien</option></select>
+    <label><input type="checkbox" id="artKnapp"> nur knappe Best&auml;nde</label>
+    <label><input type="checkbox" id="artAlle"> alle Artikel zeigen (auch ohne Bestand hier)</label>
+    <button class="btn nurAdmin" onclick="artNeu()">+ Artikel anlegen</button>
+    <button class="btn sek nurAdmin" onclick="artCsv()">Als CSV</button>
+  </div>
+  <div class="karte" style="padding:0;overflow:auto;max-height:64vh">
+    <table class="liste"><thead><tr>
+      <th style="width:88px">Nummer</th><th>Artikel</th><th>Kategorie</th><th>Platz</th>
+      <th style="text-align:right">Bestand</th><th>Einheit</th><th>Buchen</th>
+      <th style="text-align:right">Mindest</th><th class="preisSpalte" style="text-align:right">Preis</th>
+      <th class="preisSpalte" style="text-align:right">Wert</th><th>Status</th><th style="width:74px"></th>
+    </tr></thead><tbody id="artBody"></tbody></table>
+  </div>
+</section>
+
+<section id="v-abanf" class="verstecke">
+  <h1>Bestellanforderung</h1>
+  <p class="sub">Vorschlag aus den Mindestbest&auml;nden &ndash; f&uuml;r einen Standort oder
+    &uuml;ber alle hinweg, dann werden gleiche Artikel zusammengefasst.</p>
+  <div class="werkzeuge">
+    <label>Umfang <select id="abUmfang">
+      <option value="ort">nur dieser Standort</option>
+      <option value="alle">alle Standorte zusammen</option>
+    </select></label>
+    <button class="btn" onclick="abVorschlag()">Vorschlag erzeugen</button>
+    <button class="btn sek" onclick="abZeileNeu()">+ Position</button>
+    <button class="btn sek" onclick="abLeeren()">Leeren</button>
+  </div>
+  <div class="karte">
+    <div style="overflow:auto">
+      <table class="edit" style="min-width:760px"><thead><tr>
+        <th style="width:88px">Nummer</th><th>Artikel</th><th style="width:96px">Menge</th>
+        <th style="width:74px">Einheit</th><th class="preisSpalte" style="width:96px">Preis</th>
+        <th class="preisSpalte" style="width:96px">Summe</th><th>Bedarf / Standort</th>
+        <th style="width:34px"></th>
+      </tr></thead><tbody id="abanfBody"></tbody></table>
+    </div>
+    <div id="abanfSumme"></div>
+    <div class="werkzeuge" style="margin-top:12px">
+      <button class="btn" onclick="abDrucken()">Als PDF drucken</button>
+      <button class="btn sek" onclick="abCsv()">Als CSV</button>
+    </div>
+  </div>
+</section>
+
+<section id="v-averbrauch" class="verstecke">
+  <h1>Verbrauch</h1>
+  <p class="sub">Was wurde entnommen &ndash; je Standort oder &uuml;ber alle Lager hinweg.</p>
+  <div class="werkzeuge">
+    <div class="zeitwahl" id="avZeit">
+      <button data-zeit="1" class="aktiv">Monat</button>
+      <button data-zeit="3">Quartal</button>
+      <button data-zeit="12">Jahr</button>
+    </div>
+    <label>Umfang <select id="avUmfang">
+      <option value="ort">nur dieser Standort</option>
+      <option value="alle">alle Standorte</option>
+    </select></label>
+  </div>
+  <div class="kennzahlen" id="avKennzahlen"></div>
+  <div class="karte">
+    <h2 style="margin-top:0">Verbrauch je Monat</h2>
+    <div class="diagramm" id="avChart"></div>
+  </div>
+  <div class="karte">
+    <h2 style="margin-top:0">Meistverbrauchte Artikel</h2>
+    <div style="overflow:auto;max-height:50vh">
+      <table class="liste"><thead><tr>
+        <th style="width:88px">Nummer</th><th>Artikel</th><th>Standort</th>
+        <th style="text-align:right">Menge</th><th class="preisSpalte" style="text-align:right">Wert</th>
+        <th style="text-align:right">Bestand jetzt</th>
+      </tr></thead><tbody id="avBody"></tbody></table>
+    </div>
+  </div>
+</section>
+
 <section id="v-verwaltung" class="verstecke">
   <h1>Verwaltung</h1>
   <p class="sub">Tablets, Personen, Sperrcode und Sicherungen an einer Stelle.</p>
@@ -744,6 +840,8 @@ body.vollbild .karte{margin-bottom:12px}
     <div class="rollenbox">
       <div><b>Voller Zugriff</b><span>Alle Reiter, Fächer bearbeiten, Bestellanforderung,
         Verwaltung. F&uuml;r dich und Kollegen im B&uuml;ro.</span></div>
+      <div><b>Einkauf</b><span>Sieht Best&auml;nde, Preise, Verbrauch und schreibt Bestell&shy;anforderungen
+        &ndash; standort&uuml;bergreifend. Bucht keine Entnahmen.</span></div>
       <div><b>Nur Einsicht</b><span>Sieht Lagerplan, Best&auml;nde, St&uuml;cklistenpr&uuml;fung,
         Verbrauch und Keller &ndash; und kann eine BANF schreiben. Kann nichts buchen.
         F&uuml;r B&uuml;ro, Arbeitsvorbereitung und unterwegs.</span></div>
@@ -755,7 +853,7 @@ body.vollbild .karte{margin-bottom:12px}
 
     <div style="overflow:auto;margin-top:16px">
       <table class="liste"><thead><tr>
-        <th>Konto</th><th style="width:210px">Rolle</th><th style="width:44px"></th>
+        <th>Konto</th><th style="width:190px">Rolle</th><th>Standorte</th><th style="width:44px"></th>
       </tr></thead><tbody id="rollenBody"></tbody></table>
     </div>
 
@@ -764,6 +862,7 @@ body.vollbild .karte{margin-bottom:12px}
         placeholder="tablet-stahl@iwb.local" style="width:250px"></label>
       <label>Rolle<select id="rRolle" style="width:190px">
         <option value="ansicht">Nur Einsicht</option>
+        <option value="einkauf">Einkauf</option>
         <option value="tablet-stahl">Tablet Stahllager</option>
         <option value="tablet-keller">Tablet Keller</option>
         <option value="admin">Voller Zugriff</option>
@@ -2061,7 +2160,8 @@ function drucken(){
 /* ---------- Daten ---------- */
 function exportJson(){
   lade(new Blob([JSON.stringify({stand:new Date().toISOString(), stange:stange(),
-    werkstoff:stdWst(), lager, protokoll, verbrauch, istDemo, archiv, keller, rollenTabelle, personen, sperrcode}, null, 2)], {type:'application/json'}),
+    werkstoff:stdWst(), lager, protokoll, verbrauch, istDemo, archiv, keller, rollenTabelle, rollenOrte, personen, sperrcode,
+    artikel, bestand, bewegungen}, null, 2)], {type:'application/json'}),
     'Stahllager_Bestand_'+datum()+'.json');
   logge('Bestand gesichert');
 }
@@ -2088,7 +2188,9 @@ el('importDatei').addEventListener('change', e => {
       lager = obj.lager; protokoll = obj.protokoll || [];
       verbrauch = obj.verbrauch || []; istDemo = !!obj.istDemo; archiv = obj.archiv || [];
       keller = obj.keller || [];
-      rollenTabelle = obj.rollenTabelle || {}; personen = obj.personen || [];
+      rollenTabelle = obj.rollenTabelle || {}; rollenOrte = obj.rollenOrte || {};
+      personen = obj.personen || [];
+      artikel = obj.artikel || []; bestand = obj.bestand || {}; bewegungen = obj.bewegungen || [];
       if(obj.sperrcode) sperrcode = obj.sperrcode;
       if(obj.stange) el('stangeLaenge').value = obj.stange;
       if(obj.werkstoff) el('stdWerkstoff').value = obj.werkstoff;
@@ -2125,7 +2227,7 @@ function vollbildAus(){
 
 function vollbildBeschriften(){
   const o = el('vbOrt'), pn = el('vbPerson');
-  if(o) o.innerHTML = standort === '30' ? 'Keller Geb. 30' : 'Stahllager Geb. 649';
+  if(o) o.innerHTML = ORTE[standort] ? ORTE[standort].name : '–';
   if(pn) pn.textContent = el('benutzer').value.trim() || '';
 }
 
@@ -2160,7 +2262,7 @@ function menuZu(){
 function ausbuchen(){
   if(nurLesen()) return alert('Dieser Zugang darf nichts buchen.');
   if(!el('benutzer').value.trim()){ namenAbfragen(); return; }
-  if(standort === '30') ausbuchenKeller(); else ausbuchenStahl();
+  if(standort === 'stahl') ausbuchenStahl(); else ausbuchenArtikel();
 }
 
 function ausbuchenStahl(){
@@ -2228,6 +2330,65 @@ function abBuchen(mass){
   alert(n+' x '+mass+' ausgebucht.\nNeuer Bestand: '+t.item.q);
 }
 
+function ausbuchenArtikel(){
+  el('dialogBox').innerHTML =
+    '<div class="overlay" onclick="if(event.target===this)schliesse()"><div class="dialog" style="max-width:600px">'+
+    '<div class="kopf"><div><b>Entnahme buchen</b><span>&nbsp;'+ortName(standort)+' &middot; '+
+      (el('benutzer').value.trim()||'')+'</span></div>'+
+    '<button class="zu" onclick="schliesse()">&times;</button></div>'+
+    '<div class="rumpf">'+
+      '<input type="text" class="absuche" id="abSuche" placeholder="Artikel oder Nummer suchen" '+
+      'oninput="abTrefferArtikel()">'+
+      '<div class="abliste" id="abListe"></div>'+
+    '</div></div></div>';
+  abTrefferArtikel();
+  setTimeout(() => { const f = el('abSuche'); if(f) f.focus(); }, 60);
+}
+function abTrefferArtikel(){
+  const q = (el('abSuche').value || '').trim().toLowerCase();
+  const eigene = bestand[standort] || {};
+  const liste = artikel.filter(a => eigene[a.nr])
+    .filter(a => !q || (a.nr+' '+a.name+' '+a.kat+' '+(eigene[a.nr].platz||'')).toLowerCase().includes(q))
+    .sort((a,b) => a.name.localeCompare(b.name,'de')).slice(0,40);
+  el('abListe').innerHTML = liste.length
+    ? liste.map(a => '<button class="abzeile" onclick="abMengeArtikel(\''+a.nr+'\')">'+
+        '<div><b>'+a.name+'</b><span class="ort">'+a.nr+' &middot; '+
+        (eigene[a.nr].platz||'ohne Platz')+'</span></div>'+
+        '<span class="best">'+eigene[a.nr].q+'<span style="font-size:12px;font-weight:400"> '+
+        (a.einheit||'')+'</span></span></button>').join('')
+    : '<p class="sub">Kein Artikel gefunden.</p>';
+}
+function abMengeArtikel(nr){
+  const a = artFind(nr); const b = ortBestand(standort, nr);
+  if(!a || !b) return;
+  el('dialogBox').innerHTML =
+    '<div class="overlay" onclick="if(event.target===this)schliesse()"><div class="dialog" style="max-width:520px">'+
+    '<div class="kopf"><div><b>'+a.name+'</b><span>&nbsp;'+nr+' &middot; '+(b.platz||'')+
+      ' &middot; Bestand '+b.q+' '+(a.einheit||'')+'</span></div>'+
+    '<button class="zu" onclick="schliesse()">&times;</button></div>'+
+    '<div class="rumpf" style="text-align:center">'+
+      '<p class="sub" style="margin:0">Wie viel wird entnommen?</p>'+
+      '<div class="abmenge">'+
+        '<button onclick="abPlus(-1)">&minus;</button>'+
+        '<input type="number" id="abZahl" value="1" min="1">'+
+        '<button onclick="abPlus(1)">+</button>'+
+      '</div>'+
+      '<button class="btn sek" onclick="abBuchenArtikel(\''+nr+'\',1)">Zugang statt Entnahme</button>'+
+    '</div>'+
+    '<div class="fuss"><button class="btn sek" onclick="ausbuchenArtikel()">Zur&uuml;ck</button>'+
+    '<button class="btn gruen" onclick="abBuchenArtikel(\''+nr+'\',-1)">Entnehmen</button></div></div></div>';
+  setTimeout(() => { const f = el('abZahl'); if(f){ f.focus(); f.select(); } }, 60);
+}
+function abBuchenArtikel(nr, richtung){
+  const a = artFind(nr); const b = ortBestand(standort, nr);
+  if(!a || !b) return;
+  const n = Math.max(1, parseInt(el('abZahl').value,10) || 1);
+  if(richtung < 0 && n > b.q) return alert('So viel ist nicht vorhanden. Bestand: '+b.q);
+  schliesse();
+  artBuchen(nr, richtung * n);
+  alert((richtung<0? n+' entnommen.' : n+' zugebucht.')+'\nNeuer Bestand: '+b.q+' '+(a.einheit||''));
+}
+
 function ausbuchenKeller(){
   el('dialogBox').innerHTML =
     '<div class="overlay" onclick="if(event.target===this)schliesse()"><div class="dialog" style="max-width:600px">'+
@@ -2288,6 +2449,7 @@ function abBuchenKeller(id, richtung){
 const CODE_START = 'IWB-Lager-4719';
 let sperrcode = CODE_START;
 let rollenTabelle = {};
+let rollenOrte = {};   // { email: ['geb30','feuerwehr'] }
 let backups = [];          // [{slot, stand, von, groesse}]
 let codeSichtbar = false;
 
@@ -2303,16 +2465,32 @@ function rollenZeichnen(){
         '<tr><td><b>'+mail+'</b>'+(mail === (angemeldet? (angemeldet.email||'').toLowerCase():'')
           ? ' <span class="pill neu">das bist du</span>':'')+'</td>'+
         '<td><select onchange="rolleSetzen(\''+mail+'\',this.value)" style="width:100%">'+
-          ['admin','ansicht','tablet-stahl','tablet-keller'].map(o =>
+          ['admin','einkauf','ansicht','tablet-stahl','tablet-keller'].map(o =>
             '<option value="'+o+'"'+(o===r?' selected':'')+'>'+rollenName(o)+'</option>').join('')+
         '</select></td>'+
+        '<td>'+ortKnoepfe(mail)+'</td>'+
         '<td><button class="mini" onclick="rolleEntfernen(\''+mail+'\')">&times;</button></td></tr>').join('')
-    : '<tr><td colspan="3" style="padding:16px;color:var(--text-hell)">Noch keine Zuordnung. '+
+    : '<tr><td colspan="4" style="padding:16px;color:var(--text-hell)">Noch keine Zuordnung. '+
       'Alle Konten haben vollen Zugriff.</td></tr>';
 }
-const rollenName = r => ({'admin':'Voller Zugriff','ansicht':'Nur Einsicht',
+const rollenName = r => ({'admin':'Voller Zugriff','einkauf':'Einkauf','ansicht':'Nur Einsicht',
                           'tablet-stahl':'Tablet Stahllager',
                           'tablet-keller':'Tablet Keller'}[r] || r);
+
+function ortKnoepfe(mail){
+  const gesetzt = rollenOrte[mail] || [];
+  return Object.keys(ORTE).map(o =>
+    '<button class="mini" style="width:auto;padding:2px 8px;font-size:11px;'+
+    (gesetzt.includes(o)? 'background:'+ORTE[o].farbe+';color:#fff;border-color:'+ORTE[o].farbe : '')+
+    '" onclick="ortUm(\''+mail+'\',\''+o+'\')" title="'+ORTE[o].name+'">'+ORTE[o].kurz+'</button>').join(' ')+
+    (gesetzt.length? '' : ' <span class="sub">(alle)</span>');
+}
+function ortUm(mail, o){
+  const liste = rollenOrte[mail] || [];
+  rollenOrte[mail] = liste.includes(o) ? liste.filter(x => x !== o) : liste.concat([o]);
+  if(!rollenOrte[mail].length) delete rollenOrte[mail];
+  rollenSpeichern('Standortrechte für '+mail+' geändert');
+}
 
 function rolleHinzu(){
   const mail = el('rMail').value.trim().toLowerCase();
@@ -2330,7 +2508,7 @@ function rolleEntfernen(mail){
 function rollenSpeichern(text){
   if(cloudAktiv && angemeldet)
     db.collection('stahllager').doc('rollen')
-      .set({tabelle:rollenTabelle, sperrcode, clientId}).catch(()=>{});
+      .set({tabelle:rollenTabelle, orte:rollenOrte, sperrcode, clientId}).catch(()=>{});
   if(text){ logge(text); notiere('Verwaltung','','',null,null,text); }
   rollenZeichnen();
 }
@@ -2416,7 +2594,8 @@ function backupJetzt(automatisch){
     stand: new Date().toISOString(),
     von: el('benutzer').value.trim() || (angemeldet.email||''),
     faecher: lager.length, artikel: keller.length,
-    lager, keller, verbrauch, personen, rollenTabelle,
+    lager, keller, verbrauch, personen, rollenTabelle, rollenOrte,
+    artikel, bestand, bewegungen,
     stange: stange(), werkstoff: stdWst(), slot, clientId
   };
   db.collection('backups').doc('slot'+slot).set(inhalt).then(() => {
@@ -2442,6 +2621,9 @@ function backupZurueck(slot){
     const d = sn.data();
     if(d.lager) lager = d.lager;
     if(d.keller) keller = d.keller;
+    if(d.artikel) artikel = d.artikel;
+    if(d.bestand) bestand = d.bestand;
+    if(d.bewegungen) bewegungen = d.bewegungen;
     if(d.verbrauch) verbrauch = d.verbrauch;
     if(d.stange) el('stangeLaenge').value = d.stange;
     if(d.werkstoff) el('stdWerkstoff').value = d.werkstoff;
@@ -2739,7 +2921,7 @@ const nurLesen  = () => rolle === 'ansicht';
 function rolleAnwenden(){
   el('tabletBand').style.display = istTablet() ? 'flex' : 'none';
   if(istTablet()){
-    standortSetzen(rolle === 'tablet-stahl' ? '649' : '30');
+    standortSetzen(rolle === 'tablet-stahl' ? 'stahl' : 'geb30');
     standbyAn();
   }
   sichtbarkeitSetzen();
@@ -2748,18 +2930,30 @@ function rolleAnwenden(){
 /* Welche Reiter darf diese Rolle sehen? */
 function erlaubteAnsichten(){
   if(rolle === 'tablet-stahl')  return ['plan','bestand','zaehlen'];
-  if(rolle === 'tablet-keller') return ['keller'];
-  if(rolle === 'ansicht')       return ['plan','bestand','stueck','banf','verbrauch','keller'];
+  if(rolle === 'tablet-keller') return ['artikel'];
+  if(rolle === 'ansicht')       return ['plan','bestand','stueck','banf','verbrauch',
+                                        'artikel','abanf','averbrauch'];
+  if(rolle === 'einkauf')       return ['artikel','abanf','averbrauch','plan','bestand','archiv'];
   return null;   // admin: alles
 }
 
+/* Welche Standorte darf dieses Konto sehen? Leer = alle. */
+function erlaubteOrte(){
+  const alle = Object.keys(ORTE);
+  if(rolle === 'tablet-stahl') return ['stahl'];
+  const e = (rollenOrte[(angemeldet ? (angemeldet.email||'').toLowerCase() : '')] || []);
+  return e.length ? alle.filter(o => e.includes(o)) : alle;
+}
+
 const STAHL_ANSICHTEN = ['plan','bestand','stueck','zaehlen','banf','verbrauch'];
+const ALLG_ANSICHTEN  = ['artikel','abanf','averbrauch'];
 
 function ansichtErlaubt(v){
   const erlaubt = erlaubteAnsichten();
   if(erlaubt && !erlaubt.includes(v)) return false;
-  if(standort === '649' && v === 'keller') return false;
-  if(standort === '30'  && STAHL_ANSICHTEN.includes(v)) return false;
+  if(v === 'keller') return false;                       // abgelöst durch den Artikelstamm
+  if(standort === 'stahl' && ALLG_ANSICHTEN.includes(v)) return false;
+  if(standort && standort !== 'stahl' && STAHL_ANSICHTEN.includes(v)) return false;
   return true;
 }
 
@@ -2857,56 +3051,504 @@ function standbyNeuStarten(){
 ['click','keydown','touchstart','mousemove'].forEach(e =>
   document.addEventListener(e, standbyNeuStarten, {passive:true}));
 
+/* ---------- Standorte und Artikelstamm ---------- */
+const ORTE = {
+  ausbildung: {name:'Ausbildung',            kurz:'AUS', farbe:'#0F4C81',
+               text:'Allgemeines Lager der Ausbildungswerkstatt'},
+  geb30:      {name:'Gebäude 30 – Keller',   kurz:'G30', farbe:'#7A5C2E',
+               text:'Chaoslager · Verbrauchsmaterial und Sonstiges'},
+  feuerwehr:  {name:'Werkfeuerwehr',         kurz:'FW',  farbe:'#B3261E',
+               text:'Ausrüstung und Verbrauchsmaterial'},
+  packduese:  {name:'Pack und Düse',         kurz:'P&D', farbe:'#2E8B57',
+               text:'Übernommen mit dem Betriebsübergang'},
+  stahl:      {name:'Stahllager',            kurz:'ST',  farbe:'#6A3D9A',
+               text:'Flach- und Vierkantstahl · Ausbildung intern'}
+};
+const ALLGEMEIN = ['ausbildung','geb30','feuerwehr','packduese'];
+
+let artikel = [];      // {nr, name, kat, einheit, preis, notiz}
+let bestand = {};      // { ortId: { nr: {q, platz, min} } }
+let bewegungen = [];   // {d, nr, n, ort}
+
+const ortName = id => (ORTE[id] || {}).name || id;
+const artFind = nr => artikel.find(a => a.nr === nr);
+const ortBestand = (ort, nr) => ((bestand[ort]||{})[nr]) || null;
+const darfPreise = () => rolle === 'admin' || rolle === 'einkauf';
+
+/* Preis, der an einem bestimmten Tag galt */
+function preisAm(nr, datumIso){
+  const a = artFind(nr);
+  if(!a) return 0;
+  const h = (a.preise || []).filter(p => p.ab <= datumIso).sort((x,y) => x.ab.localeCompare(y.ab));
+  if(h.length) return h[h.length-1].preis;
+  const erste = (a.preise || [])[0];
+  if(erste && erste.ab > datumIso) return erste.vorher || 0;
+  return a.preis || 0;
+}
+
+function naechsteNummer(){
+  let max = 0;
+  artikel.forEach(a => { const m = String(a.nr).match(/(\d+)\s*$/); if(m) max = Math.max(max, +m[1]); });
+  return 'A-' + String(max + 1).padStart(4, '0');
+}
+
+function preisSpaltenSetzen(){
+  document.querySelectorAll('.preisSpalte').forEach(e =>
+    e.classList.toggle('verstecke', !darfPreise()));
+}
+
+/* --- Artikelliste eines Standorts --- */
+function zeichneArtikel(){
+  preisSpaltenSetzen();
+  const ort = standort;
+  el('artKopf').textContent = 'Bestand \u00b7 ' + ortName(ort);
+  const eigene = bestand[ort] || {};
+  const kats = [...new Set(artikel.map(a => a.kat).filter(Boolean))].sort();
+  const gew = el('artKat').value;
+  el('artKat').innerHTML = '<option value="">alle Kategorien</option>' +
+    kats.map(k => '<option'+(k===gew?' selected':'')+'>'+k+'</option>').join('');
+
+  const suche = el('artSuche').value.trim().toLowerCase();
+  const nurKnapp = el('artKnapp').checked;
+  const alleZeigen = el('artAlle').checked;
+
+  let liste = artikel.filter(a => alleZeigen || eigene[a.nr]);
+  if(suche) liste = liste.filter(a =>
+    (a.nr+' '+a.name+' '+a.kat+' '+((eigene[a.nr]||{}).platz||'')).toLowerCase().includes(suche));
+  if(el('artKat').value) liste = liste.filter(a => a.kat === el('artKat').value);
+  if(nurKnapp) liste = liste.filter(a => { const b = eigene[a.nr]; return b && b.min > 0 && b.q <= b.min; });
+  liste.sort((a,b) => (String((eigene[a.nr]||{}).platz||'')).localeCompare(
+      String((eigene[b.nr]||{}).platz||''),'de',{numeric:true}) || a.name.localeCompare(b.name,'de'));
+
+  const gefuehrt = artikel.filter(a => eigene[a.nr]);
+  const knapp = gefuehrt.filter(a => eigene[a.nr].min > 0 && eigene[a.nr].q <= eigene[a.nr].min).length;
+  const leer  = gefuehrt.filter(a => eigene[a.nr].q === 0).length;
+  const wert  = gefuehrt.reduce((s,a) => s + (eigene[a.nr].q * (a.preis||0)), 0);
+  el('artKennzahlen').innerHTML =
+    kz(gefuehrt.length,'Artikel hier') + kz(artikel.length,'im Stamm') +
+    kz(kats.length,'Kategorien') +
+    (darfPreise()? kz(de(wert,0)+' \u20ac','Lagerwert') : '') +
+    kz(knapp,'knapp', knapp>0) + kz(leer,'leer', leer>0);
+
+  el('artBody').innerHTML = liste.map(a => {
+    const b = eigene[a.nr];
+    const hier = !!b;
+    const st = !hier ? '<span class="pill neu">nicht hier</span>'
+      : b.q === 0 ? '<span class="pill krit">leer</span>'
+      : (b.min > 0 && b.q <= b.min) ? '<span class="pill warn">nachbestellen</span>'
+      : '<span class="pill ok">ok</span>';
+    const buchen = (!hier || nurLesen()) ? '<span class="sub">–</span>' :
+      '<button class="mini" onclick="artBuchen(\''+a.nr+'\',-1)">&minus;</button> '+
+      '<input class="menge" type="number" value="'+b.q+'" onchange="artSetzen(\''+a.nr+'\',this.value)"> '+
+      '<button class="mini" onclick="artBuchen(\''+a.nr+'\',1)">+</button>';
+    return '<tr><td><b>'+a.nr+'</b></td>'+
+      '<td>'+a.name+(a.notiz? '<br><span class="sub">'+a.notiz+'</span>':'')+'</td>'+
+      '<td style="color:var(--text-hell)">'+(a.kat||'')+'</td>'+
+      '<td>'+(hier? (b.platz||'') : '')+'</td>'+
+      '<td class="num"><b>'+(hier? b.q : '–')+'</b></td>'+
+      '<td style="color:var(--text-hell)">'+(a.einheit||'')+'</td>'+
+      '<td style="white-space:nowrap">'+buchen+'</td>'+
+      '<td class="num">'+(hier && b.min? b.min : '')+'</td>'+
+      '<td class="num preisSpalte'+(darfPreise()?'':' verstecke')+'">'+(a.preis? de(a.preis,2)+' \u20ac':'')+'</td>'+
+      '<td class="num preisSpalte'+(darfPreise()?'':' verstecke')+'">'+
+        (hier && a.preis? de(b.q*a.preis,2)+' \u20ac':'')+'</td>'+
+      '<td>'+st+'</td>'+
+      '<td style="white-space:nowrap">'+((istTablet()||nurLesen())? '' :
+        '<button class="mini" onclick="artBearbeiten(\''+a.nr+'\')" title="Bearbeiten">&#9998;</button> '+
+        (hier? '<button class="mini" onclick="artHierWeg(\''+a.nr+'\')" title="Hier auslagern">&times;</button>'
+             : '<button class="mini" onclick="artHierRein(\''+a.nr+'\')" title="Hier aufnehmen">+</button>'))+
+      '</td></tr>';
+  }).join('') || '<tr><td colspan="12" style="padding:18px;color:var(--text-hell)">'+
+    (artikel.length? 'Nichts gefunden.' : 'Noch keine Artikel. Über „+ Artikel anlegen“ beginnen.')+'</td></tr>';
+}
+
+function artBuchen(nr, delta){
+  if(nurLesen()) return alert('Dieser Zugang darf nichts buchen.');
+  const b = ortBestand(standort, nr); if(!b) return;
+  const alt = b.q;
+  b.q = Math.max(0, b.q + delta);
+  if(b.q < alt) bewegungen.push({d:new Date().toISOString().slice(0,10), nr, n:alt-b.q, ort:standort});
+  const a = artFind(nr);
+  notiere('Bestand', nr+' '+(a?a.name:''), ortName(standort)+(b.platz? ' / '+b.platz:''), alt, b.q, '');
+  artSpeichern();
+}
+function artSetzen(nr, wert){
+  if(nurLesen()) return;
+  const b = ortBestand(standort, nr); if(!b) return;
+  const neu = Math.max(0, Math.round(parseFloat(String(wert).replace(',','.')) || 0));
+  if(neu === b.q) return;
+  const alt = b.q; b.q = neu;
+  if(neu < alt) bewegungen.push({d:new Date().toISOString().slice(0,10), nr, n:alt-neu, ort:standort});
+  const a = artFind(nr);
+  notiere('Bestand', nr+' '+(a?a.name:''), ortName(standort), alt, neu, '');
+  artSpeichern();
+}
+function artHierRein(nr){
+  bestand[standort] = bestand[standort] || {};
+  bestand[standort][nr] = {q:0, platz:'', min:0};
+  const a = artFind(nr);
+  notiere('Stammdaten', nr+' '+(a?a.name:''), ortName(standort), null, 0, 'Artikel hier aufgenommen');
+  artSpeichern();
+}
+function artHierWeg(nr){
+  const a = artFind(nr);
+  if(!confirm('"'+(a?a.name:nr)+'" aus '+ortName(standort)+' entfernen?\nDer Artikel bleibt im Stamm erhalten.')) return;
+  const b = ortBestand(standort, nr);
+  delete bestand[standort][nr];
+  notiere('Stammdaten', nr+' '+(a?a.name:''), ortName(standort), b? b.q:null, null, 'hier ausgelagert');
+  artSpeichern();
+}
+
+function artNeu(){ artFormular(null); }
+function artBearbeiten(nr){ artFormular(artFind(nr)); }
+
+function artFormular(a){
+  const neu = !a;
+  const nr = neu ? naechsteNummer() : a.nr;
+  a = a || {nr, name:'', kat:'', einheit:'Stück', preis:0, notiz:''};
+  const b = ortBestand(standort, nr) || {q:0, platz:'', min:0};
+  el('dialogBox').innerHTML =
+    '<div class="overlay" onclick="if(event.target===this)schliesse()"><div class="dialog" style="max-width:640px">'+
+    '<div class="kopf"><div><b>'+(neu? 'Neuer Artikel':'Artikel '+nr)+'</b>'+
+    '<span>&nbsp;Stammdaten gelten f&uuml;r alle Standorte</span></div>'+
+    '<button class="zu" onclick="schliesse()">&times;</button></div>'+
+    '<div class="rumpf">'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'+
+        '<label>Artikelnummer<input type="text" id="aNr" value="'+nr+'" '+(neu?'':'readonly')+'></label>'+
+        '<label>Kategorie<input type="text" id="aKat" value="'+(a.kat||'')+'" placeholder="z. B. Hygiene, B&uuml;ro"></label>'+
+        '<label style="grid-column:1/3">Bezeichnung<input type="text" id="aName" value="'+(a.name||'')+'"></label>'+
+        '<label>Einheit<input type="text" id="aEinheit" value="'+(a.einheit||'')+'" placeholder="St&uuml;ck, Pack, Karton"></label>'+
+        (darfPreise()? '<label>Preis je Einheit (&euro;)<input type="number" step="0.01" id="aPreis" value="'+(a.preis||0)+'"></label>' : '')+
+        '<label style="grid-column:1/3">Notiz<input type="text" id="aNotiz" value="'+(a.notiz||'')+'"></label>'+
+      '</div>'+
+      (darfPreise() && (a.preise||[]).length > 1 ? preisVerlauf(a) : '')+
+      '<h2 style="font-size:14px;margin:18px 0 6px">Nur f&uuml;r '+ortName(standort)+'</h2>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">'+
+        '<label>Bestand<input type="number" id="aQ" value="'+b.q+'" min="0"></label>'+
+        '<label>Platz<input type="text" id="aPlatz" value="'+(b.platz||'')+'" placeholder="Regal 3 / B"></label>'+
+        '<label>Mindestbestand<input type="number" id="aMin" value="'+(b.min||0)+'" min="0"></label>'+
+      '</div>'+
+    '</div>'+
+    '<div class="fuss"><button class="btn sek" onclick="schliesse()">Abbrechen</button>'+
+    (neu? '' : '<button class="btn rot" onclick="artLoeschen(\''+nr+'\')">Aus dem Stamm l&ouml;schen</button>')+
+    '<button class="btn" onclick="artSpeichernForm(\''+nr+'\','+(neu?'true':'false')+')">Speichern</button>'+
+    '</div></div></div>';
+  setTimeout(() => { const f = el('aName'); if(f) f.focus(); }, 50);
+}
+
+function preisVerlauf(a){
+  const h = (a.preise||[]).slice().sort((x,y) => y.ab.localeCompare(x.ab));
+  return '<h2 style="font-size:14px;margin:18px 0 6px">Preisverlauf</h2>'+
+    '<div style="max-height:150px;overflow:auto"><table class="liste" style="font-size:12.5px">'+
+    '<thead><tr><th>Gültig ab</th><th style="text-align:right">Preis</th>'+
+    '<th style="text-align:right">vorher</th><th>geändert von</th></tr></thead><tbody>'+
+    h.map(p => '<tr><td>'+new Date(p.ab).toLocaleDateString('de-DE')+'</td>'+
+      '<td class="num"><b>'+de(p.preis,2)+' \u20ac</b></td>'+
+      '<td class="num" style="color:var(--text-hell)">'+(p.vorher? de(p.vorher,2)+' \u20ac':'\u2013')+'</td>'+
+      '<td style="color:var(--text-hell)">'+(p.von||'')+'</td></tr>').join('')+
+    '</tbody></table></div>';
+}
+
+function artSpeichernForm(nr, neu){
+  const name = el('aName').value.trim();
+  if(!name) return alert('Bitte eine Bezeichnung eingeben.');
+  const nummer = el('aNr').value.trim() || nr;
+  if(neu && artFind(nummer)) return alert('Diese Artikelnummer gibt es schon.');
+  const daten = {nr:nummer, name, kat:el('aKat').value.trim(),
+                 einheit:el('aEinheit').value.trim(),
+                 preis: darfPreise()? (parseFloat(String(el('aPreis').value).replace(',','.'))||0)
+                                    : ((artFind(nummer)||{}).preis||0),
+                 notiz: el('aNotiz').value.trim()};
+  const alt = artFind(nummer);
+  if(alt){
+    const vorherPreis = alt.preis || 0;
+    if(darfPreise() && Math.abs(vorherPreis - daten.preis) > 0.0001){
+      alt.preise = alt.preise || [];
+      alt.preise.push({ab: new Date().toISOString().slice(0,10), preis: daten.preis,
+                       vorher: vorherPreis, von: el('benutzer').value.trim() || (angemeldet? angemeldet.email : '')});
+      notiere('Preis', nummer+' '+name, '', vorherPreis, daten.preis,
+              'Preis geändert von '+de(vorherPreis,2)+' € auf '+de(daten.preis,2)+' €');
+    }
+    daten.preise = alt.preise || [];
+    Object.assign(alt, daten);
+  } else {
+    daten.preise = daten.preis ? [{ab:new Date().toISOString().slice(0,10), preis:daten.preis,
+                    vorher:0, von: el('benutzer').value.trim() || (angemeldet? angemeldet.email : '')}] : [];
+    artikel.push(daten);
+  }
+
+  bestand[standort] = bestand[standort] || {};
+  const vorher = bestand[standort][nummer];
+  bestand[standort][nummer] = {
+    q: Math.max(0, parseInt(el('aQ').value,10)||0),
+    platz: el('aPlatz').value.trim(),
+    min: Math.max(0, parseInt(el('aMin').value,10)||0)
+  };
+  notiere('Stammdaten', nummer+' '+name, ortName(standort),
+          vorher? vorher.q : null, bestand[standort][nummer].q,
+          neu? 'Artikel angelegt' : 'Artikel bearbeitet');
+  schliesse(); artSpeichern();
+}
+
+function artLoeschen(nr){
+  const a = artFind(nr);
+  const orte = Object.keys(bestand).filter(o => (bestand[o]||{})[nr]);
+  if(!confirm('"'+(a?a.name:nr)+'" komplett aus dem Artikelstamm löschen?'+
+     (orte.length? '\n\nEr ist noch in '+orte.map(ortName).join(', ')+' geführt.':''))) return;
+  artikel = artikel.filter(x => x.nr !== nr);
+  orte.forEach(o => delete bestand[o][nr]);
+  notiere('Stammdaten', nr+' '+(a?a.name:''), '', null, null, 'aus dem Stamm gelöscht');
+  schliesse(); artSpeichern();
+}
+
+function artCsv(){
+  const kopf = 'Nummer;Artikel;Kategorie;Einheit'+(darfPreise()? ';Preis':'')+
+    ';'+ALLGEMEIN.map(o => ORTE[o].kurz+'_Bestand;'+ORTE[o].kurz+'_Platz;'+ORTE[o].kurz+'_Min').join(';')+'\n';
+  const zeilen = artikel.map(a => {
+    const teile = [a.nr, a.name, a.kat, a.einheit];
+    if(darfPreise()) teile.push(de(a.preis||0,2));
+    ALLGEMEIN.forEach(o => { const b = ortBestand(o, a.nr);
+      teile.push(b? b.q : '', b? b.platz : '', b? (b.min||'') : ''); });
+    return teile.join(';');
+  }).join('\n');
+  lade(new Blob(['\ufeff'+kopf+zeilen], {type:'text/csv;charset=utf-8'}),
+       'Artikelbestand_'+datum()+'.csv');
+}
+
+function artSpeichern(){
+  zeichneArtikel();
+  if(!cloudAktiv || !angemeldet || nurLesen()) return;
+  db.collection('lager').doc('artikel').set({artikel, clientId,
+    updatedAt:new Date().toISOString(), updatedBy: el('benutzer').value.trim()||angemeldet.email}).catch(()=>{});
+  db.collection('lager').doc('bestand').set({bestand, bewegungen, clientId,
+    updatedAt:new Date().toISOString()}).catch(e => cloudStatus('Speichern fehlgeschlagen: '+e.code,'#B3261E'));
+}
+
+/* --- Bestellanforderung --- */
+function zeichneABanf(){
+  preisSpaltenSetzen();
+  if(!document.querySelector('#abanfBody tr')) abZeileNeu();
+  abSumme();
+}
+
+function abZeileNeu(nr='', menge='', grund=''){
+  const a = artFind(nr) || {nr:'', name:'', einheit:'', preis:0};
+  const tr = document.createElement('tr');
+  tr.innerHTML =
+    '<td><input type="text" class="qNr" value="'+(a.nr||'')+'" placeholder="A-0001" '+
+      'oninput="abZeileFuellen(this)"></td>'+
+    '<td><input type="text" class="qName" value="'+(a.name||'')+'"></td>'+
+    '<td><input type="number" class="qMenge" min="1" value="'+(menge||1)+'" oninput="abSumme()"></td>'+
+    '<td><input type="text" class="qEinheit" value="'+(a.einheit||'')+'"></td>'+
+    '<td class="preisSpalte'+(darfPreise()?'':' verstecke')+'">'+
+      '<input type="number" step="0.01" class="qPreis" value="'+(a.preis||0)+'" oninput="abSumme()"></td>'+
+    '<td class="preisSpalte'+(darfPreise()?'':' verstecke')+'"><span class="qSumme sub">–</span></td>'+
+    '<td><input type="text" class="qGrund" value="'+grund+'" placeholder="optional"></td>'+
+    '<td><button class="mini" onclick="this.closest(\'tr\').remove();abSumme()">&times;</button></td>';
+  el('abanfBody').appendChild(tr);
+  abSumme();
+}
+function abZeileFuellen(feld){
+  const tr = feld.closest('tr');
+  const a = artFind(feld.value.trim());
+  if(!a) return;
+  tr.querySelector('.qName').value = a.name;
+  tr.querySelector('.qEinheit').value = a.einheit || '';
+  const p = tr.querySelector('.qPreis'); if(p) p.value = a.preis || 0;
+  abSumme();
+}
+function abLesen(){
+  return [...document.querySelectorAll('#abanfBody tr')].map(tr => {
+    const g = k => { const e = tr.querySelector(k); return e ? e.value.trim() : ''; };
+    return {nr:g('.qNr'), name:g('.qName'), menge:parseInt(g('.qMenge'),10)||0,
+            einheit:g('.qEinheit'), preis:parseFloat((g('.qPreis')||'0').replace(',','.'))||0,
+            grund:g('.qGrund')};
+  }).filter(z => z.name && z.menge > 0);
+}
+function abSumme(){
+  let ges = 0;
+  [...document.querySelectorAll('#abanfBody tr')].forEach(tr => {
+    const m = parseInt((tr.querySelector('.qMenge')||{}).value,10)||0;
+    const pf = tr.querySelector('.qPreis');
+    const p = pf ? (parseFloat(String(pf.value).replace(',','.'))||0) : 0;
+    const zelle = tr.querySelector('.qSumme');
+    if(zelle) zelle.textContent = p ? de(m*p,2)+' \u20ac' : '–';
+    ges += m*p;
+  });
+  const z = abLesen();
+  el('abanfSumme').innerHTML = z.length
+    ? '<div class="hinweis" style="margin:12px 0 0"><b>'+z.length+' Position(en)</b>'+
+      (darfPreise()? ' &middot; gesch&auml;tzte Summe <b>'+de(ges,2)+' \u20ac</b>':'')+'</div>' : '';
+}
+function abLeeren(){ el('abanfBody').innerHTML=''; abSumme(); }
+
+function abVorschlag(){
+  abLeeren();
+  const orte = el('abUmfang').value === 'alle' ? ALLGEMEIN : [standort];
+  const bedarf = {};
+  orte.forEach(o => {
+    Object.entries(bestand[o]||{}).forEach(([nr,b]) => {
+      if(!(b.min > 0 && b.q <= b.min)) return;
+      const menge = Math.max(1, (b.min*2) - b.q);
+      if(!bedarf[nr]) bedarf[nr] = {menge:0, teile:[]};
+      bedarf[nr].menge += menge;
+      bedarf[nr].teile.push(ORTE[o].kurz+': '+b.q+'/'+b.min+' \u2192 +'+menge);
+    });
+  });
+  const eintraege = Object.entries(bedarf);
+  if(!eintraege.length){ alert('Kein Artikel liegt auf oder unter dem Mindestbestand.'); return; }
+  eintraege.sort((a,b) => (artFind(a[0])||{name:''}).name.localeCompare((artFind(b[0])||{name:''}).name,'de'));
+  eintraege.forEach(([nr,d]) => abZeileNeu(nr, d.menge, d.teile.join(' \u00b7 ')));
+}
+
+function abCsv(){
+  const z = abLesen();
+  if(!z.length) return alert('Keine Positionen vorhanden.');
+  const kopf = 'Pos;Nummer;Artikel;Menge;Einheit'+(darfPreise()? ';Preis;Summe':'')+';Bedarf\n';
+  const txt = z.map((x,i) => {
+    const t = [i+1, x.nr, x.name, x.menge, x.einheit];
+    if(darfPreise()) t.push(de(x.preis,2), de(x.menge*x.preis,2));
+    t.push(String(x.grund).replace(/;/g,','));
+    return t.join(';');
+  }).join('\n');
+  lade(new Blob(['\ufeff'+kopf+txt], {type:'text/csv;charset=utf-8'}), 'BANF_'+datum()+'.csv');
+}
+
+function abDrucken(){
+  const z = abLesen();
+  if(!z.length) return alert('Bitte mindestens eine Position eintragen.');
+  const umfang = el('abUmfang').value === 'alle' ? 'alle Standorte' : ortName(standort);
+  const nr = 'BANF-'+datum()+'-01';
+  const ges = z.reduce((s,x) => s + x.menge*x.preis, 0);
+  el('druck').innerHTML =
+   '<div class="dseite">'+
+    '<div class="bkopf"><div><p class="titel">BESTELLANFORDERUNG</p>'+
+      '<div class="unter">Allgemeines Lager &middot; '+umfang+'</div></div>'+
+      '<div style="text-align:right"><img class="dlogo" src="'+LOGO+'" alt="IWB">'+
+      '<div class="unter" style="margin-top:5px"><b>'+nr+'</b><br>'+
+      new Date().toLocaleDateString('de-DE')+'</div></div></div>'+
+    '<table class="bkopfdaten">'+
+      '<tr><td class="l">Angefordert von</td><td><b>'+(el('benutzer').value.trim()||'')+'</b></td></tr>'+
+      '<tr><td class="l">Umfang</td><td><b>'+umfang+'</b></td></tr>'+
+    '</table>'+
+    '<table class="bpos"><thead><tr><th style="width:9mm">Pos</th><th style="width:22mm">Nummer</th>'+
+      '<th>Artikel</th><th style="width:18mm" class="n">Menge</th><th style="width:18mm">Einheit</th>'+
+      (darfPreise()? '<th style="width:20mm" class="n">Preis</th><th style="width:22mm" class="n">Summe</th>':'')+
+      '<th style="width:44mm">Bedarf</th></tr></thead><tbody>'+
+      z.map((x,i) => '<tr><td>'+(i+1)+'</td><td>'+x.nr+'</td><td><b>'+x.name+'</b></td>'+
+        '<td class="n"><b>'+x.menge+'</b></td><td>'+x.einheit+'</td>'+
+        (darfPreise()? '<td class="n">'+de(x.preis,2)+'</td><td class="n">'+de(x.menge*x.preis,2)+'</td>':'')+
+        '<td style="font-size:7pt">'+x.grund+'</td></tr>').join('')+
+      (darfPreise()? '<tr class="summe"><td colspan="6">Summe</td><td class="n">'+de(ges,2)+' \u20ac</td><td></td></tr>':'')+
+    '</tbody></table>'+
+    '<div class="bunterschrift"><div>Datum, Anforderer</div><div>Datum, Freigabe</div>'+
+      '<div>Datum, Einkauf</div></div>'+
+   '</div>';
+  window.print();
+  notiere('BANF','','',null,null,nr+': '+z.length+' Position(en), '+umfang);
+}
+
+/* --- Verbrauch allgemein --- */
+let avZeitraum = 1;
+function zeichneAVerbrauch(){
+  preisSpaltenSetzen();
+  const orte = el('avUmfang').value === 'alle' ? ALLGEMEIN : [standort];
+  const monate = monatsReihe(24);
+  const grenze = new Date(); grenze.setMonth(grenze.getMonth() - avZeitraum);
+  const gStr = grenze.toISOString().slice(0,10);
+
+  const passend = bewegungen.filter(b => orte.includes(b.ort));
+  passend.forEach(b => { const m = monate.find(x => x.schl === b.d.slice(0,7)); if(m) m.summe += b.n; });
+
+  const imZeitraum = passend.filter(b => b.d >= gStr);
+  const jeArt = {};
+  imZeitraum.forEach(b => {
+    const k = b.nr+'|'+b.ort;
+    jeArt[k] = (jeArt[k]||0) + b.n;
+  });
+  const top = Object.entries(jeArt).sort((a,b)=>b[1]-a[1]).slice(0,40);
+  const summe = imZeitraum.reduce((s,b)=>s+b.n,0);
+  const wert = imZeitraum.reduce((s,b)=> s + b.n * preisAm(b.nr, b.d), 0);
+
+  el('avKennzahlen').innerHTML =
+    kz(summe,'Einheiten entnommen') +
+    (darfPreise()? kz(de(wert,0)+' \u20ac','Materialwert') : '') +
+    kz(new Set(imZeitraum.map(b=>b.nr)).size,'verschiedene Artikel') +
+    kz(orte.length,'Standorte') +
+    kz(imZeitraum.length,'Buchungen');
+
+  el('avChart').innerHTML = chartMonate(monate);
+  el('avBody').innerHTML = top.length ? top.map(([k,n]) => {
+    const [nr, ort] = k.split('|');
+    const a = artFind(nr) || {name:'(unbekannt)', einheit:'', preis:0};
+    const b = ortBestand(ort, nr);
+    return '<tr><td><b>'+nr+'</b></td><td>'+a.name+'</td>'+
+      '<td><span class="ortkuerzel">'+(ORTE[ort]||{}).kurz+'</span>'+ortName(ort)+'</td>'+
+      '<td class="num"><b>'+n+'</b> '+(a.einheit||'')+'</td>'+
+      '<td class="num preisSpalte'+(darfPreise()?'':' verstecke')+'">'+
+        (a.preis? de(n*a.preis,2)+' \u20ac':'')+'</td>'+
+      '<td class="num">'+(b? b.q : '–')+'</td></tr>';
+  }).join('') : '<tr><td colspan="6" style="padding:18px;color:var(--text-hell)">'+
+    'Im gew&auml;hlten Zeitraum wurde nichts entnommen.</td></tr>';
+}
+
 /* ---------- Standorte ---------- */
 let standort = null;
 let keller = [];   // {id, name, kat, platz, q, einheit, min, notiz}
 
-const STANDORTE = {
-  '649': {name:'Ausbildung Geb. 649', beschreibung:'Stahllager 1 + 2 &middot; Flach- und Vierkantstahl'},
-  '30':  {name:'Gebäude 30 &ndash; Keller', beschreibung:'Chaoslager &middot; Verbrauchsmaterial und Sonstiges'}
-};
-
 function standortWaehlen(){
   if(istTablet() && !codePruefen('Der Standortwechsel ist am Tablet geschützt.')) return;
+  const erlaubt = erlaubteOrte();
+  const karten = Object.keys(ORTE).filter(o => erlaubt.includes(o)).map(o => {
+    const d = ORTE[o];
+    const anz = o === 'stahl'
+      ? alleItems().length + ' Maße'
+      : Object.keys(bestand[o]||{}).length + ' Artikel';
+    const knapp = o === 'stahl' ? 0 :
+      Object.values(bestand[o]||{}).filter(b => b.min > 0 && b.q <= b.min).length;
+    return '<button class="ortfeld" style="border-left-color:'+d.farbe+'" '+
+      'onclick="standortSetzen(\''+o+'\')">'+
+      '<b>'+d.name+'</b><span>'+d.text+'</span>'+
+      '<span class="zahlen">'+anz+(knapp? ' &middot; <b style="color:#B3261E">'+knapp+' knapp</b>':'')+'</span>'+
+      '</button>';
+  }).join('');
   el('wahlBox').innerHTML =
-    '<div class="wahlhuelle"><div class="wahlkarte">'+
+    '<div class="wahlhuelle"><div class="wahlkarte" style="max-width:820px">'+
     '<img src="'+LOGO+'" alt="IWB">'+
     '<h2>Standort wählen</h2>'+
     '<p class="intro">Welches Lager möchtest du öffnen?</p>'+
-    '<div class="wahlgitter">'+
-      '<button class="wahlfeld" onclick="standortSetzen(\'649\')">'+
-        '<b>Ausbildung Geb. 649</b><span>Stahllager 1 + 2 · Flach- und Vierkantstahl, '+
-        'Stücklisten, Bestellanforderung</span></button>'+
-      '<button class="wahlfeld keller" onclick="standortSetzen(\'30\')">'+
-        '<b>Gebäude 30 – Keller</b><span>Chaoslager · vom Toilettenpapier bis zum Ordner, '+
-        'freie Platzvergabe</span></button>'+
-    '</div></div></div>';
+    '<div class="ortgitter">'+ (karten || '<p class="sub">Für dieses Konto ist kein Standort freigegeben.</p>') +'</div>'+
+    '</div></div>';
+}
+
+const ALLE_ANSICHTEN = ['plan','bestand','stueck','zaehlen','banf','verbrauch',
+                        'archiv','keller','artikel','abanf','averbrauch','verwaltung','daten'];
+
+function ansichtOeffnen(ziel){
+  document.querySelectorAll('nav button').forEach(b =>
+    b.classList.toggle('aktiv', b.dataset.ansicht === ziel));
+  ALLE_ANSICHTEN.forEach(v => { const e = el('v-'+v); if(e) e.classList.toggle('verstecke', v !== ziel); });
+  if(ziel === 'plan') skaliere();
+  if(ziel === 'keller') zeichneKeller();
+  if(ziel === 'artikel') zeichneArtikel();
+  if(ziel === 'abanf') zeichneABanf();
+  if(ziel === 'averbrauch') zeichneAVerbrauch();
+  if(ziel === 'archiv') zeichneArchiv();
+  if(ziel === 'verwaltung') zeichneVerwaltung();
+  if(ziel === 'verbrauch') zeichneVerbrauch();
+  if(ziel === 'banf' && !document.querySelector('#banfBody tr')) banfZeile();
+  menuZu();
+  try { window.scrollTo({top:0, behavior:'instant'}); } catch(e){ window.scrollTo(0,0); }
 }
 
 function standortSetzen(id){
   standort = id;
   el('wahlBox').innerHTML = '';
   el('standortBand').style.display = 'flex';
-  el('standortName').innerHTML = STANDORTE[id].name;
+  el('standortName').innerHTML = ORTE[id] ? ORTE[id].name : id;
   sichtbarkeitSetzen();
   vollbildBeschriften();
-  ansichtOeffnen(id === '649' ? 'plan' : 'keller');
-}
-
-const ALLE_ANSICHTEN = ['plan','bestand','stueck','zaehlen','banf','verbrauch',
-                        'archiv','keller','verwaltung','daten'];
-
-function ansichtOeffnen(ziel){
-  document.querySelectorAll('nav button').forEach(b =>
-    b.classList.toggle('aktiv', b.dataset.ansicht === ziel));
-  ALLE_ANSICHTEN.forEach(v => el('v-'+v).classList.toggle('verstecke', v !== ziel));
-  if(ziel === 'plan') skaliere();
-  if(ziel === 'keller') zeichneKeller();
-  if(ziel === 'archiv') zeichneArchiv();
-  if(ziel === 'verwaltung') zeichneVerwaltung();
-  if(ziel === 'verbrauch') zeichneVerbrauch();
-  if(ziel === 'banf' && !document.querySelector('#banfBody tr')) banfZeile();
-  menuZu();
+  ansichtOeffnen(id === 'stahl' ? 'plan' : 'artikel');
 }
 
 /* ---------- Kellerlager ---------- */
@@ -3047,6 +3689,13 @@ function kellerSpeichern(){
 }
 
 el('hSuche').addEventListener('input', handySuche);
+['artSuche','artKat','artKnapp','artAlle'].forEach(id =>
+  el(id).addEventListener('input', zeichneArtikel));
+el('avUmfang').addEventListener('change', zeichneAVerbrauch);
+document.querySelectorAll('#avZeit button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('#avZeit button').forEach(x => x.classList.remove('aktiv'));
+  b.classList.add('aktiv'); avZeitraum = parseInt(b.dataset.zeit,10); zeichneAVerbrauch();
+});
 ['kSuche','kKategorie','kNurKnapp'].forEach(id =>
   el(id).addEventListener('input', zeichneKeller));
 
@@ -3145,6 +3794,7 @@ function datenLauschen(){
   // Zuerst die Rolle klaeren - danach nur abonnieren, was erlaubt ist
   db.collection('stahllager').doc('rollen').onSnapshot(sn => {
     rollenTabelle = (sn.exists && sn.data().tabelle) || {};
+    rollenOrte = (sn.exists && sn.data().orte) || {};
     if(sn.exists && sn.data().sperrcode) sperrcode = sn.data().sperrcode;
     codeZeichnen();
     const meine = rollenTabelle[(angemeldet.email||'').toLowerCase()] || 'admin';
@@ -3161,8 +3811,26 @@ function datenLauschen(){
 
 function abosStarten(){
   if(rolle !== 'tablet-keller') bestandLauschen();
-  if(rolle !== 'tablet-stahl')  kellerLauschen();
+  if(rolle !== 'tablet-stahl')  artikelLauschen();
   if(rolle === 'admin'){ archivLauschen(); backupsLauschen(); }
+}
+
+function artikelLauschen(){
+  db.collection('lager').doc('artikel').onSnapshot(sn => {
+    if(!sn.exists) return;
+    const d = sn.data();
+    if(d.clientId === clientId) return;
+    artikel = d.artikel || [];
+    if(standort && standort !== 'stahl') zeichneArtikel();
+  }, () => {});
+  db.collection('lager').doc('bestand').onSnapshot(sn => {
+    if(!sn.exists) return;
+    const d = sn.data();
+    if(d.clientId === clientId) return;
+    bestand = d.bestand || {};
+    bewegungen = d.bewegungen || [];
+    if(standort && standort !== 'stahl') zeichneArtikel();
+  }, () => {});
 }
 
 function bestandLauschen(){
@@ -3199,7 +3867,7 @@ function kellerLauschen(){
     const d = sn.data();
     if(d.clientId === clientId) return;
     keller = d.artikel || [];
-    if(standort === '30') zeichneKeller();
+    if(standort && standort !== 'stahl') zeichneArtikel();
   }, () => {});
 
 }
