@@ -207,7 +207,31 @@ table.liste th{z-index:2}
 #vollbildLeiste button{background:rgba(255,255,255,.16);border:none;color:#fff;
   width:32px;height:32px;border-radius:50%;font-size:15px;cursor:pointer;line-height:1}
 #vollbildLeiste button:active{background:rgba(255,255,255,.34)}
-body.vollbild #kopfbereich{display:none}
+#vollbildLeiste .vbmenu{flex-direction:column;justify-content:center;align-items:center;gap:3.5px;
+  display:flex;width:34px;height:34px}
+#vollbildLeiste .vbmenu span{display:block;width:16px;height:2px;background:#fff;border-radius:1px}
+/* Im Vollbild bleibt die Navigation als Schublade erreichbar, alles andere verschwindet */
+body.vollbild #kopfbereich{position:fixed;top:0;left:0;right:0;height:0;
+  box-shadow:none;overflow:visible;z-index:100}
+body.vollbild .topbar,
+body.vollbild .tabletband,
+body.vollbild .standortband,
+body.vollbild header .logo,
+body.vollbild header .firmenlogo,
+body.vollbild header .menuknopf{display:none}
+body.vollbild header{padding:0;border:none;background:none;height:0;overflow:visible}
+body.vollbild nav{position:fixed;top:0;left:0;bottom:0;width:255px;max-width:82vw;
+  background:#fff;flex-direction:column;gap:0;transform:translateX(-102%);
+  transition:transform .24s ease;z-index:110;padding-top:14px;overflow-y:auto;
+  box-shadow:4px 0 22px rgba(10,35,60,.28);margin-left:0}
+body.vollbild nav.offen{transform:none}
+body.vollbild nav::before{content:"Men\00FC";display:block;padding:10px 20px 14px;font-size:11px;
+  text-transform:uppercase;letter-spacing:1.4px;color:var(--text-hell);
+  border-bottom:1px solid var(--grau-linie)}
+body.vollbild nav button{width:100%;text-align:left;padding:15px 20px;font-size:14.5px;
+  border-bottom:1px solid var(--grau-linie);border-left:4px solid transparent;letter-spacing:.4px}
+body.vollbild nav button.aktiv{border-bottom-color:var(--grau-linie);
+  border-left-color:var(--blau);background:var(--blau-hell)}
 body.vollbild #vollbildLeiste{display:flex}
 body.vollbild main{padding-top:62px}
 body.vollbild .karte{margin-bottom:12px}
@@ -760,6 +784,7 @@ body.vollbild .karte{margin-bottom:12px}
 <div id="standbyBox"></div>
 <div id="dialogBox"></div>
 <div id="vollbildLeiste">
+  <button onclick="menuUm()" title="Men&uuml;" class="vbmenu"><span></span><span></span><span></span></button>
   <span id="vbOrt">&ndash;</span>
   <span id="vbPerson"></span>
   <button onclick="standbyAn()" title="Sperren">&#128274;</button>
@@ -2027,6 +2052,7 @@ function vollbildAn(){
 }
 
 function vollbildAus(){
+  menuZu();
   document.body.classList.remove('vollbild');
   const d = document;
   const x = d.exitFullscreen || d.webkitExitFullscreen || d.msExitFullscreen;
