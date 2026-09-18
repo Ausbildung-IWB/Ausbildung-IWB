@@ -209,6 +209,14 @@ table.liste th{z-index:2}
   padding:0 12px;font-family:inherit}
 #vollbildLeiste button:active{background:rgba(255,255,255,.34)}
 #vollbildLeiste button.raus{background:#B3261E}
+@media(max-width:700px){
+  #vollbildLeiste{flex-wrap:wrap;gap:7px;padding:6px 9px}
+  #vollbildLeiste #vbOrt,#vollbildLeiste #vbPerson{font-size:12.5px}
+  #vollbildLeiste #vbPerson{flex:1 0 auto}
+  #vollbildLeiste button{height:33px;font-size:13px;padding:0 9px;min-width:34px}
+  body.vollbild main{padding-top:96px}
+  body.vollbild nav{top:92px}
+}
 #vollbildLeiste .vbmenu{flex-direction:column;justify-content:center;align-items:center;gap:3.5px;
   display:flex;width:34px;height:34px}
 #vollbildLeiste .vbmenu span{display:block;width:16px;height:2px;background:#fff;border-radius:1px}
@@ -218,9 +226,10 @@ body.vollbild #kopfbereich{position:fixed;top:0;left:0;right:0;height:0;
 body.vollbild .topbar,
 body.vollbild .tabletband,
 body.vollbild .standortband,
+body.vollbild #leseBand,
 body.vollbild header .logo,
 body.vollbild header .firmenlogo,
-body.vollbild header .menuknopf{display:none}
+body.vollbild header .menuknopf{display:none !important}
 body.vollbild header{padding:0;border:none;background:none;height:0;overflow:visible}
 body.vollbild nav{position:fixed;top:50px;left:0;bottom:0;width:255px;max-width:82vw;
   background:#fff;flex-direction:column;gap:0;transform:translateX(-102%);
@@ -789,6 +798,7 @@ body.vollbild .karte{margin-bottom:12px}
   <button onclick="menuUm()" title="Men&uuml;" class="vbmenu"><span></span><span></span><span></span></button>
   <span id="vbOrt">&ndash;</span>
   <span id="vbPerson"></span>
+  <button onclick="standortWaehlen()" title="Standort wechseln">Standort</button>
   <button onclick="standbyAn()" title="Sperren">&#128274; Sperren</button>
   <button class="raus" onclick="vollbildAus()" title="Vollbild verlassen">Vollbild beenden</button>
 </div>
