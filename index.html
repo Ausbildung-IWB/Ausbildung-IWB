@@ -314,6 +314,57 @@ body.vollbild .karte{margin-bottom:12px}
   font:inherit;font-size:12px;padding:2px 10px;border-radius:2px;cursor:pointer}
 .standortband button:hover{background:var(--blau);color:#fff}
 #cloudStatus{font-variant-numeric:tabular-nums}
+/* ---- Handy und schmale Tablets ---- */
+@media(max-width:820px){
+  body{font-size:15px}
+  .topbar{font-size:11.5px;padding:5px 12px;gap:4px}
+  header{padding:8px 12px;gap:8px}
+  .logo{padding-left:9px;border-left-width:4px}
+  .logo .txt strong{font-size:14.5px}
+  .logo .txt span{font-size:10.5px}
+  .menuknopf{display:flex}
+  nav{position:fixed;top:0;left:0;bottom:0;width:255px;max-width:82vw;background:#fff;
+    flex-direction:column;gap:0;transform:translateX(-102%);transition:transform .24s ease;
+    z-index:100;padding-top:14px;overflow-y:auto;box-shadow:4px 0 22px rgba(10,35,60,.28);
+    margin-left:0}
+  nav.offen{transform:none}
+  nav::before{content:"Men\00FC";display:block;padding:10px 20px 14px;font-size:11px;
+    text-transform:uppercase;letter-spacing:1.4px;color:var(--text-hell);
+    border-bottom:1px solid var(--grau-linie)}
+  nav button{width:100%;text-align:left;padding:15px 20px;font-size:14.5px;
+    border-bottom:1px solid var(--grau-linie);border-left:4px solid transparent;letter-spacing:.4px}
+  nav button.aktiv{border-bottom-color:var(--grau-linie);border-left-color:var(--blau);
+    background:var(--blau-hell)}
+  .firmenlogo{height:26px;margin-left:auto}
+  main{padding:12px 12px 40px}
+  h1{font-size:18px} h2{font-size:15.5px}
+  .karte{padding:13px}
+  .kz{min-width:calc(50% - 5px);flex:1}
+  .kennzahlen{gap:8px}
+  .werkzeuge{gap:7px}
+  button.btn{padding:11px 14px;font-size:14px}
+  .mini{width:32px;height:32px;font-size:17px}
+  input.menge{width:52px;padding:6px}
+  input[type=text],input[type=number],select{padding:9px}
+  .planbox{display:none}
+  #handySuche{display:block}
+  table.liste{font-size:12.5px}
+  table.liste th{font-size:10px;padding:6px 5px}
+  table.liste td{padding:6px 5px}
+  .dialog{max-height:94vh}
+  .dialog .rumpf{padding:13px}
+  .standortband,.tabletband{padding:5px 12px;font-size:11.5px}
+  .rollenbox{grid-template-columns:1fr}
+}
+#handySuche{display:none;margin-bottom:14px}
+#handySuche input{width:100%;font-size:17px;padding:13px}
+.htreffer{background:#fff;border:1px solid var(--grau-linie);border-left:4px solid var(--blau);
+  border-radius:3px;padding:12px 14px;margin-top:9px;display:flex;justify-content:space-between;
+  align-items:center;gap:12px}
+.htreffer b{font-size:17px;display:block}
+.htreffer .ort{font-size:12.5px;color:var(--text-hell)}
+.htreffer .zahl{font-size:22px;font-weight:700;color:var(--blau-dunkel);text-align:right;line-height:1.1}
+.htreffer .zahl span{display:block;font-size:11px;font-weight:400;color:var(--text-hell)}
 @media print{
   @page{ size: A4 landscape; margin: 8mm; }
   html,body{background:#fff;margin:0}
