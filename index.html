@@ -122,6 +122,17 @@ footer{background:linear-gradient(90deg,var(--blau-dunkel),#0F4C81);color:#a8c3d
 .realBalken{height:9px;background:#E6EBF0;border-radius:5px;overflow:hidden;min-width:110px}
 .realBalken div{height:100%;border-radius:5px}
 /* Produktionsbildschirm */
+.prodUeber{font-size:14px;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-hell);margin:20px 0 10px;font-weight:700}
+.prodMaGitter{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:14px;margin-bottom:6px}
+.prodMa{background:#fff;border:1px solid var(--grau-linie);border-radius:var(--radius);padding:16px 18px;display:flex;flex-direction:column;gap:6px;transition:box-shadow .2s,border-color .2s}
+.prodMa:hover{box-shadow:0 4px 18px rgba(15,76,129,.10)}
+.prodMa.laeuft{border-color:var(--gruen);background:linear-gradient(135deg,#fff,#F1F8EA)}
+.prodMa.weg{opacity:.55}
+.prodMa .name{font-size:18px;font-weight:700;display:flex;align-items:center;gap:8px}
+.prodMa .was{font-size:16px;line-height:1.35}
+.prodMa .btnZeile{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.prodMa .gross{padding:12px 16px;font-size:16px;min-height:48px;flex:1}
+.prodDran{margin-top:6px;font-size:13.5px}
 .prodKopf{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-bottom:18px}
 .prodKopf > div:nth-child(2){flex:1}
 .prodKarte{display:flex;gap:18px;background:#fff;border:1px solid var(--grau-linie);border-left:8px solid var(--blau);border-radius:var(--radius);
@@ -260,6 +271,32 @@ tr.klick{cursor:pointer} tr.klick:hover td{background:#E8F0F7 !important}
   .kz{min-width:calc(50% - 5px);flex:1}
   table.woche td.name{width:110px}
 }
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#1E2A33;color:#fff;padding:11px 18px;border-radius:12px;font-size:14px;z-index:300;box-shadow:0 6px 24px rgba(0,0,0,.25);max-width:90vw;text-align:center}
+.pin{cursor:pointer;opacity:.95;font-size:14px}.pin.aus{opacity:.25}
+/* Handy-Ansicht (Vorgesetzter) */
+#mobil{display:none}
+body.mobil #kopfbereich > header, body.mobil #kopfbereich > .topbar, body.mobil main, body.mobil footer{display:none}
+body.mobil #mobil{display:block;max-width:520px;margin:0 auto;padding:0 12px 90px}
+.mKopf{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.97);backdrop-filter:blur(8px);border-bottom:2px solid var(--blau);padding:10px 12px;display:flex;align-items:center;gap:10px;margin:0 -12px}
+.mKopf img{height:28px}.mKopf .mTitelKopf{flex:1;line-height:1.2}.mKopf .mTitelKopf small{display:block;color:var(--text-hell);font-size:12px}
+.mKopf button{padding:7px 10px;font-size:12.5px}
+.mTabs{display:flex;gap:8px;margin:12px 0;position:sticky;top:56px;z-index:29;padding:6px 0;background:linear-gradient(180deg,#F2F4F6 70%,rgba(242,244,246,0))}
+.mTabs button{flex:1;padding:13px 6px;border-radius:12px;border:1px solid var(--grau-linie);background:#fff;font-size:15px;font-weight:600;font-family:inherit;color:var(--text);transition:background var(--weich),color var(--weich)}
+.mTabs button.aktiv{background:var(--blau);color:#fff;border-color:var(--blau)}
+.mTabs button.neu{background:var(--gruen);color:#fff;border-color:var(--gruen)}
+.mInfo{font-size:14px;margin:0 2px 6px}
+#mListe{position:relative}
+.mKarte{display:flex;gap:6px;align-items:center;background:#fff;border:1px solid var(--grau-linie);border-left:6px solid var(--blau);border-radius:12px;padding:10px 8px 10px 0;margin-bottom:8px;box-shadow:var(--schatten);position:relative;transition:box-shadow .15s}
+.mKarte.zieht{box-shadow:0 12px 32px rgba(10,40,70,.28);z-index:40;transition:none;background:#F6FAFE}
+.mGriff{width:44px;align-self:stretch;display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--text-hell);touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+.mMitte{flex:1;min-width:0}.mTitel{line-height:1.3;overflow-wrap:anywhere}.mNr{display:inline-block;min-width:22px;font-weight:700;color:var(--blau)}
+.mOben{border:1px solid var(--grau-linie);background:#fff;border-radius:10px;width:40px;height:40px;font-size:18px;color:var(--blau);cursor:pointer}
+.mOben:disabled{opacity:.3}
+.mLinie{position:absolute;left:0;right:0;height:4px;background:var(--blau);border-radius:2px;pointer-events:none;z-index:35}
+.mTag{background:#fff;border:1px solid var(--grau-linie);border-radius:12px;padding:12px 14px;margin-bottom:8px;box-shadow:var(--schatten)}
+.mTag.frei{background:#F4F5F7;box-shadow:none;color:var(--text-hell)}
+.mTagKopf{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
+@media(max-width:700px){.overlay{padding:0;align-items:stretch}.dialog{max-height:100dvh;height:100%;border-radius:0}.dialog .rumpf{padding:16px 14px}}
 .testleiste{background:#FFF4D6;border-bottom:1px solid #E4B23C;padding:6px 20px;font-size:13px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;color:#6b4e00}
 .testleiste select{padding:4px 8px;font-size:13px}.testleiste .btn{padding:4px 12px;font-size:13px}.testleiste .sub{color:#8a6a1a;margin:0}
 .matrix th,.matrix td{white-space:nowrap}.matrix input[type=checkbox]{width:18px;height:18px;accent-color:var(--rot)}
@@ -272,12 +309,13 @@ tr.klick{cursor:pointer} tr.klick:hover td{background:#E8F0F7 !important}
 <div class="topbar">
   <span>Pack &amp; D&uuml;se &ndash; Planung &amp; Zeiten &middot; Daten aus Firestore</span>
   <span id="cloudStatus">&ndash;</span>
-  <span id="wer">&ndash;</span>
+  <span><span id="wer">&ndash;</span> <button id="topAbmelden" class="btn sek" style="display:none;padding:2px 10px;font-size:12px;margin-left:8px" onclick="abmelden()">Abmelden</button></span>
 </div>
 <div class="testleiste" id="testleiste" style="display:none">
   <b>TESTMODUS</b>
   <button class="btn" onclick="demoLaden()">Fake-Daten laden</button>
   <label>Ansicht als Rolle <select id="testRolle" onchange="rolleWechseln(this.value)"></select></label>
+  <button class="btn sek" onclick="handyTest()">Handy-Ansicht (Vorgesetzter) ein/aus</button>
   <span class="sub" id="testHinweis">nur zum Ausprobieren – vor dem Echtbetrieb TESTLEISTE = false setzen</span>
 </div>
 <header>
@@ -463,9 +501,12 @@ tr.klick{cursor:pointer} tr.klick:hover td{background:#E8F0F7 !important}
 
   <div class="qmGitter">
     <div class="karte">
-      <h2>Nacharbeit nach Grund (Pareto)</h2>
-      <p class="sub">Stunden, die als Nacharbeit / Qualit&auml;tsproblem gebucht wurden. Die obersten Balken sind die Hebel.</p>
-      <div id="qmChartGrund"></div>
+      <h2>Strom, Wasser, Gas</h2>
+      <p class="sub">Monatsverbr&auml;uche (Z&auml;hlerst&auml;nde). Das Tool verteilt sie nach den Ofenstunden auf die Auftr&auml;ge. Balken = Kosten je Monat.</p>
+      <div id="qmChartEnergie"></div>
+      <div id="qmEnergiePreise" class="sub" style="margin:6px 0 10px"></div>
+      <div class="werkzeuge nurSchreiben"><button class="btn" onclick="energieDialog()">Monatswerte eintragen</button><button class="btn sek" onclick="energiePreisDialog()">Preise &auml;ndern</button></div>
+      <div style="overflow:auto;max-height:240px;margin-top:10px"><table class="liste"><thead><tr><th>Monat</th><th class="num">Strom kWh</th><th class="num">Wasser m&sup3;</th><th class="num">Gas m&sup3;</th><th class="num">Kosten</th><th style="width:70px"></th></tr></thead><tbody id="qmEnergieBody"></tbody></table></div>
     </div>
     <div class="karte">
       <h2>Erfahrungswerte: Ist zu Soll je Arbeitsschritt</h2>
@@ -476,7 +517,7 @@ tr.klick{cursor:pointer} tr.klick:hover td{background:#E8F0F7 !important}
 
   <div class="karte">
     <h2>Monatstrend</h2>
-    <p class="sub">Gebuchte Stunden je Monat und Anteil Nacharbeit.</p>
+    <p class="sub">Gebuchte Stunden je Monat.</p>
     <div id="qmChartTrend"></div>
   </div>
 
@@ -489,7 +530,7 @@ tr.klick{cursor:pointer} tr.klick:hover td{background:#E8F0F7 !important}
   <div class="qmGitter">
     <div class="karte">
       <h2>Je Kunde</h2>
-      <div style="overflow:auto"><table class="liste"><thead><tr><th>Kunde</th><th class="num">Auftr&auml;ge</th><th class="num">Ist h</th><th class="num">Ist/Soll</th><th class="num">Nacharbeit</th><th class="num">Kosten</th><th class="num">Termintreue</th></tr></thead><tbody id="qmKundenBody"></tbody></table></div>
+      <div style="overflow:auto"><table class="liste"><thead><tr><th>Kunde</th><th class="num">Auftr&auml;ge</th><th class="num">Ist h</th><th class="num">Ist/Soll</th><th class="num">Energie</th><th class="num">Kosten</th><th class="num">Termintreue</th></tr></thead><tbody id="qmKundenBody"></tbody></table></div>
     </div>
     <div class="karte">
       <h2>Stunden je Arbeitsschritt</h2>
@@ -511,7 +552,7 @@ tr.klick{cursor:pointer} tr.klick:hover td{background:#E8F0F7 !important}
 
   <div class="karte">
     <h2>Kostenfaktoren</h2>
-    <p class="sub">Faktoren mit Bezug &bdquo;je Stunde&ldquo; werden automatisch mit den Ist-Stunden gerechnet, Faktoren &bdquo;je Auftrag&ldquo; pro Auftrag als Menge erfasst.</p>
+    <p class="sub">Zus&auml;tzliche Kosten neben der Energie. Faktoren mit Bezug &bdquo;je Stunde&ldquo; (z. B. Stundensatz) werden automatisch mit den Ist-Stunden gerechnet, Faktoren &bdquo;je Auftrag&ldquo; pro Auftrag als Menge erfasst. Strom, Wasser und Gas stehen oben.</p>
     <div style="overflow:auto"><table class="liste"><thead><tr>
       <th>Faktor</th><th>Einheit</th><th class="num">Preis je Einheit</th><th>Bezug</th><th style="width:70px"></th>
     </tr></thead><tbody id="kostenBody"></tbody></table></div>
@@ -521,15 +562,6 @@ tr.klick{cursor:pointer} tr.klick:hover td{background:#E8F0F7 !important}
       <label>Preis &euro;<br><input type="number" step="0.01" id="kfPreis" style="width:100px"></label>
       <label>Bezug<br><select id="kfBezug"><option value="auftrag">je Auftrag (Menge erfassen)</option><option value="stunde">je Ist-Stunde (automatisch)</option></select></label>
       <button class="btn" onclick="kostenHinzu()">Hinzuf&uuml;gen</button>
-    </div>
-  </div>
-  <div class="karte">
-    <h2>Nacharbeits-Gr&uuml;nde</h2>
-    <p class="sub">Auswahlliste im Zeiteintrag. Kurz und eindeutig halten, damit das Pareto aussagekr&auml;ftig bleibt.</p>
-    <div class="chips" id="grundListe"></div>
-    <div class="werkzeuge nurSchreiben" style="margin-top:12px">
-      <input type="text" id="grundNeu" placeholder="z. B. Lieferant" style="width:220px" onkeydown="if(event.key==='Enter')grundHinzu()">
-      <button class="btn" onclick="grundHinzu()">Hinzuf&uuml;gen</button>
     </div>
   </div>
 </section>
@@ -584,6 +616,12 @@ tr.klick{cursor:pointer} tr.klick:hover td{background:#E8F0F7 !important}
       <button class="btn nurSchreiben" onclick="teilDialog()">+ Teil anlegen</button>
     </div>
     <div style="overflow:auto;max-height:46vh"><table class="liste"><thead><tr><th>Nummer</th><th>Bezeichnung</th><th>Kunde</th><th>Material</th><th>Arbeitsschritte</th><th style="width:50px"></th></tr></thead><tbody id="kaBody"></tbody></table></div>
+  </div>
+  <div class="karte">
+    <h2>Kunden und Rangfolge</h2>
+    <p class="sub">Die Kunden, f&uuml;r die gearbeitet wird &ndash; oben = wichtigster. Neue Auftr&auml;ge ordnen sich im Hintergrund nach diesem Rang in die Priorit&auml;t ein, solange dadurch kein Kundentermin schlechter wird. Von Hand verschobene Auftr&auml;ge (&#128204;) bleiben, wo sie sind.</p>
+    <div id="kuListe"></div>
+    <div class="werkzeuge" id="kuWerkzeuge" style="margin-top:12px"><input type="text" id="kuNeu" placeholder="z. B. Kunde G" style="width:200px" onkeydown="if(event.key==='Enter')kundeHinzu()"><button class="btn" onclick="kundeHinzu()">Hinzuf&uuml;gen</button><span style="flex:1"></span><button class="btn sek" onclick="rangAnwendenKnopf()">Rang jetzt auf offene Auftr&auml;ge anwenden</button></div>
   </div>
   <div class="qmGitter">
     <div class="karte">
@@ -708,6 +746,9 @@ tr.klick{cursor:pointer} tr.klick:hover td{background:#E8F0F7 !important}
     <div id="prodAnwesend" class="chips"></div>
     <button class="btn sek" onclick="vollbildUm()">Vollbild</button>
   </div>
+  <div class="prodUeber">Wer macht was? &ndash; Namen anklicken und starten</div>
+  <div id="prodMa" class="prodMaGitter"></div>
+  <div class="prodUeber">Auftr&auml;ge nach Priorit&auml;t</div>
   <div id="prodHaupt"></div>
 </section>
 </main>
@@ -715,6 +756,13 @@ tr.klick{cursor:pointer} tr.klick:hover td{background:#E8F0F7 !important}
 <div class="menuschatten" id="menuSchatten" onclick="menuZu()"></div>
 <div id="loginBox"></div>
 <div id="sperreBox"></div>
+<div id="mobil">
+  <div class="mKopf"><img id="mLogo" alt=""><div class="mTitelKopf"><b>Pack &amp; D&uuml;se</b><small id="mDatum"></small></div>
+    <button class="btn sek" onclick="ansichtWahlSetzen('normal')">Normale Ansicht</button>
+    <button class="btn sek" id="mAbmelden" style="display:none" onclick="abmelden()">Abmelden</button></div>
+  <div class="mTabs"><button data-mt="auftraege" class="aktiv" onclick="mobilTabWahl('auftraege')">Auftr&auml;ge</button><button data-mt="abw" onclick="mobilTabWahl('abw')">Abwesend</button><button class="neu" onclick="auftragDialog()">+ Neu</button></div>
+  <div id="mInhalt"></div>
+</div>
 <div id="dialogBox"></div>
 <footer>Pack &amp; D&uuml;se &nbsp;&middot;&nbsp; Planung &amp; Zeiterfassung &nbsp;&middot;&nbsp; interne Anwendung</footer>
 
@@ -727,12 +775,12 @@ tr.klick{cursor:pointer} tr.klick:hover td{background:#E8F0F7 !important}
 const TESTLEISTE = true;
 
 const FIREBASE_KONFIG = {
-  apiKey:            "AIzaSyDMamppXsVxi56nBiNOX0uDqtoqrDVMYR0",
-  authDomain:        "iwb-ausbildung.firebaseapp.com",
-  projectId:         "iwb-ausbildung",
-  storageBucket:     "iwb-ausbildung.firebasestorage.app",
-  messagingSenderId: "430719610437",
-  appId:             "1:430719610437:web:80e51fef1920f817a1bd2c"
+  apiKey:            "",
+  authDomain:        "",
+  projectId:         "",
+  storageBucket:     "",
+  messagingSenderId: "",
+  appId:             ""
 };
 /* ===================================================================== */
 
@@ -758,11 +806,15 @@ const OEFEN_START = [
   {id:'ofen3', name:'Ofen 3', gesperrt:['Kunststoff','Titan']},
   {id:'ofen4', name:'Ofen 4 (Vakuum)', gesperrt:[]}];
 const TAET_START = ['Rüsten','Fräsen','Drehen','Montage','Prüfung','Sonstiges'];
-const GRUENDE_START = ['Maßabweichung','Materialfehler','Werkzeug / Maschine','Bedienfehler','Zeichnung / Vorgabe unklar','Kundenänderung','Sonstiges'];
 const KOSTEN_START = [
-  {id:'lohn', name:'Stundensatz', einheit:'h', preis:45, bezug:'stunde'},
-  {id:'strom', name:'Strom', einheit:'kWh', preis:0.28, bezug:'auftrag'}
+  {id:'lohn', name:'Stundensatz', einheit:'h', preis:45, bezug:'stunde'}
 ];
+/* Energie: monatliche Verbräuche (Zählerstände), Normalpreise zum Start - bitte vom QM anpassen */
+const ENERGIE = [
+  {id:'strom', name:'Strom', einheit:'kWh', farbe:'#0F4C81'},
+  {id:'wasser', name:'Wasser', einheit:'m³', farbe:'#2A8C8C'},
+  {id:'gas', name:'Gas', einheit:'m³', farbe:'#C26A2A'}];
+const PREISE_START = {strom:0.25, wasser:4.5, gas:0.95};
 
 let D = {mitarbeiter:{}, auftraege:{}, zeiten:{}, urlaub:{}, teile:{}, benutzer:{}, einst:{}};
 let archiv = [];
@@ -789,7 +841,6 @@ const einst = (k, std) => (D.einst[k] && D.einst[k].liste !== undefined) ? D.ein
 const rollen = () => einst('rollen', ROLLEN_START);
 const taetigkeiten = () => einst('taetigkeiten', TAET_START);
 const kostenfaktoren = () => einst('kosten', KOSTEN_START);
-const gruende = () => einst('gruende', GRUENDE_START);
 const materialien = () => einst('materialien', MATERIAL_START);
 const oefen = () => einst('oefen', OEFEN_START);
 const alleTeile = () => Object.values(D.teile||{}).sort((a,b)=>String(a.nr||a.name).localeCompare(String(b.nr||b.name),'de',{numeric:true}));
@@ -824,9 +875,28 @@ function schritteFuer(aid, extra){
   return l.length ? l : alle;
 }
 
-const istNacharbeit = z => z.art === 'nacharbeit';
-const nacharbeitVon = aid => Object.values(D.zeiten).filter(z => z.auftragId === aid && istNacharbeit(z)).reduce((s,z)=>s+(+z.stunden||0),0);
-const kostenVon = a => { const ist = istVon(a.id); return kostenfaktoren().reduce((s,f) => s + (f.bezug==='auftrag' ? (+(a.mengen||{})[f.id]||0) : ist) * f.preis, 0); };
+const energiePreise = () => ({...PREISE_START, ...(D.einst.energiepreise||{})});
+const energieMonate = () => (D.einst.energie && D.einst.energie.monate) || {};
+let energieCache = null;
+/* Verteilung der Monatsverbräuche auf die Aufträge: nach den Stunden, die in dem Monat auf Aufträgen mit Ofen gebucht wurden
+   (gibt es keine Ofenstunden, nach allen Stunden). */
+function energieVerteilung(){
+  if(energieCache) return energieCache;
+  const pr = energiePreise(), res = {}, jeMonat = {};
+  Object.values(D.zeiten).forEach(z => { const a = D.auftraege[z.auftragId]; if(!a) return; const k = String(z.datum).slice(0,7), h = +z.stunden||0;
+    const o = jeMonat[k] = jeMonat[k] || {ofen:{}, alle:{}, sumOfen:0, sumAlle:0};
+    o.alle[a.id] = (o.alle[a.id]||0)+h; o.sumAlle += h;
+    if(z.ofenId || a.ofenId){ o.ofen[a.id] = (o.ofen[a.id]||0)+h; o.sumOfen += h; } });
+  Object.entries(energieMonate()).forEach(([k, w]) => { const o = jeMonat[k]; if(!o || !o.sumAlle) return;
+    const quelle = o.sumOfen ? o.ofen : o.alle, summe = o.sumOfen || o.sumAlle;
+    Object.entries(quelle).forEach(([aid, h]) => { const r = res[aid] = res[aid] || {m:{strom:0,wasser:0,gas:0}, k:{strom:0,wasser:0,gas:0}, kosten:0};
+      ENERGIE.forEach(x => { const menge = (+w[x.id]||0)*h/summe; r.m[x.id] += menge; r.k[x.id] += menge*pr[x.id]; r.kosten += menge*pr[x.id]; }); }); });
+  return energieCache = res;
+}
+const energieVon = aid => energieVerteilung()[aid] || {m:{strom:0,wasser:0,gas:0}, k:{strom:0,wasser:0,gas:0}, kosten:0};
+const energieMonatKosten = w => { const pr = energiePreise(); return ENERGIE.reduce((s,x)=>s+(+w[x.id]||0)*pr[x.id],0); };
+const energieKostenPeriode = grenze => Object.entries(energieMonate()).filter(([k]) => k >= grenze.slice(0,7)).reduce((s,[,w])=>s+energieMonatKosten(w),0);
+const kostenVon = a => { const ist = istVon(a.id); return kostenfaktoren().reduce((s,f) => s + (f.bezug==='auftrag' ? (+(a.mengen||{})[f.id]||0) : ist) * f.preis, 0) + energieVon(a.id).kosten; };
 function durchlauf(a){ const z = Object.values(D.zeiten).filter(x=>x.auftragId===a.id).map(x=>x.datum).sort(); if(!z.length) return null;
   const ende = a.status==='abgeschlossen' && a.abgeschlossenAm ? a.abgeschlossenAm : z[z.length-1]; let n = 0, d = z[0]; while(d <= ende){ if(istArbeitstag(d)) n++; d = plusTage(d,1); } return {von:z[0], bis:ende, tage:n}; }
 const allgemein = () => D.einst.allgemein || {feiertage:true, gelb:80};
@@ -893,7 +963,8 @@ function toepfe(a){
   const je = a.sollJe || {};
   if(+a.sollGesamt > 0 || !Object.keys(je).length) return [{taet:'*', rest:Math.max(0, sollVon(a)-istVon(a.id))}];
   const ist = istJe(a.id);
-  return Object.keys(je).map(t => ({taet:t, rest:Math.max(0, (+je[t]||0)-(ist[t]||0))}));
+  const fertig = a.erledigt || {};
+  return Object.keys(je).map(t => ({taet:t, rest: fertig[t] ? 0 : Math.max(0, (+je[t]||0)-(ist[t]||0))}));
 }
 /* Erfahrungsfaktor je Arbeitsschritt aus abgeschlossenen Aufträgen: Ist/Soll, begrenzt auf 0,8 … 2,0 */
 function kalibFaktoren(){
@@ -988,6 +1059,113 @@ function balkenTage(ziel, tage){
       '<i style="height:'+(kl==='leer'? 100 : (t.kap? Math.round(t.belegt/t.kap*100):0))+'%"></i>'+
       '<span>'+WT[d.getDay()]+' '+d.getDate()+'.</span></div>';
   }).join('');
+}
+
+/* ---------- Kunden und Rangfolge, automatische Einordnung ---------- */
+const KUNDEN_START = ['Kunde A','Kunde B','Kunde C','Kunde D','Kunde E','Kunde F'].map((n,i) => ({id:'k'+(i+1), name:n}));
+const kunden = () => einst('kunden', KUNDEN_START);
+const kundenRang = name => { const i = kunden().findIndex(k => k.name === name); return i < 0 ? 999 : i; };
+const darfKundenPflegen = () => darfSchreiben() && (rolle === 'admin' || rolle === 'vorgesetzter');
+const spaetVon = pl => { const o = {}; pl.plan.forEach(x => o[x.a.id] = x.spaetTage); return o; };
+const schadetAnderen = (sp, basis, ausser) => Object.keys(sp).some(id => id !== ausser && sp[id] > (basis[id]||0));
+function toast(text){
+  try { const t = document.createElement('div'); t.className = 'toast'; t.textContent = text; document.body.appendChild(t); setTimeout(() => { try { t.remove(); } catch(e){} }, 5200); } catch(e){}
+}
+function prioSetzen(ids, erzwingen){
+  let n = 0; ids.forEach((id,i) => { const a = D.auftraege[id]; if(a && (a.prio !== i+1 || id === erzwingen)){ if(a.prio !== i+1) n++; a.prio = i+1; ablegen('auftraege', id, a); } });
+  return n;
+}
+/* Zieht einen Auftrag vor schlechter eingestufte Kunden - so weit, wie es keinem anderen Termin schadet.
+   Nicht vorbei an fest gesetzten Aufträgen und nicht an Aufträgen gleicher oder besserer Kunden. */
+function vorziehen(ids, id, basis){
+  const a = D.auftraege[id]; if(!a || a.fest) return ids;
+  const r = kundenRang(a.kunde), cur = ids.indexOf(id); if(cur < 0) return ids;
+  let unten = 0;
+  for(let i = 0; i < cur; i++){ const b = D.auftraege[ids[i]] || {}; if(b.fest || kundenRang(b.kunde) <= r) unten = i+1; }
+  let ziel = -1;
+  for(let i = unten; i < cur; i++){ const b = D.auftraege[ids[i]] || {}; if(kundenRang(b.kunde) > r){ ziel = i; break; } }
+  if(ziel < 0) return ids;
+  // Binäre Suche nach der am weitesten vorne liegenden unschädlichen Position (nur geprüfte Positionen werden übernommen)
+  const rest = ids.filter(x => x !== id), ok = pos => { const probe = rest.slice(); probe.splice(pos, 0, id); return schadetAnderen(spaetVon(planen({reihenfolge: probe})), basis, id) ? null : probe; };
+  let lo = ziel, hi = cur, best = null;
+  while(lo < hi){ const mid = (lo + hi) >> 1, pr = ok(mid); if(pr){ best = pr; hi = mid; } else lo = mid + 1; }
+  return best || ids;
+}
+/* Neuer oder geänderter Auftrag: nach Kundenrang einordnen. Gibt die neue Prio-Position zurück. */
+function auftragEinordnen(id, neu){
+  const p = planen(); let ids = p.plan.map(x => x.a.id); if(ids.indexOf(id) < 0) return null;
+  const vorher = ids.indexOf(id);
+  if(neu) ids = ids.filter(x => x !== id).concat([id]);
+  const basis = spaetVon(neu ? planen({reihenfolge: ids}) : p);
+  const nach = vorziehen(ids, id, basis);
+  prioSetzen(nach, id);
+  return {pos: nach.indexOf(id)+1, bewegt: nach.indexOf(id) !== (neu ? ids.length-1 : vorher)};
+}
+/* Alle offenen Aufträge nach Kundenrang ordnen - ohne dass ein Auftrag später fertig wird als vorher. */
+function rangAnwenden(){
+  const p = planen(); let ids = p.plan.map(x => x.a.id), basis = spaetVon(p); const start = ids.join();
+  // Schnellweg: innerhalb der Abschnitte zwischen fest gesetzten Aufträgen nach Rang sortieren
+  const seg = []; let puffer = [];
+  const flush = () => { puffer.sort((x,y) => kundenRang(D.auftraege[x].kunde)-kundenRang(D.auftraege[y].kunde) || ids.indexOf(x)-ids.indexOf(y)); seg.push(...puffer); puffer = []; };
+  ids.forEach(id => { if(D.auftraege[id].fest){ flush(); seg.push(id); } else puffer.push(id); }); flush();
+  if(seg.join() !== start && !schadetAnderen(spaetVon(planen({reihenfolge: seg})), basis, null)) ids = seg;
+  else if(seg.join() !== start){
+    // Schritt für Schritt, beste Kunden zuerst
+    const reihe = ids.filter(id => !D.auftraege[id].fest).sort((x,y) => kundenRang(D.auftraege[x].kunde)-kundenRang(D.auftraege[y].kunde) || ids.indexOf(x)-ids.indexOf(y));
+    reihe.forEach(id => { const neuIds = vorziehen(ids, id, basis); if(neuIds.join() !== ids.join()){ ids = neuIds; basis = spaetVon(planen({reihenfolge: ids})); } });
+  }
+  const n = ids.join() === start ? 0 : prioSetzen(ids);
+  if(n) notiere('Priorität', 'Kundenrang', null, n, n+' Aufträge nach Kundenrang umgeordnet (keine Terminverschlechterung)');
+  return n;
+}
+function rangAnwendenKnopf(){
+  if(!darfSchreiben()) return;
+  const n = rangAnwenden(); alles();
+  toast(n ? 'Rang angewendet: '+n+' Aufträge verschoben. Kein Kundentermin wurde schlechter.' : 'Nichts zu ändern: Die Reihenfolge passt schon zum Kundenrang oder Termine stehen entgegen.');
+}
+function festUm(id){
+  const a = D.auftraege[id]; if(!a || !darfSchreiben()) return;
+  a.fest = !a.fest; ablegen('auftraege', id, a); notiere('Priorität', auName(id), null, null, a.fest ? 'Position fest gesetzt' : 'Position wieder automatisch'); alles();
+}
+const festZeichen = a => a.fest ? '<span class="pin" title="Von Hand gesetzt: Die Automatik verschiebt diesen Auftrag nicht. Klicken zum Lösen." onclick="festUm(\''+a.id+'\')">&#128204;</span>' : '';
+
+function kundeHinzu(){
+  if(!darfKundenPflegen()) return; const n = el('kuNeu').value.trim(); if(!n) return;
+  if(kunden().some(k => k.name.toLowerCase() === n.toLowerCase())) return alert('Diesen Kunden gibt es schon.');
+  ablegen('einst','kunden',{liste: kunden().concat([{id:neueId(), name:n}])}); notiere('Kunde', n, null, kunden().length, 'angelegt (letzter Rang)'); el('kuNeu').value = ''; alles();
+}
+function kundeRangUm(id, r){
+  if(!darfKundenPflegen()) return;
+  const l = kunden().map(k => ({...k})), i = l.findIndex(k => k.id === id), j = i+r; if(i < 0 || j < 0 || j >= l.length) return;
+  [l[i], l[j]] = [l[j], l[i]]; ablegen('einst','kunden',{liste:l}); notiere('Kunde', l[j].name, i+1, j+1, 'Rang geändert'); alles();
+  toast('Rang geändert. Mit „Rang jetzt auf offene Aufträge anwenden“ auf die Prioritäten übertragen.');
+}
+function kundeUmbenennen(id){
+  if(!darfKundenPflegen()) return; const k = kunden().find(x => x.id === id); if(!k) return;
+  const n = (prompt('Neuer Name für „'+k.name+'“:', k.name)||'').trim(); if(!n || n === k.name) return;
+  if(kunden().some(x => x.id !== id && x.name.toLowerCase() === n.toLowerCase())) return alert('Diesen Namen gibt es schon.');
+  sammelStart();
+  Object.values(D.auftraege).filter(a => a.kunde === k.name).forEach(a => { a.kunde = n; ablegen('auftraege', a.id, a); });
+  Object.values(D.teile).filter(t => t.kunde === k.name).forEach(t => { t.kunde = n; ablegen('teile', t.id, t); });
+  ablegen('einst','kunden',{liste: kunden().map(x => x.id === id ? {...x, name:n} : x)});
+  sammelEnde(); notiere('Kunde', k.name, null, null, 'umbenannt in '+n); alles();
+}
+function kundeWeg(id){
+  if(!darfKundenPflegen()) return; const k = kunden().find(x => x.id === id); if(!k) return;
+  const offen = Object.values(D.auftraege).filter(a => a.kunde === k.name && a.status !== 'abgeschlossen').length;
+  if(offen) return alert(k.name+' hat noch '+offen+' offene Aufträge. Bitte zuerst abschließen oder umstellen.');
+  if(!confirm('„'+k.name+'“ aus der Auswahl nehmen?\n\nBestehende (abgeschlossene) Aufträge behalten den Namen.')) return;
+  ablegen('einst','kunden',{liste: kunden().filter(x => x.id !== id)}); notiere('Kunde', k.name, null, null, 'entfernt'); alles();
+}
+function zeichneKunden(){
+  const kp = darfKundenPflegen(), l = kunden();
+  el('kuWerkzeuge').style.display = kp ? '' : 'none';
+  el('kuListe').innerHTML = '<table class="liste"><thead><tr><th style="width:60px">Rang</th><th>Kunde</th><th class="num">offene Aufträge</th><th style="width:130px"></th></tr></thead><tbody>'+
+    (l.map((k,i) => { const n = Object.values(D.auftraege).filter(a => a.kunde === k.name && a.status !== 'abgeschlossen').length;
+      return '<tr><td><b>'+(i+1)+'</b></td><td><b>'+esc(k.name)+'</b></td><td class="num">'+n+'</td><td style="white-space:nowrap">'+(kp?
+        '<button class="mini" onclick="kundeRangUm(\''+k.id+'\',-1)" '+(i===0?'disabled':'')+'>&uarr;</button> <button class="mini" onclick="kundeRangUm(\''+k.id+'\',1)" '+(i===l.length-1?'disabled':'')+'>&darr;</button> '+
+        '<button class="mini" title="umbenennen" onclick="kundeUmbenennen(\''+k.id+'\')">&#9998;</button> <button class="mini" onclick="kundeWeg(\''+k.id+'\')">&times;</button>':'')+'</td></tr>'; }).join('')
+    || '<tr><td colspan="4" class="sub" style="padding:12px">Noch keine Kunden.</td></tr>')+'</tbody></table>';
 }
 
 /* ---------- Automatischer Prio-Vorschlag ---------- */
@@ -1127,7 +1305,7 @@ function zeichneWoche(){
   el('wocheTab').innerHTML = html;
   el('wocheListe').innerHTML = zeiten.sort((a,b)=>a.datum.localeCompare(b.datum)||maName(a.mitarbeiterId).localeCompare(maName(b.mitarbeiterId))).map(z =>
     '<tr><td>'+dmy(z.datum)+'</td><td>'+esc(maName(z.mitarbeiterId))+'</td><td>'+esc(auName(z.auftragId))+'</td><td>'+esc(z.taetigkeit)+'</td>'+
-    '<td class="num"><b>'+de(z.stunden,1)+'</b></td><td style="color:var(--text-hell)">'+(z.art==='nacharbeit'? '<span class="pill krit">Nacharbeit · '+esc(z.grund||'')+'</span> ':'')+esc(z.bemerkung||'')+'</td>'+
+    '<td class="num"><b>'+de(z.stunden,1)+'</b></td><td style="color:var(--text-hell)">'+esc(z.bemerkung||'')+'</td>'+
     '<td style="white-space:nowrap">'+(darfSchreiben()? '<button class="mini" onclick="zeitDialog(\''+z.id+'\')">&#9998;</button> <button class="mini" onclick="zeitLoeschen(\''+z.id+'\')">&times;</button>':'')+'</td></tr>'
   ).join('') || '<tr><td colspan="7" style="padding:14px;color:var(--text-hell)">Noch keine Einträge in dieser Woche.</td></tr>';
 }
@@ -1163,8 +1341,6 @@ function zeitDialog(id, mid, datum, aid){
       '<label>Arbeitsschritt<select id="zTaet">'+schritteFuer(selA, z&&z.taetigkeit).map(t=>'<option'+(z&&z.taetigkeit===t?' selected':'')+'>'+esc(t)+'</option>').join('')+'</select></label>'+
       '<label>Ofen (nur falls verwendet)<select id="zOfen">'+ofenOptionenHtml(selMats, z&&z.ofenId, '– keiner –')+'</select></label>'+
       '<label>Stunden<input type="number" step="0.25" min="0" id="zStd" value="'+vorschlag+'"></label>'+
-      '<label>Art<select id="zArt" onchange="el(\'zGrundFeld\').style.display=this.value===\'nacharbeit\'?\'\':\'none\'"><option value="normal"'+(!z||z.art!=='nacharbeit'?' selected':'')+'>Normale Arbeit</option><option value="nacharbeit"'+(z&&z.art==='nacharbeit'?' selected':'')+'>Nacharbeit / Qualitätsproblem</option></select></label>'+
-      '<label id="zGrundFeld" style="display:'+(z&&z.art==='nacharbeit'?'':'none')+'">Grund<select id="zGrund">'+gruende().map(g=>'<option'+(z&&z.grund===g?' selected':'')+'>'+esc(g)+'</option>').join('')+'</select></label>'+
       '<label class="breit">Bemerkung (optional)<input type="text" id="zBem" value="'+esc(z?z.bemerkung:'')+'" placeholder="z. B. Bohrung 0,1 mm zu klein, nachgearbeitet"></label>'+
     '</div>'+
     (schon.length? '<div class="hinweis" style="margin-top:14px">An diesem Tag sind schon '+de(schonH,1)+' h eingetragen: '+schon.map(x=>esc(auName(x.auftragId))+' '+de(x.stunden,1)+' h').join(', ')+'</div>':'')+
@@ -1189,7 +1365,7 @@ function zeitSpeichern(id, weiter){
     if(k.length) return alert('Ofen-Schutz: '+o.name+' ist für '+k.join(', ')+' gesperrt.\n\nBitte einen anderen Ofen wählen.'); }
   const alt = id ? D.zeiten[id] : null;
   const z = {id: id || neueId(), datum: el('zDatum').value, mitarbeiterId: el('zMa').value, auftragId: el('zAu').value,
-    taetigkeit: taet, ofenId, stunden: std, bemerkung: el('zBem').value.trim(), art: el('zArt').value, grund: el('zArt').value==='nacharbeit' ? el('zGrund').value : '',
+    taetigkeit: taet, ofenId, stunden: std, bemerkung: el('zBem').value.trim(),
     erfasstVon: benutzerName(), erfasstAm: new Date().toISOString()};
   if(alt){ z.erstellt = alt.erstellt || alt.erfasstAm; z.aenderungen = (alt.aenderungen||[]).concat([{am:new Date().toISOString(), von:benutzerName(), vorher:alt.stunden}]); }
   ablegen('zeiten', z.id, z);
@@ -1237,9 +1413,9 @@ function zeichneAuftraege(){
   const nOffen = p.plan.length;
   el('auBody').innerHTML = liste.map(a => {
     const am = ampel(a), x = plan[a.id], offen = a.status !== 'abgeschlossen';
-    const prio = offen && x ? '<div class="prio"><b>'+x.nr+'</b>'+(darfSchreiben()? '<span style="display:inline-flex;flex-direction:column;gap:2px"><button class="mini" style="height:16px;font-size:10px" onclick="prioVerschieben(\''+a.id+'\',-1)" '+(x.nr===1?'disabled':'')+'>&#9650;</button><button class="mini" style="height:16px;font-size:10px" onclick="prioVerschieben(\''+a.id+'\',1)" '+(x.nr===nOffen?'disabled':'')+'>&#9660;</button></span>':'')+'</div>' : '<span class="pill grau">abgeschl.</span>';
+    const prio = offen && x ? '<div class="prio"><b>'+x.nr+'</b>'+festZeichen(a)+(darfSchreiben()? '<span style="display:inline-flex;flex-direction:column;gap:2px"><button class="mini" style="height:16px;font-size:10px" onclick="prioVerschieben(\''+a.id+'\',-1)" '+(x.nr===1?'disabled':'')+'>&#9650;</button><button class="mini" style="height:16px;font-size:10px" onclick="prioVerschieben(\''+a.id+'\',1)" '+(x.nr===nOffen?'disabled':'')+'>&#9660;</button></span>':'')+'</div>' : '<span class="pill grau">abgeschl.</span>';
     const fertig = !offen ? dmy(a.abgeschlossenAm) : (x && x.ende ? '<span class="pill '+x.bewertung+'" title="'+esc(x.text)+'">'+dmy(x.ende)+'</span>' : (x && x.rest>0 ? '–' : 'fertig'));
-    return '<tr><td>'+prio+'</td><td><b>'+esc(a.nummer||'–')+'</b></td><td>'+esc(a.bezeichnung)+(a.notiz? '<br><span class="sub">'+esc(a.notiz)+'</span>':'')+'</td><td>'+esc(a.kunde||'')+'</td>'+
+    return '<tr><td>'+prio+'</td><td><b>'+esc(a.nummer||'–')+'</b></td><td>'+esc(a.bezeichnung)+(alleErledigt(a)? ' <span class="pill ok" title="Alle Arbeitsschritte wurden in der Produktion als erledigt gemeldet">Schritte fertig</span>':'')+(a.notiz? '<br><span class="sub">'+esc(a.notiz)+'</span>':'')+'</td><td>'+esc(a.kunde||'')+'</td>'+
       '<td>'+dmy(a.endeKunde)+'</td><td>'+fertig+'</td><td class="num">'+(am.soll? de(am.soll,0):'–')+'</td><td class="num">'+de(am.ist,1)+'</td>'+
       '<td><span class="ampel '+am.kl+'"></span>'+balkenHtml(am)+'</td>'+
       '<td style="white-space:nowrap">'+(darfSchreiben() && offen ? '<button class="btn" style="padding:4px 9px;font-size:12px" onclick="zeitDialog(null,null,null,\''+a.id+'\')">+ Zeit</button> ':'')+
@@ -1254,9 +1430,8 @@ function auftragDialog(id){
   const a = id ? D.auftraege[id] : {id:neueId(), nummer:nummerVorschlag(), teilId:'', bezeichnung:'', kunde:'', menge:'', start:heute(), endeKunde:'', sollGesamt:'', sollJe:{}, schritte:[], materialien:[], ofenId:'', notiz:'', status:'offen'};
   const t = a.teilId ? D.teile[a.teilId] : null;
   const teilWert = t ? teilText(t) : String(a.bezeichnung||'').replace(/,\s*\d+\s*Stück$/,'');
-  const kunden = [...new Set(alleTeile().map(x=>x.kunde).concat(Object.values(D.auftraege).map(x=>x.kunde)).filter(Boolean))].sort((x,y)=>x.localeCompare(y,'de'));
   const gewSchr = (a.schritte && a.schritte.length) ? a.schritte : Object.keys(a.sollJe||{});
-  const mats = a.materialien || [];
+  const mats = a.materialien || [], einfach = mobilAn();
   el('dialogBox').innerHTML =
     '<div class="overlay" onclick="if(event.target===this)schliesse()"><div class="dialog">'+
     '<div class="kopf"><div><b>'+(id?'Auftrag bearbeiten':'Neuer Auftrag')+'</b></div><button class="zu" onclick="schliesse()">&times;</button></div>'+
@@ -1273,11 +1448,10 @@ function auftragDialog(id){
     '<div class="formtitel">Auftrag</div><div class="formgitter">'+
       '<label>Auftragsnummer<input type="text" id="auNr" value="'+esc(a.nummer)+'"></label>'+
       '<label>Menge (Stück)<input type="number" min="0" id="auMenge" value="'+esc(a.menge||'')+'" placeholder="optional"></label>'+
-      '<label>Kunde<input type="text" id="auKunde" list="auKunden" value="'+esc(a.kunde)+'" autocomplete="off"></label>'+
-      '<datalist id="auKunden">'+kunden.map(k=>'<option value="'+esc(k)+'"></option>').join('')+'</datalist>'+
-      '<label>Frühester Start<input type="date" id="auStart" value="'+(a.start||'')+'"></label>'+
+      '<label>Kunde<select id="auKunde">'+kundenOptionen(a.kunde)+'</select></label>'+
+      '<label'+(einfach?' style="display:none"':'')+'>Frühester Start<input type="date" id="auStart" value="'+(a.start||'')+'"></label>'+
       '<label>Kundentermin (Ende)<input type="date" id="auEnde" value="'+(a.endeKunde||'')+'"></label>'+
-      '<label>Max. Personen gleichzeitig<input type="number" min="1" id="auMax" value="'+(a.maxPersonen||'')+'" placeholder="leer = beliebig"></label>'+
+      '<label'+(einfach?' style="display:none"':'')+'>Max. Personen gleichzeitig<input type="number" min="1" id="auMax" value="'+(a.maxPersonen||'')+'" placeholder="leer = beliebig"></label>'+
     '</div>'+
     '<div class="formtitel">Material und Ofen</div><p class="formhinweis">Was steckt in diesem Auftrag? Danach zeigt der Ofen-Schutz nur die Öfen, in denen das Material laufen darf.</p>'+
     '<div class="chips">'+materialien().map(m=>'<label class="chip" style="cursor:pointer"><input type="checkbox" data-mat="'+esc(m)+'" '+(mats.includes(m)?'checked':'')+' onchange="auOfenAktualisieren()"> '+esc(m)+'</label>').join('')+'</div>'+
@@ -1285,9 +1459,10 @@ function auftragDialog(id){
       '<div id="auOfenInfo" style="align-self:end;padding-bottom:6px">'+ofenInfoHtml(mats)+'</div></div>'+
     '<div class="formtitel">Arbeitsschritte und Soll-Zeit</div><p class="formhinweis">Haken setzen bei den Schritten, die dieser Auftrag braucht. Soll-Stunden sind optional: entweder je Schritt oder als Gesamtzeit. Ist eine Gesamtzeit angegeben, gilt sie.</p>'+
     '<div class="formgitter"><label>Soll gesamt (h)<input type="number" step="0.5" min="0" id="auSoll" value="'+(a.sollGesamt||'')+'" placeholder="z. B. 40"></label></div>'+
+    (einfach ? '<div class="chips" style="margin-top:10px">'+taetigkeiten().map(tt => '<label class="chip" style="cursor:pointer"><input type="checkbox" data-schritt="'+esc(tt)+'" '+(gewSchr.includes(tt)?'checked':'')+'> '+esc(tt)+'</label>').join('')+'</div>' :
     '<table class="liste" style="margin-top:12px"><thead><tr><th>Arbeitsschritt</th><th class="num" style="width:140px">Soll h</th><th class="num" style="width:120px">Ist h bisher</th></tr></thead><tbody>'+
     taetigkeiten().map(tt => '<tr><td><label style="cursor:pointer"><input type="checkbox" data-schritt="'+esc(tt)+'" '+(gewSchr.includes(tt)?'checked':'')+'> '+esc(tt)+'</label></td><td class="num"><input type="number" step="0.5" min="0" data-taet="'+esc(tt)+'" value="'+((a.sollJe||{})[tt]||'')+'" style="width:100px;text-align:right"></td>'+
-      '<td class="num">'+de(istJe(a.id)[tt]||0,1)+'</td></tr>').join('')+'</tbody></table>'+
+      '<td class="num">'+de(istJe(a.id)[tt]||0,1)+'</td></tr>').join('')+'</tbody></table>')+
     '<div class="formgitter" style="margin-top:14px"><label class="breit">Bemerkung (nur für Ausnahmen)<textarea id="auNotiz" rows="2">'+esc(a.notiz)+'</textarea></label></div>'+
     '</div><div class="fuss">'+(id? '<button class="btn rot" onclick="auftragLoeschen(\''+a.id+'\')">Löschen</button>':'')+
     '<span style="flex:1"></span><button class="btn sek" onclick="schliesse()">Abbrechen</button>'+
@@ -1303,12 +1478,16 @@ function auTeilGewaehlt(still){
   el('auNeuBox').style.display = (!t && w) ? '' : 'none';
   el('auTeilStatus').textContent = t ? 'Aus dem Katalog: '+(t.kunde? t.kunde+' · ':'')+'Material und Arbeitsschritte sind vorbelegt und können für diesen Auftrag geändert werden.' : '';
   if(t && !still){
-    if(t.kunde) el('auKunde').value = t.kunde;
+    if(t.kunde){ const sel = el('auKunde'); if(sel.options && ![...sel.options].some(o => o.value === t.kunde)) sel.innerHTML = kundenOptionen(t.kunde); sel.value = t.kunde; }
     document.querySelectorAll('#dialogBox input[data-mat]').forEach(i => { i.checked = (t.materialien||[]).includes(i.dataset.mat); });
     document.querySelectorAll('#dialogBox input[data-schritt]').forEach(i => { i.checked = (t.schritte||[]).includes(i.dataset.schritt); });
     document.querySelectorAll('#dialogBox input[data-taet]').forEach(i => { i.value = (t.sollJe||{})[i.dataset.taet] || ''; });
   }
   if(!still) auOfenAktualisieren();
+}
+function kundenOptionen(gew){
+  const l = kunden().map(k => k.name); if(gew && !l.includes(gew)) l.push(gew);
+  return '<option value="">– kein Kunde –</option>'+l.map(n => '<option'+(n===gew?' selected':'')+'>'+esc(n)+'</option>').join('');
 }
 function auOfenAktualisieren(){
   const sel = el('auOfen'); if(!sel) return;
@@ -1355,7 +1534,14 @@ function auftragSpeichern(id, neu){
   ablegen('auftraege', id, a);
   const of = oefen().find(o => o.id === ofenId);
   notiere('Auftrag', auName(id), neu? null : sollVon(alt), sollVon(a), neu? 'angelegt' : 'bearbeitet'+(alt.endeKunde!==a.endeKunde? ' · Kundentermin '+dmy(alt.endeKunde)+' → '+dmy(a.endeKunde):'')+(of? ' · Ofen '+of.name:''));
-  schliesse(); alles();
+  // Priorität im Hintergrund nach Kundenrang
+  let hinweis = '';
+  if(neu || (alt.kunde||'') !== kunde){
+    const r = auftragEinordnen(id, !!neu);
+    if(!neu && kundenRang(kunde) > kundenRang(alt.kunde)) rangAnwenden();
+    if(r){ notiere('Priorität', auName(id), null, r.pos, 'automatisch nach Kundenrang'+(kunde? ' ('+kunde+')':'')+(r.bewegt? ' vorgezogen':' am Ende der gleichrangigen')); hinweis = '„'+auName(id)+'“ steht jetzt auf Priorität '+r.pos+(kunde? ' (Rang von '+kunde+')':'')+'.'; }
+  }
+  schliesse(); alles(); if(hinweis) toast(hinweis);
 }
 function auftragStatus(id, st){
   const a = D.auftraege[id]; if(!a) return;
@@ -1392,7 +1578,7 @@ function auftragDetails(id){
     '</tbody></table>'+
     '<h2>Je Mitarbeiter</h2><div class="chips">'+Object.entries(jeMa).map(([m,h])=>'<span class="chip">'+esc(maName(m))+' · '+de(h,1)+' h</span>').join('')+'</div>'+
     '<h2>Zeiteinträge</h2><div style="max-height:30vh;overflow:auto"><table class="liste"><thead><tr><th>Datum</th><th>Mitarbeiter</th><th>Arbeitsschritt</th><th class="num">h</th><th>Bemerkung</th></tr></thead><tbody>'+
-    zeiten.map(z=>'<tr><td>'+dmy(z.datum)+'</td><td>'+esc(maName(z.mitarbeiterId))+'</td><td>'+esc(z.taetigkeit)+'</td><td class="num">'+de(z.stunden,1)+'</td><td class="sub">'+(istNacharbeit(z)?'<span class="pill krit">'+esc(z.grund||'Nacharbeit')+'</span> ':'')+esc(z.bemerkung||'')+(darfSchreiben()? ' <button class="mini" style="float:right" onclick="zeitDialog(\''+z.id+'\')">&#9998;</button>':'')+'</td></tr>').join('')+
+    zeiten.map(z=>'<tr><td>'+dmy(z.datum)+'</td><td>'+esc(maName(z.mitarbeiterId))+'</td><td>'+esc(z.taetigkeit)+'</td><td class="num">'+de(z.stunden,1)+'</td><td class="sub">'+esc(z.bemerkung||'')+(darfSchreiben()? ' <button class="mini" style="float:right" onclick="zeitDialog(\''+z.id+'\')">&#9998;</button>':'')+'</td></tr>').join('')+
     '</tbody></table></div></div>'+
     '<div class="fuss">'+(darfSchreiben() && a.status!=='abgeschlossen'? '<button class="btn" onclick="zeitDialog(null,null,null,\''+id+'\')">+ Zeit buchen</button>':'')+'<span style="flex:1"></span><button class="btn sek" onclick="schliesse()">Schließen</button></div></div></div>';
 }
@@ -1402,8 +1588,9 @@ function zeichneKatalog(){
   const s = (el('kaSuche').value||'').trim().toLowerCase();
   const liste = alleTeile().filter(t => !s || (teilText(t)+' '+(t.kunde||'')+' '+(t.materialien||[]).join(' ')).toLowerCase().includes(s));
   const sw = darfSchreiben();
-  el('kaKennzahlen').innerHTML = kz(alleTeile().length,'Teile im Katalog')+kz(materialien().length,'Materialien')+kz(oefen().length,'Öfen')+kz(taetigkeiten().length,'Arbeitsschritte');
+  el('kaKennzahlen').innerHTML = kz(alleTeile().length,'Teile im Katalog')+kz(kunden().length,'Kunden')+kz(materialien().length,'Materialien')+kz(oefen().length,'Öfen')+kz(taetigkeiten().length,'Arbeitsschritte');
   el('kaProbleme').innerHTML = ofenHinweisHtml();
+  zeichneKunden();
   el('kaBody').innerHTML = liste.map(t =>
     '<tr><td><b>'+esc(t.nr||'–')+'</b></td><td>'+esc(t.name)+'</td><td>'+esc(t.kunde||'')+'</td>'+
     '<td>'+(t.materialien||[]).map(m=>'<span class="chip" style="padding:2px 9px;font-size:12px">'+esc(m)+'</span>').join(' ')+'</td>'+
@@ -1421,14 +1608,12 @@ function zeichneKatalog(){
 function teilDialog(id){
   if(!darfSchreiben()) return;
   const t = id ? D.teile[id] : {id:neueId(), nr:'', name:'', kunde:'', materialien:[], schritte:[], sollJe:{}, notiz:''};
-  const kunden = [...new Set(alleTeile().map(x=>x.kunde).concat(Object.values(D.auftraege).map(x=>x.kunde)).filter(Boolean))].sort((x,y)=>x.localeCompare(y,'de'));
   el('dialogBox').innerHTML =
     '<div class="overlay" onclick="if(event.target===this)schliesse()"><div class="dialog" style="max-width:640px">'+
     '<div class="kopf"><div><b>'+(id?'Teil bearbeiten':'Neues Teil')+'</b></div><button class="zu" onclick="schliesse()">&times;</button></div>'+
     '<div class="rumpf"><div class="formgitter">'+
       '<label>Teilenummer<input type="text" id="tNr" value="'+esc(t.nr)+'"></label>'+
-      '<label>Kunde<input type="text" id="tKunde" list="tKunden" value="'+esc(t.kunde||'')+'" autocomplete="off"></label>'+
-      '<datalist id="tKunden">'+kunden.map(k=>'<option value="'+esc(k)+'"></option>').join('')+'</datalist>'+
+      '<label>Kunde<select id="tKunde">'+kundenOptionen(t.kunde||'')+'</select></label>'+
       '<label class="breit">Bezeichnung<input type="text" id="tName" value="'+esc(t.name)+'"></label></div>'+
     '<div class="formtitel">Material</div><div class="chips">'+materialien().map(m=>'<label class="chip" style="cursor:pointer"><input type="checkbox" data-tmat="'+esc(m)+'" '+((t.materialien||[]).includes(m)?'checked':'')+'> '+esc(m)+'</label>').join('')+'</div>'+
     '<div class="formtitel">Arbeitsschritte (Standard-Soll in Stunden ist optional)</div>'+
@@ -1551,7 +1736,7 @@ function zeichnePlanung(){
     kz(p.unter.length,'Tage mit freier Kapazität (30 Tage)', p.unter.length?'gelb':'');
   el('plHinweise').innerHTML = planHinweise(p, false);
   el('plBody').innerHTML = p.plan.map((x,i) =>
-    '<tr><td><div class="prio"><b>'+(i+1)+'</b>'+(darfSchreiben()? '<button class="mini" onclick="prioVerschieben(\''+x.a.id+'\',-1)" '+(i===0?'disabled':'')+'>&uarr;</button><button class="mini" onclick="prioVerschieben(\''+x.a.id+'\',1)" '+(i===p.plan.length-1?'disabled':'')+'>&darr;</button>':'')+'</div></td>'+
+    '<tr><td><div class="prio"><b>'+(i+1)+'</b>'+festZeichen(x.a)+(darfSchreiben()? '<button class="mini" onclick="prioVerschieben(\''+x.a.id+'\',-1)" '+(i===0?'disabled':'')+'>&uarr;</button><button class="mini" onclick="prioVerschieben(\''+x.a.id+'\',1)" '+(i===p.plan.length-1?'disabled':'')+'>&darr;</button>':'')+'</div></td>'+
     '<td><b>'+esc(x.a.nummer||'')+'</b> '+esc(x.a.bezeichnung)+'<br><span class="sub">'+esc(x.a.kunde||'')+'</span></td>'+
     '<td class="num">'+(sollVon(x.a)? de(x.rest,1):'–')+'</td><td>'+dmy(x.a.start)+'</td><td>'+(x.start? dmy(x.start):'–')+'</td><td>'+(x.ende? '<b>'+dmy(x.ende)+'</b>':'–')+'</td>'+
     '<td>'+dmy(x.a.endeKunde)+'</td><td><span class="pill '+x.bewertung+'">'+x.text+'</span></td>'+
@@ -1567,7 +1752,8 @@ function prioVerschieben(id, richtung){
 }
 function prioOben(id){ const liste = planen().plan.map(x=>x.a); const a = liste.find(x=>x.id===id); prioNeuNummerieren([a].concat(liste.filter(x=>x.id!==id)), id); }
 function prioNeuNummerieren(liste, id){
-  liste.forEach((a,i) => { if(a.prio !== i+1){ a.prio = i+1; ablegen('auftraege', a.id, a); } });
+  const bew = liste.find(a => a.id === id); if(bew) bew.fest = true;      // von Hand gesetzt: Automatik lässt die Position in Ruhe
+  liste.forEach((a,i) => { if(a.prio !== i+1 || a.id === id){ a.prio = i+1; ablegen('auftraege', a.id, a); } });
   notiere('Priorität', auName(id), null, liste.findIndex(a=>a.id===id)+1, 'Reihenfolge geändert');
   alles();
 }
@@ -1830,12 +2016,10 @@ function zeichneQM(){
     '<td>'+(f.bezug==='stunde'? 'je Ist-Stunde (automatisch)':'je Auftrag (Menge erfassen)')+'</td>'+
     '<td>'+(darfSchreiben()? '<button class="mini" onclick="kostenPreis(\''+f.id+'\')">&#9998;</button> <button class="mini" onclick="kostenWeg(\''+f.id+'\')">&times;</button>':'')+'</td></tr>').join('')
     || '<tr><td colspan="5" class="sub" style="padding:12px">Noch keine Faktoren.</td></tr>';
-  el('grundListe').innerHTML = gruende().map(g=>'<span class="chip">'+esc(g)+(darfSchreiben()?'<button onclick="grundWeg(\''+esc(g)+'\')">&times;</button>':'')+'</span>').join('');
 
-  const {auftr, zeiten} = qmFilter();
+  const {auftr, zeiten, grenze} = qmFilter();
   // Kennzahlen
   const istH = zeiten.reduce((s,z)=>s+(+z.stunden||0),0);
-  const naH = zeiten.filter(istNacharbeit).reduce((s,z)=>s+(+z.stunden||0),0);
   const mitSoll = auftr.filter(a=>sollVon(a)>0);
   const sollH = mitSoll.reduce((s,a)=>s+sollVon(a),0), istSollH = mitSoll.reduce((s,a)=>s+istVon(a.id),0);
   const abg = auftr.filter(a=>a.status==='abgeschlossen');
@@ -1843,10 +2027,10 @@ function zeichneQM(){
   const dls = abg.map(durchlauf).filter(Boolean); const dlMittel = dls.length ? dls.reduce((s,d)=>s+d.tage,0)/dls.length : 0;
   const kosten = auftr.reduce((s,a)=>s+kostenVon(a),0);
   const ueber = mitSoll.filter(a => istVon(a.id) > sollVon(a)).length;
-  const naQuote = istH ? naH/istH*100 : 0;
+  const eKosten = energieKostenPeriode(grenze);
   el('qmKennzahlen').innerHTML =
     kz(de(istH,0)+' h','gebuchte Stunden') +
-    kz(de(naQuote,1)+' %','Nacharbeitsquote', naQuote>=10?'warn':naQuote>=5?'gelb':'gruen') +
+    kz(de(eKosten,0)+' €','Energiekosten', eKosten?'':'gelb') +
     kz((sollH? Math.round(istSollH/sollH*100):0)+' %','Ist zu Soll', sollH && istSollH>sollH*1.1?'warn':sollH && istSollH>sollH?'gelb':'gruen') +
     kz(ueber+' / '+mitSoll.length,'Aufträge über Soll', ueber? 'gelb':'gruen') +
     kz(termine.length? Math.round(puenktlich/termine.length*100)+' %':'–','Termintreue', termine.length && puenktlich<termine.length? (puenktlich/termine.length<.8?'warn':'gelb'):'gruen') +
@@ -1855,9 +2039,11 @@ function zeichneQM(){
     kz(istH? de(kosten/istH,2)+' €':'–','Kosten je Stunde');
   // Hinweise
   let hw = '';
-  const grundH = {}; zeiten.filter(istNacharbeit).forEach(z => grundH[z.grund||'ohne Grund'] = (grundH[z.grund||'ohne Grund']||0)+(+z.stunden||0));
-  const topGrund = Object.entries(grundH).sort((a,b)=>b[1]-a[1])[0];
-  if(topGrund && naH) hw += '<div class="hinweis gelb"><b>Häufigster Nacharbeitsgrund:</b> '+esc(topGrund[0])+' mit '+de(topGrund[1],1)+' h ('+Math.round(topGrund[1]/naH*100)+' % der Nacharbeit).</div>';
+  // Monate mit gebuchten Stunden, aber ohne Verbrauchswerte
+  const monH = {}; zeiten.forEach(z => { const k = String(z.datum).slice(0,7); monH[k] = (monH[k]||0)+(+z.stunden||0); });
+  const aktMon = heute().slice(0,7), eMon = energieMonate();
+  const fehlt = Object.keys(monH).filter(k => k < aktMon && !eMon[k]).sort();
+  if(fehlt.length) hw += '<div class="hinweis gelb"><b>Energie fehlt für '+fehlt.length+' Monat'+(fehlt.length>1?'e':'')+':</b> '+fehlt.map(k=>MON[+k.slice(5,7)-1]+' '+k.slice(0,4)).join(', ')+'. Ohne Verbrauchswerte fließt dort keine Energie in die Auftragskosten ein.'+(darfSchreiben()? ' <button class="mini" onclick="energieDialog(\''+fehlt[fehlt.length-1]+'\')">jetzt eintragen</button>':'')+'</div>';
   const kalib = {}; const kalibN = {};
   auftr.forEach(a => { const je = a.sollJe||{}; if(+a.sollGesamt>0 || !Object.keys(je).length) return; const ist = istJe(a.id);
     Object.keys(je).forEach(t => { if(+je[t]>0){ kalib[t] = (kalib[t]||0)+(ist[t]||0); kalibN[t] = (kalibN[t]||0)+(+je[t]); } }); });
@@ -1867,7 +2053,7 @@ function zeichneQM(){
   if(spaet.length) hw += '<div class="hinweis rot"><b>'+spaet.length+' abgeschlossene Aufträge nach Kundentermin:</b> '+spaet.map(a=>esc(a.nummer||a.bezeichnung)+' (+'+terminStatus(a).tage+' AT)').join(', ')+'.</div>';
   el('qmHinweise').innerHTML = hw;
   // Charts
-  el('qmChartGrund').innerHTML = chartBalken(Object.entries(grundH).sort((a,b)=>b[1]-a[1]), 'h');
+  zeichneEnergie(grenze);
   el('qmChartKalib').innerHTML = chartBalken(Object.keys(kalib).map(t=>[t, Math.round(kalib[t]/kalibN[t]*100)]).sort((a,b)=>b[1]-a[1]), '%', 100);
   el('qmChartTrend').innerHTML = chartMonate(zeiten);
   const jeT = {}; zeiten.forEach(x => jeT[x.taetigkeit]=(jeT[x.taetigkeit]||0)+(+x.stunden||0));
@@ -1875,15 +2061,15 @@ function zeichneQM(){
   const jeM = {}; zeiten.forEach(x => jeM[maName(x.mitarbeiterId)]=(jeM[maName(x.mitarbeiterId)]||0)+(+x.stunden||0));
   el('qmChartMa').innerHTML = chartBalken(Object.entries(jeM).sort((a,b)=>b[1]-a[1]), 'h');
   // Detailtabelle
-  el('qmKopf').innerHTML = '<tr><th>Auftrag</th><th>Kunde</th><th class="num">Soll h</th><th class="num">Ist h</th><th class="num">Abw.</th><th class="num">Nacharbeit</th><th>Termin</th><th class="num">Durchlauf</th>'+
+  el('qmKopf').innerHTML = '<tr><th>Auftrag</th><th>Kunde</th><th class="num">Soll h</th><th class="num">Ist h</th><th class="num">Abw.</th><th class="num">Energie</th><th>Termin</th><th class="num">Durchlauf</th>'+
     kf.filter(jeAuftrag).map(f=>'<th class="num">'+esc(f.name)+'<br><small>'+esc(f.einheit)+'</small></th>').join('')+'<th class="num">Kosten</th><th class="num">€ / h</th><th>QM-Vermerk</th><th style="width:60px"></th></tr>';
   el('qmBody').innerHTML = auftr.map(a => {
-    const am = ampel(a), na = nacharbeitVon(a.id), ts = terminStatus(a), dl = durchlauf(a), k = kostenVon(a);
+    const am = ampel(a), en = energieVon(a.id).kosten, ts = terminStatus(a), dl = durchlauf(a), k = kostenVon(a);
     const abw = am.soll ? am.ist-am.soll : null;
     return '<tr class="klick" onclick="qmAuftragDetail(\''+a.id+'\')" title="Details anzeigen"><td><b>'+esc(a.nummer||'')+'</b> '+esc(a.bezeichnung)+(a.status==='abgeschlossen'? ' <span class="pill grau">abgeschl.</span>':'')+'</td><td>'+esc(a.kunde||'')+'</td>'+
       '<td class="num">'+(am.soll? de(am.soll,1):'–')+'</td><td class="num">'+de(am.ist,1)+'</td>'+
       '<td class="num" style="color:'+(abw>0?'var(--rot)':'var(--gruen)')+'">'+(abw===null?'–':(abw>0?'+':'')+de(abw,1)+' ('+Math.round(am.p*100)+' %)')+'</td>'+
-      '<td class="num">'+(na? '<span class="pill krit">'+de(na,1)+' h</span>':'–')+'</td>'+
+      '<td class="num">'+(en? de(en,0)+' €':'–')+'</td>'+
       '<td>'+(ts? (ts.ok? '<span class="pill ok">pünktlich</span>':'<span class="pill krit">+'+ts.tage+' AT</span>') : (a.endeKunde? dmy(a.endeKunde):'–'))+'</td>'+
       '<td class="num">'+(dl? dl.tage+' AT':'–')+'</td>'+
       kf.filter(jeAuftrag).map(f=>{ const m = +(a.mengen||{})[f.id]||0; return '<td class="num">'+(m? de(m,1):'<span class="sub">–</span>')+'</td>'; }).join('')+
@@ -1893,11 +2079,11 @@ function zeichneQM(){
   }).join('') || '<tr><td colspan="20" class="sub" style="padding:14px">Keine Aufträge im Filter.</td></tr>';
   // Kunden
   const kunden = {};
-  auftr.forEach(a => { const k = a.kunde||'(ohne Kunde)'; const o = kunden[k] = kunden[k] || {n:0, ist:0, soll:0, na:0, kosten:0, term:0, puenkt:0};
-    o.n++; o.ist += istVon(a.id); o.soll += sollVon(a); o.na += nacharbeitVon(a.id); o.kosten += kostenVon(a); const t = terminStatus(a); if(t){ o.term++; if(t.ok) o.puenkt++; } });
+  auftr.forEach(a => { const k = a.kunde||'(ohne Kunde)'; const o = kunden[k] = kunden[k] || {n:0, ist:0, soll:0, en:0, kosten:0, term:0, puenkt:0};
+    o.n++; o.ist += istVon(a.id); o.soll += sollVon(a); o.en += energieVon(a.id).kosten; o.kosten += kostenVon(a); const t = terminStatus(a); if(t){ o.term++; if(t.ok) o.puenkt++; } });
   el('qmKundenBody').innerHTML = Object.entries(kunden).sort((a,b)=>b[1].ist-a[1].ist).map(([k,o]) =>
     '<tr class="klick" onclick="qmKundeDetail(\''+esc(k)+'\')" title="Details anzeigen"><td><b>'+esc(k)+'</b></td><td class="num">'+o.n+'</td><td class="num">'+de(o.ist,0)+'</td><td class="num">'+(o.soll? Math.round(o.ist/o.soll*100)+' %':'–')+'</td>'+
-    '<td class="num">'+(o.ist? de(o.na/o.ist*100,1)+' %':'–')+'</td><td class="num">'+de(o.kosten,0)+' €</td><td class="num">'+(o.term? Math.round(o.puenkt/o.term*100)+' %':'–')+'</td></tr>').join('')
+    '<td class="num">'+(o.en? de(o.en,0)+' €':'–')+'</td><td class="num">'+de(o.kosten,0)+' €</td><td class="num">'+(o.term? Math.round(o.puenkt/o.term*100)+' %':'–')+'</td></tr>').join('')
     || '<tr><td colspan="7" class="sub" style="padding:12px">Keine Daten.</td></tr>';
   // Vermerke
   const verm = Object.values(D.auftraege).filter(a => a.qmVermerk && !a.qmErledigt);
@@ -1926,21 +2112,21 @@ function chartKuchen(daten, einheit, farben){
 function qmDetailDaten(auftr){
   const aids = new Set(auftr.map(a=>a.id));
   const zeiten = Object.values(D.zeiten).filter(z => aids.has(z.auftragId)).sort((x,y)=>x.datum.localeCompare(y.datum));
-  const jeT = {}, jeG = {}, jeM = {}, jeK = {}, verlauf = {};
+  const jeT = {}, jeE = {}, jeM = {}, jeK = {}, verlauf = {};
   zeiten.forEach(z => { const st = +z.stunden||0; jeT[z.taetigkeit] = (jeT[z.taetigkeit]||0)+st; jeM[maName(z.mitarbeiterId)] = (jeM[maName(z.mitarbeiterId)]||0)+st;
-    if(istNacharbeit(z)) jeG[z.grund||'ohne Grund'] = (jeG[z.grund||'ohne Grund']||0)+st;
-    const w = montag(z.datum); verlauf[w] = verlauf[w] || {h:0, na:0}; verlauf[w].h += st; if(istNacharbeit(z)) verlauf[w].na += st; });
+    const w = montag(z.datum); verlauf[w] = verlauf[w] || {h:0}; verlauf[w].h += st; });
   kostenfaktoren().forEach(f => { let k = 0; auftr.forEach(a => { k += (f.bezug==='auftrag' ? (+(a.mengen||{})[f.id]||0) : istVon(a.id)) * f.preis; }); if(k) jeK[f.name] = k; });
-  const ist = zeiten.reduce((s,z)=>s+(+z.stunden||0),0), na = zeiten.filter(istNacharbeit).reduce((s,z)=>s+(+z.stunden||0),0);
+  auftr.forEach(a => { const en = energieVon(a.id); ENERGIE.forEach(x => { if(en.k[x.id]){ jeK[x.name] = (jeK[x.name]||0)+en.k[x.id]; jeE[x.name] = (jeE[x.name]||0)+en.k[x.id]; } }); });
+  const ist = zeiten.reduce((s,z)=>s+(+z.stunden||0),0);
   const soll = auftr.reduce((s,a)=>s+sollVon(a),0), kosten = Object.values(jeK).reduce((s,v)=>s+v,0);
-  return {zeiten, jeT, jeG, jeM, jeK, verlauf, ist, na, soll, kosten};
+  return {zeiten, jeT, jeE, jeM, jeK, verlauf, ist, energie: Object.values(jeE).reduce((s,v)=>s+v,0), soll, kosten};
 }
 function chartWochen(verlauf){
   const keys = Object.keys(verlauf).sort().slice(-16); if(!keys.length) return '<p class="sub">Keine Buchungen.</p>';
   const B = 900, H = 150, l = 40, r = 10, o = 16, u = 30, bw = (B-l-r)/keys.length, max = Math.max(1, ...keys.map(k=>verlauf[k].h));
   let s = '<svg class="chart" viewBox="0 0 '+B+' '+H+'">';
-  keys.forEach((k,i) => { const v = verlauf[k], x = l+i*bw+bw*0.15, w = bw*0.7, hh = (H-o-u)*(v.h/max), hn = (H-o-u)*(v.na/max);
-    s += '<rect x="'+x+'" y="'+(H-u-hh)+'" width="'+w+'" height="'+hh+'" fill="#0F4C81" rx="3"/>'+(hn? '<rect x="'+x+'" y="'+(H-u-hn)+'" width="'+w+'" height="'+hn+'" fill="#B3261E" rx="3"/>':'')+
+  keys.forEach((k,i) => { const v = verlauf[k], x = l+i*bw+bw*0.15, w = bw*0.7, hh = (H-o-u)*(v.h/max);
+    s += '<rect x="'+x+'" y="'+(H-u-hh)+'" width="'+w+'" height="'+hh+'" fill="#0F4C81" rx="3"/>'+
       '<text x="'+(x+w/2)+'" y="'+(H-u-hh-4)+'" text-anchor="middle" font-size="10.5" fill="#1E2A33">'+de(v.h,0)+'</text>'+
       '<text x="'+(x+w/2)+'" y="'+(H-u+14)+'" text-anchor="middle" font-size="10.5" fill="#5B6B78">KW '+kalenderwoche(k)+'</text>'; });
   return s+'</svg>';
@@ -1950,7 +2136,7 @@ function qmDetailHtml(auftr, titel, unter){
   const abg = auftr.filter(a=>a.status==='abgeschlossen'), term = abg.map(terminStatus).filter(Boolean), pk = term.filter(t=>t.ok).length;
   const kzs = kz(d.soll? de(d.soll,0)+' h':'–','Soll') + kz(de(d.ist,1)+' h','Ist') +
     kz(d.soll? Math.round(d.ist/d.soll*100)+' %':'–','Ist zu Soll', d.soll && d.ist>d.soll*1.1?'warn':d.soll && d.ist>d.soll?'gelb':'gruen') +
-    kz(d.ist? de(d.na/d.ist*100,1)+' %':'–','Nacharbeit', d.ist && d.na/d.ist>=.1?'warn':d.ist && d.na/d.ist>=.05?'gelb':'gruen') +
+    kz(d.energie? de(d.energie,0)+' €':'–','Energie') +
     (term.length? kz(Math.round(pk/term.length*100)+' %','Termintreue', pk<term.length?'gelb':'gruen'):'') +
     kz(de(d.kosten,0)+' €','Kosten') + kz(d.ist? de(d.kosten/d.ist,2)+' €':'–','je Stunde');
   let sollJeT = {}; auftr.forEach(a => Object.entries(a.sollJe||{}).forEach(([t,v]) => sollJeT[t] = (sollJeT[t]||0)+(+v||0)));
@@ -1961,18 +2147,18 @@ function qmDetailHtml(auftr, titel, unter){
     '<div class="rumpf"><div class="kennzahlen">'+kzs+'</div>'+
     '<div class="qmGitter3">'+
       '<div><h2>Stunden je Arbeitsschritt</h2>'+chartKuchen(Object.entries(d.jeT),'h')+'</div>'+
-      '<div><h2>Nacharbeit nach Grund</h2>'+(d.na? chartKuchen(Object.entries(d.jeG),'h',['#B3261E','#D9534F','#E4B23C','#C26A2A','#9E5A7A','#7A8A99']) : '<p class="sub" style="padding:20px 0">Keine Nacharbeit gebucht. 👍</p>')+'</div>'+
+      '<div><h2>Energie nach Art</h2>'+(d.energie? chartKuchen(Object.entries(d.jeE),'€',['#0F4C81','#2A8C8C','#C26A2A']) : '<p class="sub" style="padding:20px 0">Noch keine Energiekosten verteilt.</p>')+'</div>'+
       '<div><h2>Kostenaufteilung</h2>'+chartKuchen(Object.entries(d.jeK),'€')+'</div>'+
     '</div>'+
-    '<h2>Verlauf je Kalenderwoche</h2><p class="sub">Blau = Stunden, rot = davon Nacharbeit.</p>'+chartWochen(d.verlauf)+
+    '<h2>Verlauf je Kalenderwoche</h2><p class="sub">Gebuchte Stunden je Woche.</p>'+chartWochen(d.verlauf)+
     (taetTab? '<h2>Soll / Ist je Arbeitsschritt</h2><table class="liste"><thead><tr><th>Arbeitsschritt</th><th class="num">Soll</th><th class="num">Ist</th><th class="num">Abw.</th><th style="width:160px"></th></tr></thead><tbody>'+taetTab+'</tbody></table>':'')+
     '<h2>Mitarbeiter</h2><div class="chips">'+Object.entries(d.jeM).sort((a,b)=>b[1]-a[1]).map(([m,v])=>'<span class="chip">'+esc(m)+' · '+de(v,1)+' h</span>').join('')+'</div>'+
-    (auftr.length > 1 ? '<h2>Aufträge</h2><table class="liste"><thead><tr><th>Auftrag</th><th class="num">Soll</th><th class="num">Ist</th><th class="num">Nacharbeit</th><th>Termin</th><th class="num">Kosten</th></tr></thead><tbody>'+
-      auftr.map(a => { const am = ampel(a), ts = terminStatus(a); return '<tr style="cursor:pointer" onclick="qmAuftragDetail(\''+a.id+'\')"><td><b>'+esc(a.nummer||'')+'</b> '+esc(a.bezeichnung)+(a.status==='abgeschlossen'?' <span class="pill grau">abgeschl.</span>':'')+'</td><td class="num">'+(am.soll?de(am.soll,0):'–')+'</td><td class="num">'+de(am.ist,1)+'</td><td class="num">'+de(nacharbeitVon(a.id),1)+'</td><td>'+(ts?(ts.ok?'<span class="pill ok">pünktlich</span>':'<span class="pill krit">+'+ts.tage+' AT</span>'):dmy(a.endeKunde)||'–')+'</td><td class="num">'+de(kostenVon(a),0)+' €</td></tr>'; }).join('')+'</tbody></table>' : '')+
+    (auftr.length > 1 ? '<h2>Aufträge</h2><table class="liste"><thead><tr><th>Auftrag</th><th class="num">Soll</th><th class="num">Ist</th><th class="num">Energie</th><th>Termin</th><th class="num">Kosten</th></tr></thead><tbody>'+
+      auftr.map(a => { const am = ampel(a), ts = terminStatus(a); return '<tr style="cursor:pointer" onclick="qmAuftragDetail(\''+a.id+'\')"><td><b>'+esc(a.nummer||'')+'</b> '+esc(a.bezeichnung)+(a.status==='abgeschlossen'?' <span class="pill grau">abgeschl.</span>':'')+'</td><td class="num">'+(am.soll?de(am.soll,0):'–')+'</td><td class="num">'+de(am.ist,1)+'</td><td class="num">'+de(energieVon(a.id).kosten,0)+' €</td><td>'+(ts?(ts.ok?'<span class="pill ok">pünktlich</span>':'<span class="pill krit">+'+ts.tage+' AT</span>'):dmy(a.endeKunde)||'–')+'</td><td class="num">'+de(kostenVon(a),0)+' €</td></tr>'; }).join('')+'</tbody></table>' : '')+
     (auftr.length === 1 && auftr[0].qmVermerk ? '<h2>QM-Vermerk</h2><div class="hinweis gelb">'+esc(auftr[0].qmVermerk)+(auftr[0].qmErledigt?' <span class="pill ok">erledigt</span>':'')+'</div>':'')+
     (auftr.length === 1 && auftr[0].notiz ? '<div class="hinweis">Notiz: '+esc(auftr[0].notiz)+'</div>':'')+
-    '<h2>Zeiteinträge ('+d.zeiten.length+')</h2><div style="max-height:32vh;overflow:auto"><table class="liste"><thead><tr><th>Datum</th>'+(auftr.length>1?'<th>Auftrag</th>':'')+'<th>Mitarbeiter</th><th>Arbeitsschritt</th><th class="num">h</th><th>Art / Bemerkung</th></tr></thead><tbody>'+
-      d.zeiten.slice().reverse().map(z=>'<tr'+(istNacharbeit(z)?' style="background:#FBEEED"':'')+'><td>'+dmy(z.datum)+'</td>'+(auftr.length>1?'<td>'+esc((D.auftraege[z.auftragId]||{}).nummer||'')+'</td>':'')+'<td>'+esc(maName(z.mitarbeiterId))+'</td><td>'+esc(z.taetigkeit)+'</td><td class="num">'+de(z.stunden,1)+'</td><td class="sub">'+(istNacharbeit(z)?'<span class="pill krit">'+esc(z.grund||'Nacharbeit')+'</span> ':'')+esc(z.bemerkung||'')+'</td></tr>').join('')+
+    '<h2>Zeiteinträge ('+d.zeiten.length+')</h2><div style="max-height:32vh;overflow:auto"><table class="liste"><thead><tr><th>Datum</th>'+(auftr.length>1?'<th>Auftrag</th>':'')+'<th>Mitarbeiter</th><th>Arbeitsschritt</th><th class="num">h</th><th>Bemerkung</th></tr></thead><tbody>'+
+      d.zeiten.slice().reverse().map(z=>'<tr><td>'+dmy(z.datum)+'</td>'+(auftr.length>1?'<td>'+esc((D.auftraege[z.auftragId]||{}).nummer||'')+'</td>':'')+'<td>'+esc(maName(z.mitarbeiterId))+'</td><td>'+esc(z.taetigkeit)+'</td><td class="num">'+de(z.stunden,1)+'</td><td class="sub">'+esc(z.bemerkung||'')+'</td></tr>').join('')+
     '</tbody></table></div></div>'+
     '<div class="fuss">'+(auftr.length===1 && darfSchreiben()? '<button class="btn sek" onclick="schliesse();mengenDialog(\''+auftr[0].id+'\')">Verbrauch / Vermerk bearbeiten</button>':'')+'<span style="flex:1"></span><button class="btn sek" onclick="schliesse()">Schließen</button></div></div></div>';
 }
@@ -1983,32 +2169,94 @@ function qmKundeDetail(kunde){
 }
 
 function chartMonate(zeiten){
-  const m = {}; zeiten.forEach(z => { const k = z.datum.slice(0,7); m[k] = m[k] || {h:0, na:0}; m[k].h += +z.stunden||0; if(istNacharbeit(z)) m[k].na += +z.stunden||0; });
+  const m = {}; zeiten.forEach(z => { const k = z.datum.slice(0,7); m[k] = (m[k]||0) + (+z.stunden||0); });
   const keys = Object.keys(m).sort().slice(-12);
   if(!keys.length) return '<p class="sub">Keine Daten im Zeitraum.</p>';
   const B = 900, H = 200, l = 50, r = 20, o = 14, u = 34, bw = (B-l-r)/keys.length;
-  const max = Math.max(1, ...keys.map(k=>m[k].h));
+  const max = Math.max(1, ...keys.map(k=>m[k]));
   let s = '<svg class="chart" viewBox="0 0 '+B+' '+H+'">';
   [0,.5,1].forEach(f => { const y = o+(H-o-u)*(1-f); s += '<line x1="'+l+'" y1="'+y+'" x2="'+(B-r)+'" y2="'+y+'" stroke="#E6EBF0"/><text x="'+(l-6)+'" y="'+(y+4)+'" text-anchor="end" font-size="11" fill="#5B6B78">'+Math.round(max*f)+'</text>'; });
-  keys.forEach((k,i) => { const x = l+i*bw+bw*0.18, w = bw*0.64, hh = (H-o-u)*(m[k].h/max), hn = (H-o-u)*(m[k].na/max);
+  keys.forEach((k,i) => { const x = l+i*bw+bw*0.18, w = bw*0.64, hh = (H-o-u)*(m[k]/max);
     s += '<rect x="'+x+'" y="'+(H-u-hh)+'" width="'+w+'" height="'+hh+'" fill="#0F4C81" rx="3"/>'+
-         (hn? '<rect x="'+x+'" y="'+(H-u-hn)+'" width="'+w+'" height="'+hn+'" fill="#B3261E" rx="3"/>':'')+
-         '<text x="'+(x+w/2)+'" y="'+(H-u-hh-5)+'" text-anchor="middle" font-size="11" fill="#1E2A33">'+de(m[k].h,0)+(m[k].na? ' <tspan fill="#B3261E">('+Math.round(m[k].na/m[k].h*100)+' %)</tspan>':'')+'</text>'+
+         '<text x="'+(x+w/2)+'" y="'+(H-u-hh-5)+'" text-anchor="middle" font-size="11" fill="#1E2A33">'+de(m[k],0)+'</text>'+
          '<text x="'+(x+w/2)+'" y="'+(H-u+16)+'" text-anchor="middle" font-size="11.5" fill="#5B6B78">'+MON[+k.slice(5,7)-1].slice(0,3)+' '+k.slice(2,4)+'</text>'; });
-  s += '<rect x="'+l+'" y="'+(H-12)+'" width="10" height="10" fill="#0F4C81" rx="2"/><text x="'+(l+14)+'" y="'+(H-3)+'" font-size="11" fill="#5B6B78">Stunden</text>'+
-       '<rect x="'+(l+80)+'" y="'+(H-12)+'" width="10" height="10" fill="#B3261E" rx="2"/><text x="'+(l+94)+'" y="'+(H-3)+'" font-size="11" fill="#5B6B78">davon Nacharbeit</text>';
   return s+'</svg>';
 }
 function qmCsv(){
   const {auftr} = qmFilter(); const kf = kostenfaktoren().filter(f=>f.bezug==='auftrag');
-  const kopf = ['Nummer','Bezeichnung','Kunde','Status','Soll h','Ist h','Abweichung h','Ist/Soll %','Nacharbeit h','Kundentermin','Abgeschlossen am','Termin gehalten','Verspätung AT','Durchlauf AT'].concat(kf.map(f=>f.name+' ('+f.einheit+')'),['Kosten €','€/h','QM-Vermerk']);
-  const zeilen = auftr.map(a => { const am = ampel(a), ts = terminStatus(a), dl = durchlauf(a), k = kostenVon(a);
-    return [a.nummer||'', a.bezeichnung, a.kunde||'', a.status, am.soll? de(am.soll,2):'', de(am.ist,2), am.soll? de(am.ist-am.soll,2):'', am.soll? Math.round(am.p*100):'', de(nacharbeitVon(a.id),2),
-      dmy(a.endeKunde), dmy(a.abgeschlossenAm), ts? (ts.ok?'ja':'nein'):'', ts? ts.tage:'', dl? dl.tage:''].concat(kf.map(f=>de(+(a.mengen||{})[f.id]||0,2)), [de(k,2), am.ist? de(k/am.ist,2):'', String(a.qmVermerk||'').replace(/;/g,',')]); });
+  const kopf = ['Nummer','Bezeichnung','Kunde','Status','Soll h','Ist h','Abweichung h','Ist/Soll %','Kundentermin','Abgeschlossen am','Termin gehalten','Verspätung AT','Durchlauf AT','Strom kWh','Wasser m³','Gas m³','Energie €'].concat(kf.map(f=>f.name+' ('+f.einheit+')'),['Kosten gesamt €','€/h','QM-Vermerk']);
+  const zeilen = auftr.map(a => { const am = ampel(a), ts = terminStatus(a), dl = durchlauf(a), k = kostenVon(a), en = energieVon(a.id);
+    return [a.nummer||'', a.bezeichnung, a.kunde||'', a.status, am.soll? de(am.soll,2):'', de(am.ist,2), am.soll? de(am.ist-am.soll,2):'', am.soll? Math.round(am.p*100):'',
+      dmy(a.endeKunde), dmy(a.abgeschlossenAm), ts? (ts.ok?'ja':'nein'):'', ts? ts.tage:'', dl? dl.tage:'', de(en.m.strom,1), de(en.m.wasser,2), de(en.m.gas,1), de(en.kosten,2)].concat(kf.map(f=>de(+(a.mengen||{})[f.id]||0,2)), [de(k,2), am.ist? de(k/am.ist,2):'', String(a.qmVermerk||'').replace(/;/g,',')]); });
   lade(new Blob(['﻿'+[kopf].concat(zeilen).map(z=>z.join(';')).join('\n')],{type:'text/csv;charset=utf-8'}), 'PackDuese_QM_'+heute().replace(/-/g,'')+'.csv');
 }
-function grundHinzu(){ const n = el('grundNeu').value.trim(); if(!n || gruende().includes(n)) return; ablegen('einst','gruende',{liste: gruende().concat([n])}); notiere('QM', n, null, null, 'Nacharbeitsgrund angelegt'); el('grundNeu').value=''; alles(); }
-function grundWeg(g){ if(!confirm('"'+g+'" aus der Liste nehmen?')) return; ablegen('einst','gruende',{liste: gruende().filter(x=>x!==g)}); notiere('QM', g, null, null, 'Nacharbeitsgrund entfernt'); alles(); }
+
+/* ---------- Energie: Monatswerte und Preise ---------- */
+function chartEnergie(keys){
+  if(!keys.length) return '<p class="sub">Noch keine Monatswerte eingetragen.</p>';
+  const mon = energieMonate(), pr = energiePreise();
+  const B = 900, H = 210, l = 56, r = 20, o = 14, u = 56, bw = (B-l-r)/keys.length;
+  const summen = keys.map(k => energieMonatKosten(mon[k])), max = Math.max(1, ...summen);
+  let s = '<svg class="chart" viewBox="0 0 '+B+' '+H+'">';
+  [0,.5,1].forEach(f => { const y = o+(H-o-u)*(1-f); s += '<line x1="'+l+'" y1="'+y+'" x2="'+(B-r)+'" y2="'+y+'" stroke="#E6EBF0"/><text x="'+(l-6)+'" y="'+(y+4)+'" text-anchor="end" font-size="11" fill="#5B6B78">'+de(max*f,0)+' €</text>'; });
+  keys.forEach((k,i) => { const x = l+i*bw+bw*0.18, w = bw*0.64; let y = H-u;
+    ENERGIE.forEach(en => { const v = (+mon[k][en.id]||0)*pr[en.id], hh = (H-o-u)*(v/max); y -= hh; if(hh > 0) s += '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+hh+'" fill="'+en.farbe+'"/>'; });
+    s += '<text x="'+(x+w/2)+'" y="'+(y-5)+'" text-anchor="middle" font-size="11" fill="#1E2A33">'+de(summen[i],0)+'</text>'+
+         '<text x="'+(x+w/2)+'" y="'+(H-u+16)+'" text-anchor="middle" font-size="11.5" fill="#5B6B78">'+MON[+k.slice(5,7)-1].slice(0,3)+' '+k.slice(2,4)+'</text>'; });
+  ENERGIE.forEach((en,i) => { s += '<rect x="'+(l+i*110)+'" y="'+(H-14)+'" width="10" height="10" fill="'+en.farbe+'" rx="2"/><text x="'+(l+i*110+14)+'" y="'+(H-5)+'" font-size="11" fill="#5B6B78">'+en.name+'</text>'; });
+  return s+'</svg>';
+}
+function zeichneEnergie(grenze){
+  const mon = energieMonate(), pr = energiePreise();
+  const keys = Object.keys(mon).sort().filter(k => k >= grenze.slice(0,7)).slice(-12);
+  el('qmChartEnergie').innerHTML = chartEnergie(keys);
+  el('qmEnergiePreise').innerHTML = 'Preise: '+ENERGIE.map(x => x.name+' '+de(pr[x.id],2)+' €/'+x.einheit).join(' · ')+(D.einst.energiepreise? '' : ' <i>(Normalwerte zum Start, bitte anpassen)</i>');
+  el('qmEnergieBody').innerHTML = keys.slice().reverse().map(k => { const w = mon[k];
+    return '<tr><td><b>'+MON[+k.slice(5,7)-1]+' '+k.slice(0,4)+'</b></td>'+ENERGIE.map(x=>'<td class="num">'+de(w[x.id]||0,0)+'</td>').join('')+'<td class="num"><b>'+de(energieMonatKosten(w),0)+' €</b></td>'+
+      '<td>'+(darfSchreiben()? '<button class="mini" onclick="energieDialog(\''+k+'\')">&#9998;</button> <button class="mini" onclick="energieLoeschen(\''+k+'\')">&times;</button>':'')+'</td></tr>'; }).join('')
+    || '<tr><td colspan="6" class="sub" style="padding:12px">Noch keine Monatswerte.</td></tr>';
+}
+function energieDialog(monat){
+  if(!darfSchreiben()) return;
+  if(!monat){ const d = new Date(); d.setDate(1); d.setMonth(d.getMonth()-1); monat = iso(d).slice(0,7); }
+  const w = energieMonate()[monat] || {};
+  el('dialogBox').innerHTML =
+    '<div class="overlay" onclick="if(event.target===this)schliesse()"><div class="dialog" style="max-width:520px">'+
+    '<div class="kopf"><div><b>Energie eintragen</b></div><button class="zu" onclick="schliesse()">&times;</button></div>'+
+    '<div class="rumpf"><p class="formhinweis">Gesamtverbrauch der Abteilung f&uuml;r den Monat (Differenz der Z&auml;hlerst&auml;nde). Gibt es den Monat schon, wird er &uuml;berschrieben.</p>'+
+    '<div class="formgitter"><label class="breit">Monat<input type="month" id="eMonat" value="'+monat+'"></label>'+
+    ENERGIE.map(x => '<label>'+x.name+' ('+x.einheit+')<input type="number" step="0.1" min="0" id="e_'+x.id+'" value="'+(w[x.id]===undefined?'':w[x.id])+'"></label>').join('')+'</div></div>'+
+    '<div class="fuss"><span style="flex:1"></span><button class="btn sek" onclick="schliesse()">Abbrechen</button><button class="btn" onclick="energieSpeichern()">Speichern</button></div></div></div>';
+}
+function energieSpeichern(){
+  const monat = el('eMonat').value; if(!/^\d{4}-\d{2}$/.test(monat)) return alert('Bitte einen Monat wählen.');
+  const w = {}; let summe = 0; ENERGIE.forEach(x => { const v = parseFloat(String(el('e_'+x.id).value).replace(',','.')); w[x.id] = v>0 ? v : 0; summe += w[x.id]; });
+  if(!summe) return alert('Bitte mindestens einen Verbrauch eintragen.');
+  const alt = energieMonate()[monat];
+  ablegen('einst','energie',{...(D.einst.energie||{}), monate:{...energieMonate(), [monat]:w}});
+  notiere('Energie', monat, alt? JSON.stringify(alt) : null, JSON.stringify(w), ENERGIE.map(x=>x.name+' '+w[x.id]+' '+x.einheit).join(', '));
+  schliesse(); alles();
+}
+function energieLoeschen(monat){
+  if(!confirm('Verbrauchswerte für '+monat+' löschen?')) return;
+  const m = {...energieMonate()}; const alt = m[monat]; delete m[monat];
+  ablegen('einst','energie',{...(D.einst.energie||{}), monate:m}); notiere('Energie', monat, alt? JSON.stringify(alt):null, null, 'gelöscht'); alles();
+}
+function energiePreisDialog(){
+  if(!darfSchreiben()) return; const pr = energiePreise();
+  el('dialogBox').innerHTML =
+    '<div class="overlay" onclick="if(event.target===this)schliesse()"><div class="dialog" style="max-width:520px">'+
+    '<div class="kopf"><div><b>Energiepreise</b></div><button class="zu" onclick="schliesse()">&times;</button></div>'+
+    '<div class="rumpf"><p class="formhinweis">Preis je Einheit, netto. Die Preise gelten f&uuml;r alle Monate; &Auml;nderungen rechnen die Kosten r&uuml;ckwirkend neu.</p>'+
+    '<div class="formgitter">'+ENERGIE.map(x => '<label>'+x.name+' (&euro; je '+x.einheit+')<input type="number" step="0.01" min="0" id="p_'+x.id+'" value="'+pr[x.id]+'"></label>').join('')+'</div></div>'+
+    '<div class="fuss"><span style="flex:1"></span><button class="btn sek" onclick="schliesse()">Abbrechen</button><button class="btn" onclick="energiePreisSpeichern()">Speichern</button></div></div></div>';
+}
+function energiePreisSpeichern(){
+  const alt = energiePreise(), neu = {};
+  ENERGIE.forEach(x => { const v = parseFloat(String(el('p_'+x.id).value).replace(',','.')); neu[x.id] = v>=0 ? v : alt[x.id]; });
+  ENERGIE.forEach(x => { if(neu[x.id] !== alt[x.id]) notiere('Energiepreis', x.name, alt[x.id], neu[x.id], 'Preis geändert (€ je '+x.einheit+')'); });
+  ablegen('einst','energiepreise',neu); schliesse(); alles();
+}
 function vermerkErledigt(aid){ const a = D.auftraege[aid]; if(!a) return; a.qmErledigt = true; ablegen('auftraege', aid, a); notiere('QM', auName(aid), null, null, 'Vermerk erledigt'); alles(); }
 function chartBalken(daten, einheit, marke){
   if(!daten.length) return '<p class="sub">Keine Daten im Zeitraum.</p>';
@@ -2066,6 +2314,81 @@ function mengenSpeichern(aid){
 
 
 /* ---------- Produktionsbildschirm ---------- */
+/* ---------- Produktion: Wer macht gerade was, Start / Fertig mit Zeitbuchung ---------- */
+const alleErledigt = a => a.status !== 'abgeschlossen' && (a.schritte||[]).length > 0 && a.schritte.every(s => (a.erledigt||{})[s]);
+const aktiveSitzungen = () => D.einst.aktiv || {};
+const uhrzeit = d => d.toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'});
+function aktivSetzen(mid, obj){
+  const a = {...aktiveSitzungen()}; if(obj) a[mid] = obj; else delete a[mid];
+  D.einst.aktiv = a;
+  if(cloudAktiv && angemeldet){ const upd = {}; upd[mid] = obj || firebase.firestore.FieldValue.delete(); db.collection('einst').doc('aktiv').set(upd, {merge:true}).catch(schreibFehler); }
+  else lokalSpeichern();
+}
+/* Nächster passender Schritt für eine Person: höchste Priorität zuerst, Fähigkeiten und "max. Personen" beachtet */
+function schrittVorschlag(m, p, aktiv){
+  const h = heute();
+  for(const x of p.plan){
+    const a = x.a; if(a.start && a.start > h) continue;
+    const dran = Object.entries(aktiv).filter(([mid, s]) => mid !== m.id && s.aid === a.id).length;
+    if(+a.maxPersonen && dran >= +a.maxPersonen) continue;
+    const fertig = a.erledigt || {}, tp = toepfe(a).filter(t => t.rest > 0);
+    const frei = tp.find(t => t.taet !== '*' && kann(m, t.taet));
+    if(frei) return {a, taet:frei.taet, rest:frei.rest};
+    if((tp.length && tp[0].taet === '*') || (!tp.length && !sollVon(a))){
+      const s = schritteFuer(a.id).find(t => !fertig[t] && kann(m, t));
+      if(s) return {a, taet:s, rest: tp.length ? tp[0].rest : 0};
+    }
+  }
+  return null;
+}
+function prodMaKarten(p){
+  const h = heute(), aktiv = aktiveSitzungen(), jetzt = Date.now();
+  const karten = mitarbeiterAktiv().map(m => {
+    const ab = abwesend(m.id, h), s = aktiv[m.id], vorname = esc(m.name);
+    if(ab && !s) return '<div class="prodMa weg"><div class="name">'+vorname+'</div><div class="was">'+(ab.art==='K'?'krank':ab.art==='U'?'Urlaub':'abwesend')+' heute</div></div>';
+    if(s){
+      const a = D.auftraege[s.aid];
+      if(!a) return '<div class="prodMa"><div class="name">'+vorname+'</div><div class="was">Der Auftrag existiert nicht mehr.</div><div class="btnZeile"><button class="btn sek gross" data-m="'+m.id+'" onclick="aktivSetzen(this.dataset.m,null);alles()">Verwerfen</button></div></div>';
+      const min = Math.max(0, Math.round((jetzt - new Date(s.start).getTime())/60000));
+      return '<div class="prodMa laeuft"><div class="name">'+vorname+' <span class="pill ok">läuft</span></div>'+
+        '<div class="was"><b>'+esc(s.taet)+'</b> · '+esc(a.nummer||'')+' '+esc(a.bezeichnung)+'</div>'+
+        '<div class="sub">seit '+uhrzeit(new Date(s.start))+' Uhr · '+Math.floor(min/60)+' h '+String(min%60).padStart(2,'0')+' min</div>'+
+        '<div class="btnZeile"><button class="btn gross" data-m="'+m.id+'" onclick="prodStopp(this.dataset.m,true)">Fertig – Schritt erledigt</button>'+
+        '<button class="btn sek gross" data-m="'+m.id+'" onclick="prodStopp(this.dataset.m,false)">Pause / Feierabend</button></div>'+
+        '<div class="sub" style="font-size:12.5px">Beim Beenden werden die Stunden automatisch gebucht. <a href="#" data-m="'+m.id+'" onclick="prodVerwerfen(this.dataset.m);return false">Irrtum – nichts buchen</a></div></div>';
+    }
+    const v = schrittVorschlag(m, p, aktiv);
+    if(!v) return '<div class="prodMa"><div class="name">'+vorname+'</div><div class="was sub">Gerade ist nichts Passendes eingeplant. Bitte beim Vorgesetzten nachfragen.</div></div>';
+    const o = oefen().find(x => x.id === v.a.ofenId), sperre = o && ofenKonflikt(o, v.a.materialien).length;
+    return '<div class="prodMa"><div class="name">'+vorname+'</div>'+
+      '<div class="was">Nächster Schritt: <b>'+esc(v.taet)+'</b><br>'+esc(v.a.nummer||'')+' '+esc(v.a.bezeichnung)+(v.rest? ' <span class="sub">noch '+de(v.rest,0)+' h</span>':'')+'</div>'+
+      ofenZeileHtml(v.a)+
+      '<div class="btnZeile"><button class="btn gross" '+(sperre?'disabled ':'')+'data-m="'+m.id+'" data-a="'+v.a.id+'" data-t="'+esc(v.taet)+'" onclick="prodStart(this.dataset.m,this.dataset.a,this.dataset.t)">Starten</button></div></div>';
+  });
+  return karten.join('') || '<p class="sub">Keine Mitarbeiter angelegt.</p>';
+}
+function prodStart(mid, aid, taet){
+  const a = D.auftraege[aid], m = D.mitarbeiter[mid]; if(!a || !m || aktiveSitzungen()[mid] || abwesend(mid, heute())) return;
+  const o = oefen().find(x => x.id === a.ofenId), k = o ? ofenKonflikt(o, a.materialien) : [];
+  if(k.length) return alert('Ofen-Schutz: '+o.name+' ist für '+k.join(', ')+' gesperrt. Bitte den Vorgesetzten informieren.');
+  aktivSetzen(mid, {aid, taet, start:new Date().toISOString()}); alles();
+}
+function prodVerwerfen(mid){ if(!confirm('Laufende Zeit verwerfen? Es werden keine Stunden gebucht.')) return; aktivSetzen(mid, null); alles(); }
+function prodStopp(mid, fertig){
+  const s = aktiveSitzungen()[mid]; if(!s) return;
+  const a = D.auftraege[s.aid], m = D.mitarbeiter[mid], ende = new Date(), start = new Date(s.start);
+  if(a && m){
+    let h = (ende - start)/3600000, bem = 'Produktion '+uhrzeit(start)+'–'+uhrzeit(ende);
+    const kap = +m.stundenTag || 8; if(h > kap){ h = kap; bem += ' (auf Tagesstunden begrenzt, bitte prüfen)'; }
+    const std = Math.max(0.25, Math.round(h*4)/4);
+    const z = {id:neueId(), datum:iso(start), mitarbeiterId:mid, auftragId:s.aid, taetigkeit:s.taet, ofenId:a.ofenId||'', stunden:std, bemerkung:bem, erfasstVon:'Produktion', erfasstAm:ende.toISOString()};
+    ablegen('zeiten', z.id, z);
+    notiere('Zeit', maName(mid)+' · '+auName(s.aid)+' · '+dmy(z.datum), null, std, s.taet+' – '+bem+(fertig? ' · Schritt erledigt':''));
+    if(fertig){ a.erledigt = {...(a.erledigt||{}), [s.taet]: true}; ablegen('auftraege', a.id, a); }
+  }
+  aktivSetzen(mid, null); alles();
+  toast(fertig ? 'Schritt „'+s.taet+'“ erledigt und Stunden gebucht.' : 'Stunden gebucht.');
+}
 function ofenZeileHtml(a){
   const mats = a.materialien || [], o = oefen().find(x => x.id === a.ofenId);
   if(!mats.length && !o) return '';
@@ -2081,13 +2404,13 @@ function zeichneProduktion(){
   const fehlt = mitarbeiterAktiv().filter(m => abwesend(m.id, h));
   el('prodAnwesend').innerHTML = fehlt.length ? fehlt.map(m => { const ab = abwesend(m.id,h); return '<span class="chip" style="background:'+(ab.art==='K'?'#FBEEED':'#E1ECF7')+'">'+esc(m.name)+' · '+(ab.art==='K'?'krank':ab.art==='U'?'Urlaub':'abwesend')+'</span>'; }).join('')
     : '<span class="chip" style="background:#EDF5E5">Alle da</span>';
+  el('prodMa').innerHTML = prodMaKarten(p);
   const liste = p.plan.filter(x => x.rest > 0 || x.bewertung === 'grau');
+  const dranJe = {}; Object.entries(aktiveSitzungen()).forEach(([mid, s]) => { (dranJe[s.aid] = dranJe[s.aid] || []).push(maName(mid).split(' ')[0]+' ('+s.taet+')'); });
   if(!liste.length){ el('prodHaupt').innerHTML = '<div class="hinweis gruen" style="font-size:18px;padding:30px">Aktuell ist keine Arbeit eingeplant. Bitte beim Vorgesetzten melden.</div>'; return; }
   const karte = (x, i) => {
-    const a = x.a, am = ampel(a), ns = naechsterSchritt(a);
+    const a = x.a, am = ampel(a);
     const rang = i===0 ? 'JETZT' : i===1 ? 'DANACH' : (i+1)+'.';
-    const schritt = ns ? (ns.taet ? ns.taet : 'Auftrag abarbeiten') : 'kein Soll hinterlegt';
-    const weitere = ns && ns.alle.length > 1 ? ns.alle.slice(1).map(t => esc(t.taet)+' ('+de(t.rest,0)+' h)').join(' → ') : '';
     const farbe = x.bewertung==='krit' ? 'var(--rot)' : x.bewertung==='warn' ? 'var(--gelb)' : 'var(--blau)';
     const pfeile = darfSchreiben() ? '<div class="prodPfeile"><button class="mini" title="nach oben" onclick="prioVerschieben(\''+a.id+'\',-1)" '+(i===0?'disabled':'')+'>&uarr;</button>'+
       '<button class="mini" title="nach unten" onclick="prioVerschieben(\''+a.id+'\',1)" '+(i===liste.length-1?'disabled':'')+'>&darr;</button></div>' : '';
@@ -2098,8 +2421,8 @@ function zeichneProduktion(){
         '<div class="prodMeta">'+esc(a.kunde||'')+(a.endeKunde? ' · Termin <b>'+dmy(a.endeKunde)+'</b>':'')+
           (x.bewertung==='krit' && a.endeKunde ? ' · <span class="pill krit">'+x.text+'</span>' : '')+'</div>'+
         ofenZeileHtml(a)+
-        '<div class="prodSchritt">Nächster Schritt: <b>'+esc(schritt)+'</b>'+(ns && ns.rest ? ' <span>noch '+de(ns.rest,0)+' h</span>':'')+'</div>'+
-        (weitere? '<div class="prodWeitere">Danach: '+weitere+'</div>':'')+
+        (dranJe[a.id] ? '<div class="prodDran"><span class="pill ok">dran:</span> '+esc(dranJe[a.id].join(', '))+'</div>' : '')+
+        (alleErledigt(a) ? '<div class="prodDran"><span class="pill ok">alle Arbeitsschritte erledigt</span> – wartet auf Abschluss durch den Vorgesetzten</div>' : '')+
         (a.notiz? '<div class="prodNotiz">'+esc(a.notiz)+'</div>':'')+
         (am.soll? '<div style="margin-top:10px;max-width:420px">'+balkenHtml(am)+'</div>':'')+
       '</div></div>';
@@ -2349,7 +2672,7 @@ function lade(blob, name){ const a = document.createElement('a'); a.href = URL.c
 function exportJson(){ lade(new Blob([JSON.stringify({stand:new Date().toISOString(), D, archiv},null,2)],{type:'application/json'}), 'PackDuese_Backup_'+heute().replace(/-/g,'')+'.json'); notiere('Backup','Datei',null,null,'als JSON gesichert'); }
 function zeitenCsv(){
   const l = Object.values(D.zeiten).sort((a,b)=>a.datum.localeCompare(b.datum));
-  const t = '\ufeffDatum;Mitarbeiter;Auftragsnummer;Auftrag;Arbeitsschritt;Ofen;Stunden;Art;Grund;Bemerkung;Erfasst von\n'+l.map(z=>[dmy(z.datum), maName(z.mitarbeiterId), (D.auftraege[z.auftragId]||{}).nummer||'', (D.auftraege[z.auftragId]||{}).bezeichnung||'', z.taetigkeit, (oefen().find(o=>o.id===z.ofenId)||{}).name||'', de(z.stunden,2), istNacharbeit(z)?'Nacharbeit':'normal', z.grund||'', String(z.bemerkung||'').replace(/;/g,','), z.erfasstVon||''].join(';')).join('\n');
+  const t = '\ufeffDatum;Mitarbeiter;Auftragsnummer;Auftrag;Arbeitsschritt;Ofen;Stunden;Bemerkung;Erfasst von\n'+l.map(z=>[dmy(z.datum), maName(z.mitarbeiterId), (D.auftraege[z.auftragId]||{}).nummer||'', (D.auftraege[z.auftragId]||{}).bezeichnung||'', z.taetigkeit, (oefen().find(o=>o.id===z.ofenId)||{}).name||'', de(z.stunden,2), String(z.bemerkung||'').replace(/;/g,','), z.erfasstVon||''].join(';')).join('\n');
   lade(new Blob([t],{type:'text/csv;charset=utf-8'}), 'PackDuese_Zeiten_'+heute().replace(/-/g,'')+'.csv');
 }
 el('importDatei').addEventListener('change', e => {
@@ -2381,18 +2704,18 @@ function demoLaden(){
   ablegen('einst','materialien',{liste: [...new Set(materialien().concat(MATERIAL_START))]});
   if(!D.einst.oefen) ablegen('einst','oefen',{liste: OEFEN_START});
   const TEILE_DEMO = [
-    ['DK-12','Düsenkörper DK-12','Maier Kunststofftechnik',['Edelstahl'],['Rüsten','Drehen','Fräsen','Prüfung']],
-    ['DK-10','Düsenkörper DK-10','Maier Kunststofftechnik',['Edelstahl'],['Rüsten','Drehen','Fräsen','Prüfung']],
-    ['DP-8','Düsenplatte DP-8','Hofer Verpackungen',['Stahl'],['Rüsten','Fräsen','Montage','Prüfung']],
-    ['PS-B','Packstück Serie B','Industriepark intern',['Aluminium'],['Fräsen','Montage','Prüfung']],
-    ['SK-3','Spritzkopf Linie 3','Weber & Söhne',['Messing','Edelstahl'],['Montage','Prüfung']],
-    ['MK-5','Mischkopf MK-5','Maier Kunststofftechnik',['Stahl','Messing'],['Rüsten','Drehen','Montage','Prüfung']],
-    ['VB-22','Verteilerblock VB-22','Bachmann Formenbau',['Aluminium'],['Rüsten','Fräsen','Prüfung']],
-    ['DF-31','Dichtflansch DF-31','Kessler Pumpen',['Edelstahl','Kunststoff'],['Drehen','Montage','Prüfung']],
-    ['KD-15','Kalibrierdorn KD-15','Bachmann Formenbau',['Stahl'],['Rüsten','Drehen','Prüfung']],
-    ['FE-40','Formeinsatz FE-40','Rieger Anlagenbau',['Titan'],['Rüsten','Fräsen','Drehen','Prüfung']],
-    ['SB-S3','Spannbacken Satz S3','Weber & Söhne',['Stahl'],['Rüsten','Fräsen','Prüfung']],
-    ['VR-01','Vorrichtung Schweißtisch','intern',['Stahl'],['Rüsten','Fräsen','Montage']]];
+    ['DK-12','Düsenkörper DK-12','Kunde A',['Edelstahl'],['Rüsten','Drehen','Fräsen','Prüfung']],
+    ['DK-10','Düsenkörper DK-10','Kunde A',['Edelstahl'],['Rüsten','Drehen','Fräsen','Prüfung']],
+    ['DP-8','Düsenplatte DP-8','Kunde C',['Stahl'],['Rüsten','Fräsen','Montage','Prüfung']],
+    ['PS-B','Packstück Serie B','Kunde F',['Aluminium'],['Fräsen','Montage','Prüfung']],
+    ['SK-3','Spritzkopf Linie 3','Kunde B',['Messing','Edelstahl'],['Montage','Prüfung']],
+    ['MK-5','Mischkopf MK-5','Kunde A',['Stahl','Messing'],['Rüsten','Drehen','Montage','Prüfung']],
+    ['VB-22','Verteilerblock VB-22','Kunde D',['Aluminium'],['Rüsten','Fräsen','Prüfung']],
+    ['DF-31','Dichtflansch DF-31','Kunde E',['Edelstahl','Kunststoff'],['Drehen','Montage','Prüfung']],
+    ['KD-15','Kalibrierdorn KD-15','Kunde D',['Stahl'],['Rüsten','Drehen','Prüfung']],
+    ['FE-40','Formeinsatz FE-40','Kunde F',['Titan'],['Rüsten','Fräsen','Drehen','Prüfung']],
+    ['SB-S3','Spannbacken Satz S3','Kunde B',['Stahl'],['Rüsten','Fräsen','Prüfung']],
+    ['VR-01','Vorrichtung Schweißtisch','Kunde F',['Stahl'],['Rüsten','Fräsen','Montage']]];
   const teile = TEILE_DEMO.map(d => { const alt = Object.values(D.teile).find(x => x.nr === d[0]); if(alt) return alt;
     const t = {id:neueId(), nr:d[0], name:d[1], kunde:d[2], materialien:d[3], schritte:d[4], sollJe:{}, notiz:'', erstellt:new Date().toISOString(), erstelltVon:'Demo'}; ablegen('teile', t.id, t); return t; });
   const teilNr = nr => teile.find(t => t.nr === nr);
@@ -2401,17 +2724,17 @@ function demoLaden(){
   const verteile = (soll, steps) => { const w = steps.map(() => 0.5+zuf()), sum = w.reduce((x,y)=>x+y,0), r = {}; steps.forEach((st,i) => { r[st] = Math.max(1, Math.round(soll*w[i]/sum)); }); return r; };
   // [Bezeichnung, Kunde, Soll gesamt, Kundentermin in Tagen ab heute, Soll je Arbeitsschritt, Status]
   const au = [
-    ['Düsenkörper DK-12, 40 Stück', 'Maier Kunststofftechnik', 0, 9, {'Rüsten':8,'Drehen':70,'Fräsen':48,'Prüfung':8}, 'offen'],
-    ['Packstück Serie B, Nacharbeit', 'Industriepark intern', 48, 6, {}, 'offen'],
-    ['Reparatur Spritzkopf Linie 3', 'Weber & Söhne', 24, 3, {}, 'offen'],
-    ['Vorrichtung Schweißtisch', 'intern', 160, 30, {}, 'offen'],
-    ['Düsenplatte DP-8 Prototyp', 'Hofer Verpackungen', 36, 14, {'Fräsen':24,'Montage':8,'Prüfung':4}, 'offen'],
-    ['Ersatzteile Mischkopf', 'Maier Kunststofftechnik', 150, 12, {}, 'offen'],
-    ['Düsenkörper DK-10, 20 Stück', 'Maier Kunststofftechnik', 70, -8, {}, 'abgeschlossen']
+    ['Düsenkörper DK-12, 40 Stück', 'Kunde A', 0, 9, {'Rüsten':8,'Drehen':70,'Fräsen':48,'Prüfung':8}, 'offen'],
+    ['Packstück Serie B, Folgeauftrag', 'Kunde F', 48, 6, {}, 'offen'],
+    ['Reparatur Spritzkopf Linie 3', 'Kunde B', 24, 3, {}, 'offen'],
+    ['Vorrichtung Schweißtisch', 'Kunde F', 160, 30, {}, 'offen'],
+    ['Düsenplatte DP-8 Prototyp', 'Kunde C', 36, 14, {'Fräsen':24,'Montage':8,'Prüfung':4}, 'offen'],
+    ['Ersatzteile Mischkopf', 'Kunde A', 150, 12, {}, 'offen'],
+    ['Düsenkörper DK-10, 20 Stück', 'Kunde A', 70, -8, {}, 'abgeschlossen']
   ];
   const aids = au.map((a,i) => { const id = neueId();
     ablegen('auftraege', id, {id, nummer:'A-'+h.slice(0,4)+'-0'+String(i+41), bezeichnung:a[0], kunde:a[1], start:plusTage(h, i===5? 10 : -20), endeKunde:a[3]!==null? plusTage(h,a[3]):'',
-      sollGesamt:a[2], sollJe:a[4], maxPersonen: i===3? 2 : 0, notiz: i===2? 'Kunde steht still – hat Vorrang' : '', status:a[5], prio:i+1, mengen:{strom: Math.round(40+zuf()*120)},
+      sollGesamt:a[2], sollJe:a[4], maxPersonen: i===3? 2 : 0, notiz: i===2? 'Kunde steht still – hat Vorrang' : '', status:a[5], prio:i+1, mengen:{},
       abgeschlossenAm: a[5]==='abgeschlossen'? plusTage(h,-8):'', erstellt:new Date().toISOString(), erstelltVon:'Demo',
       ...mitTeil(teilNr(['DK-12','PS-B','SK-3','VR-01','DP-8','MK-5','DK-10'][i]), [40,0,0,0,0,0,20][i])}); return id; });
   const urlaub = [[3,-2,4,'U'],[5,-4,-3,'K'],[1,7,18,'U'],[0,21,25,'U'],[4,35,46,'U'],[2,-15,-12,'U']];
@@ -2437,9 +2760,6 @@ function demoLaden(){
           art: 'normal', bemerkung:'', erfasstVon:'Demo', erfasstAm:new Date().toISOString()}); });
     }
   });
-  // Nacharbeit: einige Buchungen umwidmen (Pareto sichtbar)
-  const gr = ['Maßabweichung','Maßabweichung','Maßabweichung','Werkzeug / Maschine','Werkzeug / Maschine','Materialfehler','Zeichnung / Vorgabe unklar'];
-  Object.values(D.zeiten).filter(z => z.erfasstVon==='Demo').forEach((z,i) => { if(i % 9 === 4){ z.art = 'nacharbeit'; z.grund = gr[i % gr.length]; z.bemerkung = z.grund==='Maßabweichung' ? 'Bohrung nachgearbeitet' : ''; ablegen('zeiten', z.id, z); } });
   const abgA = D.auftraege[aids[6]]; abgA.endeKunde = plusTage(h,-10); abgA.qmVermerk = 'Drehen bei DK-Serie künftig mit 20 % Zuschlag kalkulieren, Spannmittel war Engpass.'; ablegen('auftraege', abgA.id, abgA);
   // Auftragsbestand: offene Aufträge bis über das Jahresende hinaus (volle Bücher)
   const tagesKapDemo = leute.reduce((s,p)=>s+p[1],0);
@@ -2460,7 +2780,7 @@ function demoLaden(){
     kumuliert += soll;
   }
   // Historie: 12 Monate abgeschlossene Aufträge
-  const kundenH = [['Maier Kunststofftechnik',0.06],['Weber & Söhne',0.14],['Hofer Verpackungen',0.04],['Industriepark intern',0.09],['Bachmann Formenbau',0.11],['Kessler Pumpen',0.03]];
+  const kundenH = [['Kunde A',0.06],['Kunde B',0.14],['Kunde C',0.04],['Kunde F',0.09],['Kunde D',0.11],['Kunde E',0.03]];
   const namenH = ['Düsenkörper DK-','Düsenplatte DP-','Packstück Serie ','Reparatur Spritzkopf ','Ersatzteile Mischkopf ','Vorrichtung ','Spannbacken Satz ','Verteilerblock VB-','Dichtflansch DF-','Nachbearbeitung Charge '];
   const grH = ['Maßabweichung','Maßabweichung','Werkzeug / Maschine','Materialfehler','Bedienfehler','Zeichnung / Vorgabe unklar','Kundenänderung','Sonstiges'];
   const histUrlaub = [[0,-330,-320,'U'],[0,-200,-190,'U'],[1,-300,-296,'K'],[1,-150,-136,'U'],[2,-280,-270,'U'],[2,-90,-80,'U'],[3,-250,-240,'U'],[3,-120,-118,'K'],[4,-340,-330,'U'],[4,-180,-170,'U'],[5,-210,-200,'U'],[5,-60,-58,'K'],[0,-45,-44,'K'],[2,-160,-146,'U']];
@@ -2484,19 +2804,24 @@ function demoLaden(){
       if(istArbeitstag(t)) team.forEach(i => { if(rest <= 0 || abwesend(ids[i], t)) return;
         const k = kapLeer(i, t, tag); const take = Math.min(k, rest); if(take <= 0) return;
         frei[ids[i]+'|'+t] -= take; rest -= take; letzter = tag;
-        const na = zuf() < naRate; const z = neueId();
+        const z = neueId();
         ablegen('zeiten', z, {id:z, datum:t, mitarbeiterId:ids[i], auftragId:id, taetigkeit: taets[Math.floor(n++/2) % taets.length], stunden:take,
-          art: na?'nacharbeit':'normal', grund: na? grH[Math.floor(zuf()*grH.length)] : '', bemerkung: na && zuf()<0.5 ? 'nachgearbeitet' : '', erfasstVon:'Demo', erfasstAm:new Date().toISOString()}); });
+          art:'normal', bemerkung:'', erfasstVon:'Demo', erfasstAm:new Date().toISOString()}); });
       tag++;
     }
     const abgAm = plusTage(h, letzter + 1 + Math.floor(zuf()*3));
     ablegen('auftraege', id, {id, nummer, ...mitTeil(tp, zuf() < 0.4 ? 5+Math.floor(zuf()*40) : 0), start:plusTage(h,tagStart), endeKunde: zuf()<0.85 ? termin : '',
-      sollGesamt: Object.keys(jeT).length ? 0 : soll, sollJe: jeT, notiz:'', status:'abgeschlossen', prio: 100+nr, mengen:{strom: Math.round(soll*(1.5+zuf()*2))},
+      sollGesamt: Object.keys(jeT).length ? 0 : soll, sollJe: jeT, notiz:'', status:'abgeschlossen', prio: 100+nr, mengen:{},
       abgeschlossenAm: abgAm, qmVermerk: zuf() < 0.15 ? ['Spannmittel war Engpass, beim nächsten Mal zweites Set bereitlegen.','Zeichnung hatte Toleranzfehler, mit Kunde geklärt.','Werkzeugbruch beim Fräsen, Standzeit prüfen.','Material kam mit Lunker, Lieferant reklamiert.'][Math.floor(zuf()*4)] : '',
       qmErledigt: zuf() < 0.6, erstellt:new Date().toISOString(), erstelltVon:'Demo'});
     tagStart += Math.max(3, Math.round(dauerAT*0.9)) + Math.floor(zuf()*3);
   }
+  ablegen('einst','kunden',{liste: KUNDEN_START});
+  const mon = {}; for(let k=1;k<=12;k++){ const d = new Date(); d.setMonth(d.getMonth()-k, 1); const key = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    mon[key] = {strom: Math.round(5200+zuf()*1800), wasser: Math.round(80+zuf()*40), gas: Math.round(1800+zuf()*900)}; }
+  ablegen('einst','energie',{monate: mon});
   sammelEnde();
+  try { rangAnwenden(); } catch(x){}
   notiere('System','Fake-Daten',null,null,'geladen'); alles();
 }
 
@@ -2544,7 +2869,7 @@ function firebaseStarten(){
 function firebaseBereit(){
   try {
     firebase.initializeApp(FIREBASE_KONFIG); fbAuth = firebase.auth(); db = firebase.firestore(); cloudAktiv = true;
-    el('btnAbmelden').style.display = 'inline-block'; el('btnPass').style.display = 'inline-block';
+    el('btnAbmelden').style.display = 'inline-block'; el('btnPass').style.display = 'inline-block'; el('topAbmelden').style.display = 'inline-block';
     el('datenHinweis').textContent = 'Die Daten liegen auf dem Firebase-Server und werden zwischen allen Arbeitsplätzen abgeglichen. Eine Sicherung als Datei bleibt trotzdem sinnvoll.';
     fbAuth.onAuthStateChanged(n => {
       if(n){ angemeldet = n; el('loginBox').innerHTML = ''; cloudStatus('verbunden als '+n.email, '#7ED957'); datenLauschen(); }
@@ -2603,6 +2928,97 @@ function abosStarten(){
   db.collection('archiv').orderBy('t','desc').limit(1500).onSnapshot(s => { const l = []; s.forEach(d => l.push(d.data())); archiv = l; if(!el('v-archiv').classList.contains('verstecke')) zeichneArchiv(); }, ()=>{});
 }
 
+/* ---------- Handy-Ansicht (Vorgesetzter) ---------- */
+let mobilTab = 'auftraege', drag = null;
+const ansichtWahl = () => { try { return sessionStorage.getItem('ansichtWahl') || ''; } catch(e){ return ''; } };
+const handySchmal = () => { try { return window.matchMedia('(max-width: 700px)').matches; } catch(e){ return false; } };
+const mobilAn = () => rolle === 'vorgesetzter' && (ansichtWahl() === 'handy' || (ansichtWahl() !== 'normal' && handySchmal()));
+function mobilKlasse(){ try { if(document.body) document.body.classList.toggle('mobil', mobilAn()); } catch(e){} }
+function ansichtWahlSetzen(w){ try { sessionStorage.setItem('ansichtWahl', w); } catch(e){} mobilKlasse(); alles(); window.scrollTo(0,0); }
+function handyTest(){
+  if(mobilAn()) return ansichtWahlSetzen('normal');
+  if(rolle !== 'vorgesetzter') rolleWechseln('vorgesetzter');
+  ansichtWahlSetzen('handy');
+}
+function mobilTabWahl(t){ mobilTab = t; zeichneMobil(); }
+function zeichneMobil(){
+  if(drag) return;
+  el('mDatum').textContent = WT[vonIso(heute()).getDay()]+', '+dmy(heute());
+  el('mLogo').src = LOGO; el('mAbmelden').style.display = cloudAktiv ? '' : 'none';
+  document.querySelectorAll('#mobil .mTabs button[data-mt]').forEach(b => b.classList.toggle('aktiv', b.dataset.mt === mobilTab));
+  el('mInhalt').innerHTML = mobilTab === 'abw' ? mobilAbwesend() : mobilAuftraege();
+}
+function mobilAuftraege(){
+  const p = planen(), krit = p.plan.filter(x => x.bewertung === 'krit' && x.a.endeKunde).length;
+  return '<div class="mInfo"><b>'+p.plan.length+'</b> offene Aufträge · '+(krit? '<b style="color:var(--rot)">'+krit+' Termin'+(krit>1?'e':'')+' gefährdet</b>' : 'alle Termine im Plan')+'</div>'+
+    '<div class="sub" style="margin:0 2px 10px">&#9776; gedrückt halten und ziehen = Priorität ändern. Oben = zuerst dran.</div>'+
+    '<div id="mListe">'+(p.plan.map((x,i) => mobilKarte(x, i)).join('') || '<div class="hinweis">Keine offenen Aufträge.</div>')+'</div>';
+}
+function mobilKarte(x, i){
+  const a = x.a, farbe = x.bewertung === 'krit' ? 'var(--rot)' : x.bewertung === 'warn' ? 'var(--gelb)' : 'var(--blau)';
+  return '<div class="mKarte" data-id="'+a.id+'" style="border-left-color:'+farbe+'">'+
+    '<div class="mGriff" onpointerdown="mDragStart(event)" title="ziehen">&#9776;</div>'+
+    '<div class="mMitte"><div class="mTitel"><span class="mNr">'+(i+1)+'</span><b>'+esc(a.nummer||'')+'</b> '+esc(a.bezeichnung)+' '+festZeichen(a)+'</div>'+
+    '<div class="sub">'+esc(a.kunde||'ohne Kunde')+(a.endeKunde? ' · Termin '+dmy(a.endeKunde):'')+'</div>'+
+    '<div style="margin-top:4px"><span class="pill '+x.bewertung+'">'+(x.ende? 'fertig ca. '+dmy(x.ende).slice(0,6)+' · ':'')+esc(x.text)+'</span></div></div>'+
+    '<button class="mOben" data-id="'+a.id+'" onclick="mNachOben(this.dataset.id)" '+(i===0?'disabled':'')+' title="ganz nach oben">&#10514;</button></div>';
+}
+function mNachOben(id){ prioOben(id); toast('Ganz nach oben gesetzt.'); }
+function mDragStart(ev){
+  const karte = ev.currentTarget.closest('.mKarte'); if(!karte || !darfSchreiben()) return;
+  ev.preventDefault();
+  const karten = [...el('mListe').querySelectorAll('.mKarte')], r = karte.getBoundingClientRect();
+  drag = {id:karte.dataset.id, karte, karten, y0:ev.clientY, y:ev.clientY, scroll0:window.scrollY, mitte0:r.top+r.height/2+window.scrollY, ziel:karten.indexOf(karte), linie:document.createElement('div'), raf:0};
+  drag.linie.className = 'mLinie'; el('mListe').appendChild(drag.linie); karte.classList.add('zieht');
+  window.addEventListener('pointermove', mDragMove, {passive:false}); window.addEventListener('pointerup', mDragEnde); window.addEventListener('pointercancel', mDragAbbruch);
+  mDragLauf();
+}
+function mDragMove(ev){ if(!drag) return; ev.preventDefault(); drag.y = ev.clientY; mDragZeichnen(); }
+function mDragZeichnen(){
+  const d = drag; if(!d) return;
+  const dy = d.y - d.y0 + (window.scrollY - d.scroll0); d.karte.style.transform = 'translateY('+dy+'px)';
+  const mitte = d.mitte0 + dy, andere = d.karten.filter(k => k !== d.karte);
+  let ziel = 0; andere.forEach(k => { const r = k.getBoundingClientRect(); if(r.top + r.height/2 + window.scrollY < mitte) ziel++; });
+  d.ziel = ziel;
+  const vor = andere[ziel], letzte = andere[andere.length-1];
+  d.linie.style.top = (vor ? vor.offsetTop - 6 : (letzte ? letzte.offsetTop + letzte.offsetHeight + 2 : 0))+'px';
+}
+function mDragLauf(){
+  if(!drag) return;
+  const y = drag.y, h = window.innerHeight; let v = 0;
+  if(y < 90) v = -Math.ceil((90-y)/5); else if(y > h-90) v = Math.ceil((y-(h-90))/5);
+  if(v){ window.scrollBy(0, v); mDragZeichnen(); }
+  drag.raf = requestAnimationFrame(mDragLauf);
+}
+function mDragRaus(){
+  const d = drag; cancelAnimationFrame(d.raf);
+  window.removeEventListener('pointermove', mDragMove); window.removeEventListener('pointerup', mDragEnde); window.removeEventListener('pointercancel', mDragAbbruch);
+  d.karte.style.transform = ''; d.karte.classList.remove('zieht'); d.linie.remove(); drag = null; return d;
+}
+function mDragAbbruch(){ if(drag){ mDragRaus(); zeichneMobil(); } }
+function mDragEnde(){
+  if(!drag) return;
+  const d = mDragRaus(), alt = d.karten.map(k => k.dataset.id), ids = alt.filter(id => id !== d.id);
+  ids.splice(d.ziel, 0, d.id);
+  if(ids.join() === alt.join()) return zeichneMobil();
+  prioNeuNummerieren(ids.map(id => D.auftraege[id]).filter(Boolean), d.id);
+  toast('Auf Priorität '+(d.ziel+1)+' gesetzt.');
+}
+function mobilAbwesend(){
+  const alle = mitarbeiterAktiv(); let h = '<div class="mInfo">Wer fehlt in den <b>nächsten 7 Tagen</b>?</div>';
+  for(let i = 0; i < 7; i++){
+    const t = plusTage(heute(), i), d = vonIso(t), frei = !istArbeitstag(t);
+    const fehl = alle.map(m => ({m, ab: abwesend(m.id, t)})).filter(x => x.ab);
+    const wort = i === 0 ? 'Heute' : i === 1 ? 'Morgen' : WT[d.getDay()];
+    const stand = frei ? '<span class="pill grau">'+(istFeiertag(t)? 'Feiertag':'frei')+'</span>' :
+      '<span class="pill '+(!fehl.length?'ok':fehl.length*2 > alle.length?'krit':'warn')+'">'+(alle.length-fehl.length)+' von '+alle.length+' da</span>';
+    h += '<div class="mTag'+(frei?' frei':'')+'"><div class="mTagKopf"><span><b>'+wort+'</b> '+dmy(t).slice(0,6)+'</span>'+stand+'</div>'+
+      (frei ? '' : (fehl.length ? '<div class="chips">'+fehl.map(x => '<span class="chip" style="background:'+(x.ab.art==='K'?'#FBEEED':'#E1ECF7')+'">'+esc(x.m.name)+' · '+esc(artName(x.ab.art))+'</span>').join('')+'</div>' : '<span class="sub">Alle da.</span>'))+'</div>';
+  }
+  return h;
+}
+window.addEventListener('resize', () => { const vor = document.body && document.body.classList.contains('mobil'); mobilKlasse(); if(vor !== mobilAn()) alles(); });
+
 /* ---------- Rollen & Navigation ---------- */
 function testleisteAnwenden(){
   const sichtbar = TESTLEISTE && (!cloudAktiv || echteRolle === 'admin');
@@ -2635,7 +3051,7 @@ function zeichneAnsicht(z){
   ({uebersicht:zeichneUebersicht, zeiten:zeichneWoche, auftraege:zeichneAuftraege, planung:zeichnePlanung, urlaub:zeichneUrlaub,
     qm:zeichneQM, mitarbeiter:zeichneMitarbeiter, verwaltung:zeichneVerwaltung, archiv:zeichneArchiv, produktion:zeichneProduktion, kalender:zeichneKalender, katalog:zeichneKatalog}[z] || (()=>{}))();
 }
-function alles(){ const a = document.querySelector('nav button.aktiv'); if(a && rolle !== 'keine') zeichneAnsicht(a.dataset.ansicht); }
+function alles(){ energieCache = null; mobilKlasse(); if(mobilAn()){ zeichneMobil(); return; } const a = document.querySelector('nav button.aktiv'); if(a && rolle !== 'keine') zeichneAnsicht(a.dataset.ansicht); }
 function schliesse(){ el('dialogBox').innerHTML = ''; }
 function menuUm(){ const auf = !document.querySelector('nav').classList.contains('offen'); document.querySelector('nav').classList.toggle('offen', auf); el('menuSchatten').classList.toggle('offen', auf); }
 function menuZu(){ document.querySelector('nav').classList.remove('offen'); el('menuSchatten').classList.remove('offen'); }
