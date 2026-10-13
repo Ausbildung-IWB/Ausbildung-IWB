@@ -650,6 +650,7 @@ body.mobil #mobil{display:block;max-width:520px;margin:0 auto;padding:0 12px 90p
     <select id="poFilter"><option value="">alle Positionen</option><option value="poly">Polymer fehlt</option><option value="sonst">nur Sonstiges</option><option value="lang">langer Ofenlauf</option><option value="leer">ohne Arbeitsschritte</option></select>
     <span style="margin-left:auto"></span>
     <button class="btn sek nurSchreiben" id="poStandardBtn" onclick="positionenStandard()">Standard-Positionen anlegen / aktualisieren</button>
+    <button class="btn sek" onclick="positionenCsv()">Als CSV exportieren</button>
     <button class="btn nurSchreiben" onclick="posDialog()">+ Position</button>
   </div>
   <div class="karte" style="padding:0;overflow:auto;max-height:68vh"><table class="liste" id="poTab"></table></div>
@@ -1872,6 +1873,15 @@ function zeichnePositionen(){
       '<td><button class="mini" data-pid="'+esc(t.id)+'" onclick="event.stopPropagation();posDialog(this.dataset.pid)">&#9998;</button></td></tr>'; });
   if(!liste.length) h += '<tr><td colspan="7" class="sub" style="padding:18px">Keine Position passt zum Filter.</td></tr>';
   el('poTab').innerHTML = h+'</tbody>';
+}
+/* Alle Positionen als CSV (Semikolon, Excel-tauglich) – dient als Vorlage für neue Versionen der Seite */
+function positionenCsv(){
+  const q = v => { const s = String(v === undefined || v === null ? '' : v); return /[;"\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s; };
+  const kopf = ['Nr','Position','Kunde','Art','Stück je Einheit (wirksam)','Stück je Einheit (eigener Wert)','Arbeitsschritte','Stunden je Stück (Demontieren)','Stunden je Einheit (übrige Schritte)','Polymer g je Stück','Langer Ofenlauf','Sonstiges','Eht. (alt, Info)'];
+  const zeilen = poSortiert(alleTeile()).map(t => { const art = posArt(t); return [t.nr, t.name, t.kunde||'', ART[art], ART_GRUPPIERT.includes(art) ? posPro(t) : '', posProEigen(t) ? t.proEinheit : '', (t.schritte||[]).join(' > '),
+    t.rwStueck||'', t.rwEinheit||'', t.polymerG === undefined ? '' : t.polymerG, t.ofenLang ? 'ja' : '', t.sonstiges ? 'ja' : '', t.eht === undefined ? '' : String(t.eht).replace('.',',')].map(q).join(';'); });
+  const gz = ['# Standardgröße je Art', 'Korb='+artPro('korb'), 'Baum='+artPro('baum'), 'Ständer='+artPro('staender'), 'Arbeitsschritte='+taetigkeiten().join(' > ')].join(';');
+  lade(new Blob(['﻿'+[kopf.join(';')].concat(zeilen, [gz]).join('\n')], {type:'text/csv;charset=utf-8'}), 'PackDuese_Positionen_'+heute().replace(/-/g,'')+'.csv');
 }
 const zahlOderLeer = v => { const x = parseFloat(String(v).replace(',','.')); return x > 0 ? x : ''; };
 function posDialog(id){
