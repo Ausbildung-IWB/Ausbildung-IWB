@@ -326,6 +326,8 @@ body.mobil #mobil{display:block;max-width:520px;margin:0 auto;padding:0 12px 90p
     <button data-ansicht="zeiten">Wochenblatt</button>
     <button data-ansicht="auftraege">Auftr&auml;ge</button>
     <button data-ansicht="katalog">Katalog</button>
+    <button data-ansicht="positionen">Positionen</button>
+    <button data-ansicht="sonderfaelle">Sonderf&auml;lle</button>
     <button data-ansicht="planung">Planung</button>
     <button data-ansicht="kalender">Kalender</button>
     <button data-ansicht="urlaub">Abwesenheiten</button>
@@ -604,19 +606,9 @@ body.mobil #mobil{display:block;max-width:520px;margin:0 auto;padding:0 12px 90p
 <!-- ===== Katalog ===== -->
 <section id="v-katalog" class="verstecke">
   <h1>Katalog</h1>
-  <p class="sub">Feste Auswahllisten statt Freitext: Teile, Material, Arbeitsschritte und Öfen. Aufträge wählen daraus aus. Die Einträge hier sind Beispiele und werden durch die echten Listen ersetzt.</p>
+  <p class="sub">Feste Auswahllisten: Kunden mit Rangfolge, Arbeitsschritte und Öfen. Die Positionen 101&ndash;409 stehen im Reiter &bdquo;Positionen&ldquo;. Material und Ofen-Schutz sind optional.</p>
   <div class="kennzahlen" id="kaKennzahlen"></div>
   <div id="kaProbleme"></div>
-  <div class="karte">
-    <h2>Teile</h2>
-    <div class="werkzeuge">
-      <input type="text" id="kaSuche" placeholder="Suchen (Nummer, Name, Kunde, Material)" style="width:280px">
-      <span style="margin-left:auto"></span>
-      <button class="btn sek nurSchreiben" onclick="teileImportDialog()">Teile importieren</button>
-      <button class="btn nurSchreiben" onclick="teilDialog()">+ Teil anlegen</button>
-    </div>
-    <div style="overflow:auto;max-height:46vh"><table class="liste"><thead><tr><th>Nummer</th><th>Bezeichnung</th><th>Kunde</th><th>Material</th><th>Arbeitsschritte</th><th style="width:50px"></th></tr></thead><tbody id="kaBody"></tbody></table></div>
-  </div>
   <div class="karte">
     <h2>Kunden und Rangfolge</h2>
     <p class="sub">Die Kunden, f&uuml;r die gearbeitet wird &ndash; oben = wichtigster. Neue Auftr&auml;ge ordnen sich im Hintergrund nach diesem Rang in die Priorit&auml;t ein, solange dadurch kein Kundentermin schlechter wird. Von Hand verschobene Auftr&auml;ge (&#128204;) bleiben, wo sie sind.</p>
@@ -642,6 +634,37 @@ body.mobil #mobil{display:block;max-width:520px;margin:0 auto;padding:0 12px 90p
     <p class="sub">Häkchen = dieses Material darf in diesem Ofen <b>nicht</b> laufen. Der Ofen-Schutz sperrt solche Öfen bei Auftrag und Zeitbuchung und warnt in der Produktion.</p>
     <div style="overflow:auto"><table class="liste matrix" id="ofenMatrix"></table></div>
     <div class="werkzeuge nurSchreiben" style="margin-top:12px"><input type="text" id="ofenNeu" placeholder="Name des Ofens" style="width:220px" onkeydown="if(event.key==='Enter')ofenHinzu()"><button class="btn" onclick="ofenHinzu()">Ofen hinzufügen</button></div>
+  </div>
+</section>
+
+<!-- ===== Positionen ===== -->
+<section id="v-positionen" class="verstecke">
+  <h1>Positionen und Arbeitsschritte</h1>
+  <p class="sub">Alle Positionen vom Verrechnungsblatt (101&ndash;409). Pro Position anhaken, welche Arbeitsschritte n&ouml;tig sind &ndash; meistens nur wenige. &Auml;nderungen gelten f&uuml;r neue Auftr&auml;ge, bestehende behalten ihre Schritte. Der Richtwert (Stunden je St&uuml;ck) ergibt die automatische Soll-Zeit; leer = Startwert. Die alte Verrechnungs-Einheit (Eht.) wird nicht verwendet.</p>
+  <div class="kennzahlen" id="poKennzahlen"></div>
+  <div class="werkzeuge">
+    <input type="text" id="poSuche" placeholder="Suchen (Nummer, Name, Kunde)" style="width:260px">
+    <span style="margin-left:auto"></span>
+    <button class="btn sek nurSchreiben" id="poStandardBtn" onclick="positionenStandard()">Standard-Positionen 101&ndash;409 anlegen</button>
+    <button class="btn nurSchreiben" onclick="posDialog()">+ Position</button>
+  </div>
+  <div class="hinweis gelb" id="poLeiste" style="display:none"><b>Ungespeicherte &Auml;nderungen.</b> <button class="btn gruen" style="padding:6px 14px;margin-left:10px" onclick="poSpeichern()">Speichern</button> <button class="btn sek" style="padding:6px 14px" onclick="poVerwerfen()">Verwerfen</button></div>
+  <div class="karte" style="padding:0;overflow:auto;max-height:68vh"><table class="liste matrix" id="poTab"></table></div>
+</section>
+
+<!-- ===== Sonderf&auml;lle ===== -->
+<section id="v-sonderfaelle" class="verstecke">
+  <h1>Sonderf&auml;lle</h1>
+  <p class="sub">Alles Ungew&ouml;hnliche: Auftr&auml;ge mit einer Sonstiges-Position (entstehen automatisch) und Ofen-Notizen, z. B. wenn der Kunde neues Material nicht gemeldet hat und der Ofen abgeschaltet hat oder mehr Wasser zum K&uuml;hlen brauchte. Bei neuen Auftr&auml;gen des Kunden erscheint dann ein Hinweis.</p>
+  <div class="kennzahlen" id="soKennzahlen"></div>
+  <div class="werkzeuge">
+    <input type="text" id="soSuche" placeholder="Suchen" style="width:220px">
+    <select id="soTyp"><option value="">alle Arten</option><option value="ofen">Ofen-Notizen</option><option value="sonstiges">Sonstiges</option></select>
+    <span style="margin-left:auto"></span>
+    <button class="btn nurSchreiben" onclick="sonderDialog()">+ Sonderfall</button>
+  </div>
+  <div class="karte" style="padding:0;overflow:auto;max-height:66vh">
+    <table class="liste"><thead><tr><th style="width:90px">Datum</th><th>Art</th><th>Kunde</th><th>Position / Auftrag</th><th>Beschreibung</th><th>Folge</th><th style="width:40px"></th></tr></thead><tbody id="soBody"></tbody></table>
   </div>
 </section>
 
@@ -733,7 +756,7 @@ body.mobil #mobil{display:block;max-width:520px;margin:0 auto;padding:0 12px 90p
   </div>
   <div class="karte">
     <h2>Alles zurücksetzen</h2>
-    <p class="sub">Löscht Mitarbeiter, Aufträge, Zeiten, Abwesenheiten und Teile (auch die Fake-Daten aus dem Testmodus). Listen und Einstellungen bleiben.</p>
+    <p class="sub">Löscht Mitarbeiter, Aufträge, Zeiten, Abwesenheiten und Sonderfälle (auch die Fake-Daten aus dem Testmodus). Positionen, Listen und Einstellungen bleiben.</p>
     <div class="werkzeuge"><button class="btn rot" onclick="allesLoeschen()">Alle Daten löschen</button></div>
   </div>
 </section>
@@ -790,22 +813,20 @@ const LOGO = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAWgAAABrCAYAAABaBhjP
 const ANSICHTEN = [
   ['uebersicht','Übersicht'],['zeiten','Wochenblatt'],['auftraege','Aufträge'],['planung','Planung'],
   ['urlaub','Abwesenheiten'],['qm','QM'],['mitarbeiter','Mitarbeiter'],['verwaltung','Verwaltung'],
-  ['kalender','Kalender'],['katalog','Katalog'],['archiv','Archiv'],['daten','Daten'],['produktion','Produktion']];
+  ['kalender','Kalender'],['katalog','Katalog'],['positionen','Positionen'],['sonderfaelle','Sonderfälle'],['archiv','Archiv'],['daten','Daten'],['produktion','Produktion']];
 const ROLLEN_START = [
   {id:'admin', name:'Admin', schreiben:true, ansichten:ANSICHTEN.map(a=>a[0])},
   {id:'vorgesetzter', name:'Vorgesetzter', schreiben:true,
-   ansichten:['auftraege','katalog','kalender','urlaub','mitarbeiter','produktion']},
-  {id:'qm', name:'QM', schreiben:true, ansichten:['uebersicht','auftraege','katalog','planung','kalender','qm','archiv']},
+   ansichten:['auftraege','positionen','sonderfaelle','katalog','kalender','urlaub','mitarbeiter','produktion']},
+  {id:'qm', name:'QM', schreiben:true, ansichten:['uebersicht','auftraege','katalog','sonderfaelle','planung','kalender','qm','archiv']},
   {id:'produktion', name:'Produktion (Bildschirm)', schreiben:false, ansichten:['produktion']}
 ];
 /* BEISPIEL-LISTEN: werden durch die echten Listen ersetzt (Katalog-Reiter bzw. Import) */
-const MATERIAL_START = ['Stahl','Edelstahl','Aluminium','Messing','Titan','Kunststoff'];
+const MATERIAL_START = [];
 const OEFEN_START = [
-  {id:'ofen1', name:'Ofen 1', gesperrt:['Aluminium','Kunststoff']},
-  {id:'ofen2', name:'Ofen 2', gesperrt:['Messing']},
-  {id:'ofen3', name:'Ofen 3', gesperrt:['Kunststoff','Titan']},
-  {id:'ofen4', name:'Ofen 4 (Vakuum)', gesperrt:[]}];
-const TAET_START = ['Rüsten','Fräsen','Drehen','Montage','Prüfung','Sonstiges'];
+  {id:'ofen1', name:'Ofen 1', gesperrt:[]},
+  {id:'ofen2', name:'Ofen 2', gesperrt:[]}];
+const TAET_START = ['Demontieren','Waschen','Strahlen','Ofen','Nachwaschen','Messen','Sonstiges'];
 const KOSTEN_START = [
   {id:'lohn', name:'Stundensatz', einheit:'h', preis:45, bezug:'stunde'}
 ];
@@ -816,7 +837,7 @@ const ENERGIE = [
   {id:'gas', name:'Gas', einheit:'m³', farbe:'#C26A2A'}];
 const PREISE_START = {strom:0.25, wasser:4.5, gas:0.95};
 
-let D = {mitarbeiter:{}, auftraege:{}, zeiten:{}, urlaub:{}, teile:{}, benutzer:{}, einst:{}};
+let D = {mitarbeiter:{}, auftraege:{}, zeiten:{}, urlaub:{}, teile:{}, sonderfaelle:{}, benutzer:{}, einst:{}};
 let archiv = [];
 let rolle = 'admin';
 let db = null, fbAuth = null, cloudAktiv = false, angemeldet = null;
@@ -1062,7 +1083,7 @@ function balkenTage(ziel, tage){
 }
 
 /* ---------- Kunden und Rangfolge, automatische Einordnung ---------- */
-const KUNDEN_START = ['Kunde A','Kunde B','Kunde C','Kunde D','Kunde E','Kunde F'].map((n,i) => ({id:'k'+(i+1), name:n}));
+const KUNDEN_START = ['Indorama','JM','Perlon','Kunde D','Kunde E','Kunde F'].map((n,i) => ({id:'k'+(i+1), name:n}));
 const kunden = () => einst('kunden', KUNDEN_START);
 const kundenRang = name => { const i = kunden().findIndex(k => k.name === name); return i < 0 ? 999 : i; };
 const darfKundenPflegen = () => darfSchreiben() && (rolle === 'admin' || rolle === 'vorgesetzter');
@@ -1427,63 +1448,65 @@ function zeichneAuftraege(){
 }
 function auftragDialog(id){
   if(!darfSchreiben()) return;
-  const a = id ? D.auftraege[id] : {id:neueId(), nummer:nummerVorschlag(), teilId:'', bezeichnung:'', kunde:'', menge:'', start:heute(), endeKunde:'', sollGesamt:'', sollJe:{}, schritte:[], materialien:[], ofenId:'', notiz:'', status:'offen'};
+  const a = id ? D.auftraege[id] : {id:neueId(), nummer:nummerVorschlag(), teilId:'', bezeichnung:'', freitext:'', kunde:'', menge:'', start:heute(), endeKunde:'', sollGesamt:'', sollJe:{}, schritte:[], materialien:[], ofenId:'', notiz:'', status:'offen'};
   const t = a.teilId ? D.teile[a.teilId] : null;
-  const teilWert = t ? teilText(t) : String(a.bezeichnung||'').replace(/,\s*\d+\s*Stück$/,'');
   const gewSchr = (a.schritte && a.schritte.length) ? a.schritte : Object.keys(a.sollJe||{});
-  const mats = a.materialien || [], einfach = mobilAn();
+  const mats = a.materialien || [], einfach = mobilAn(), pos = alleTeile();
+  const gr = []; kunden().forEach(k => gr.push(k.name)); pos.forEach(p => { if(!gr.includes(p.kunde||'')) gr.push(p.kunde||''); });
+  const posOpt = '<option value="">– Position wählen –</option>'+gr.map(g => { const l = pos.filter(p => (p.kunde||'') === g); if(!l.length) return '';
+    return '<optgroup label="'+esc((g||'ohne Kunde')+(POS_GRUPPE[g]? ' – '+POS_GRUPPE[g]:''))+'">'+l.map(p => '<option value="'+esc(p.id)+'"'+(t && t.id===p.id?' selected':'')+'>'+esc(p.nr+' · '+p.name)+'</option>').join('')+'</optgroup>'; }).join('');
   el('dialogBox').innerHTML =
     '<div class="overlay" onclick="if(event.target===this)schliesse()"><div class="dialog">'+
     '<div class="kopf"><div><b>'+(id?'Auftrag bearbeiten':'Neuer Auftrag')+'</b></div><button class="zu" onclick="schliesse()">&times;</button></div>'+
     '<div class="rumpf">'+
-    '<div class="formtitel">Teil</div><div class="formgitter">'+
-      '<label class="breit">Teil aus dem Katalog<input type="text" id="auTeil" list="auTeile" value="'+esc(teilWert)+'" placeholder="Nummer oder Name eintippen und aus der Liste wählen" oninput="auTeilGewaehlt()" autocomplete="off"></label>'+
-      '<datalist id="auTeile">'+alleTeile().map(x=>'<option value="'+esc(teilText(x))+'"></option>').join('')+'</datalist>'+
-      '<input type="hidden" id="auTeilId" value="'+esc(t? t.id : '')+'">'+
+    (pos.length ? '' : '<div class="hinweis gelb"><b>Noch keine Positionen.</b> Bitte zuerst im Reiter „Positionen“ die Standard-Positionen anlegen.</div>')+
+    '<div class="formtitel">Was soll gemacht werden?</div><div class="formgitter">'+
+      '<label class="breit">Position (Nr. 101–409)<select id="auPos" onchange="auPosGewaehlt()">'+posOpt+'</select></label>'+
+      '<label><span id="auMengeLbl">Stückzahl</span><input type="number" min="1" id="auMenge" value="'+esc(a.menge||'')+'" oninput="auSollInfo()" inputmode="numeric"></label>'+
+      '<label>Kundentermin (optional)<input type="date" id="auEnde" value="'+(a.endeKunde||'')+'"></label>'+
     '</div>'+
-    '<div id="auTeilStatus" class="sub" style="margin-top:6px"></div>'+
-    '<div id="auNeuBox" class="hinweis gelb" style="display:none"><b>Neues Teil – noch nicht im Katalog.</b> Bitte unten Material und Arbeitsschritte anklicken.'+
-      '<div class="formgitter" style="margin-top:10px"><label>Teilenummer (optional)<input type="text" id="nNr"></label>'+
-      '<label style="text-transform:none;letter-spacing:0;font-size:13.5px"><input type="checkbox" id="nSpeichern" checked style="width:auto;margin:0 6px 0 0">im Katalog speichern, damit es beim nächsten Mal zur Auswahl steht</label></div></div>'+
-    '<div class="formtitel">Auftrag</div><div class="formgitter">'+
+    '<div id="auPosInfo" class="sub" style="margin-top:6px"></div>'+
+    '<div id="auFreiBox" style="display:none"><div class="formgitter" style="margin-top:10px"><label class="breit">Sonstiges – was genau? <span class="sub" style="text-transform:none">(wird im Reiter „Sonderfälle“ festgehalten)</span><textarea id="auFrei" rows="2">'+esc(a.freitext||'')+'</textarea></label></div></div>'+
+    '<div id="auSonderHinweis"></div>'+
+    '<div class="formtitel">Weitere Angaben</div><div class="formgitter">'+
+      '<label>Kunde<select id="auKunde" onchange="auKundeHinweis()">'+kundenOptionen(a.kunde)+'</select></label>'+
       '<label>Auftragsnummer<input type="text" id="auNr" value="'+esc(a.nummer)+'"></label>'+
-      '<label>Menge (Stück)<input type="number" min="0" id="auMenge" value="'+esc(a.menge||'')+'" placeholder="optional"></label>'+
-      '<label>Kunde<select id="auKunde">'+kundenOptionen(a.kunde)+'</select></label>'+
       '<label'+(einfach?' style="display:none"':'')+'>Frühester Start<input type="date" id="auStart" value="'+(a.start||'')+'"></label>'+
-      '<label>Kundentermin (Ende)<input type="date" id="auEnde" value="'+(a.endeKunde||'')+'"></label>'+
       '<label'+(einfach?' style="display:none"':'')+'>Max. Personen gleichzeitig<input type="number" min="1" id="auMax" value="'+(a.maxPersonen||'')+'" placeholder="leer = beliebig"></label>'+
-    '</div>'+
-    '<div class="formtitel">Material und Ofen</div><p class="formhinweis">Was steckt in diesem Auftrag? Danach zeigt der Ofen-Schutz nur die Öfen, in denen das Material laufen darf.</p>'+
-    '<div class="chips">'+materialien().map(m=>'<label class="chip" style="cursor:pointer"><input type="checkbox" data-mat="'+esc(m)+'" '+(mats.includes(m)?'checked':'')+' onchange="auOfenAktualisieren()"> '+esc(m)+'</label>').join('')+'</div>'+
-    '<div class="formgitter" style="margin-top:14px"><label>Vorgesehener Ofen<select id="auOfen">'+ofenOptionenHtml(mats, a.ofenId)+'</select></label>'+
-      '<div id="auOfenInfo" style="align-self:end;padding-bottom:6px">'+ofenInfoHtml(mats)+'</div></div>'+
-    '<div class="formtitel">Arbeitsschritte und Soll-Zeit</div><p class="formhinweis">Haken setzen bei den Schritten, die dieser Auftrag braucht. Soll-Stunden sind optional: entweder je Schritt oder als Gesamtzeit. Ist eine Gesamtzeit angegeben, gilt sie.</p>'+
-    '<div class="formgitter"><label>Soll gesamt (h)<input type="number" step="0.5" min="0" id="auSoll" value="'+(a.sollGesamt||'')+'" placeholder="z. B. 40"></label></div>'+
-    (einfach ? '<div class="chips" style="margin-top:10px">'+taetigkeiten().map(tt => '<label class="chip" style="cursor:pointer"><input type="checkbox" data-schritt="'+esc(tt)+'" '+(gewSchr.includes(tt)?'checked':'')+'> '+esc(tt)+'</label>').join('')+'</div>' :
-    '<table class="liste" style="margin-top:12px"><thead><tr><th>Arbeitsschritt</th><th class="num" style="width:140px">Soll h</th><th class="num" style="width:120px">Ist h bisher</th></tr></thead><tbody>'+
-    taetigkeiten().map(tt => '<tr><td><label style="cursor:pointer"><input type="checkbox" data-schritt="'+esc(tt)+'" '+(gewSchr.includes(tt)?'checked':'')+'> '+esc(tt)+'</label></td><td class="num"><input type="number" step="0.5" min="0" data-taet="'+esc(tt)+'" value="'+((a.sollJe||{})[tt]||'')+'" style="width:100px;text-align:right"></td>'+
-      '<td class="num">'+de(istJe(a.id)[tt]||0,1)+'</td></tr>').join('')+'</tbody></table>')+
+      '<label>Soll gesamt (h)<input type="number" step="0.25" min="0" id="auSoll" value="'+(a.sollAuto? '' : (a.sollGesamt||''))+'" placeholder="automatisch"></label>'+
+    '</div><div id="auSollInfo" class="sub" style="margin-top:6px"></div>'+
+    '<div class="formtitel">Arbeitsschritte</div><p class="formhinweis">Aus der Position vorbelegt. Hier nur für diesen Auftrag änderbar.</p>'+
+    '<div class="chips">'+taetigkeiten().map(tt => '<label class="chip" style="cursor:pointer"><input type="checkbox" data-schritt="'+esc(tt)+'" '+(gewSchr.includes(tt)?'checked':'')+'> '+esc(tt)+'</label>').join('')+'</div>'+
+    (einfach ? '' :
+    '<details style="margin-top:14px"><summary><b>Soll-Stunden je Arbeitsschritt (optional)</b></summary>'+
+    '<table class="liste" style="margin-top:8px"><thead><tr><th>Arbeitsschritt</th><th class="num" style="width:140px">Soll h</th><th class="num" style="width:120px">Ist h bisher</th></tr></thead><tbody>'+
+    taetigkeiten().map(tt => '<tr><td>'+esc(tt)+'</td><td class="num"><input type="number" step="0.5" min="0" data-taet="'+esc(tt)+'" value="'+((a.sollJe||{})[tt]||'')+'" style="width:100px;text-align:right"></td>'+
+      '<td class="num">'+de(istJe(a.id)[tt]||0,1)+'</td></tr>').join('')+'</tbody></table></details>'+
+    '<details style="margin-top:10px"'+(mats.length||a.ofenId?' open':'')+'><summary><b>Material und Ofen (optional)</b></summary>'+
+    '<div class="chips" style="margin-top:8px">'+materialien().map(m=>'<label class="chip" style="cursor:pointer"><input type="checkbox" data-mat="'+esc(m)+'" '+(mats.includes(m)?'checked':'')+' onchange="auOfenAktualisieren()"> '+esc(m)+'</label>').join('')+'</div>'+
+    '<div class="formgitter" style="margin-top:10px"><label>Vorgesehener Ofen<select id="auOfen">'+ofenOptionenHtml(mats, a.ofenId)+'</select></label>'+
+      '<div id="auOfenInfo" style="align-self:end;padding-bottom:6px">'+(materialien().length? ofenInfoHtml(mats):'')+'</div></div></details>')+
     '<div class="formgitter" style="margin-top:14px"><label class="breit">Bemerkung (nur für Ausnahmen)<textarea id="auNotiz" rows="2">'+esc(a.notiz)+'</textarea></label></div>'+
     '</div><div class="fuss">'+(id? '<button class="btn rot" onclick="auftragLoeschen(\''+a.id+'\')">Löschen</button>':'')+
     '<span style="flex:1"></span><button class="btn sek" onclick="schliesse()">Abbrechen</button>'+
     '<button class="btn" onclick="auftragSpeichern(\''+a.id+'\','+(id?'false':'true')+')">Speichern</button></div></div></div>';
-  auTeilGewaehlt(true);
-  setTimeout(()=>el('auTeil').focus(),60);
+  auPosGewaehlt(true);
 }
 const gewaehlteMaterialien = () => [...document.querySelectorAll('#dialogBox input[data-mat]')].filter(i=>i.checked).map(i=>i.dataset.mat);
-function auTeilGewaehlt(still){
-  const w = el('auTeil').value.trim();
-  const t = alleTeile().find(x => teilText(x) === w || (x.nr && x.nr === w));
-  el('auTeilId').value = t ? t.id : '';
-  el('auNeuBox').style.display = (!t && w) ? '' : 'none';
-  el('auTeilStatus').textContent = t ? 'Aus dem Katalog: '+(t.kunde? t.kunde+' · ':'')+'Material und Arbeitsschritte sind vorbelegt und können für diesen Auftrag geändert werden.' : '';
+function auPosGewaehlt(still){
+  const t = D.teile[el('auPos').value];
+  el('auFreiBox').style.display = (t && t.sonstiges) ? '' : 'none';
+  el('auMengeLbl').textContent = (t && t.einheit === 'Tag') ? 'Anzahl Tage' : 'Stückzahl';
+  el('auPosInfo').textContent = t ? (t.kunde? t.kunde+(POS_GRUPPE[t.kunde]? ' ('+POS_GRUPPE[t.kunde]+')':'')+' · ':'')+'Arbeitsschritte: '+((t.schritte||[]).join(' → ')||'noch keine hinterlegt') : '';
   if(t && !still){
     if(t.kunde){ const sel = el('auKunde'); if(sel.options && ![...sel.options].some(o => o.value === t.kunde)) sel.innerHTML = kundenOptionen(t.kunde); sel.value = t.kunde; }
-    document.querySelectorAll('#dialogBox input[data-mat]').forEach(i => { i.checked = (t.materialien||[]).includes(i.dataset.mat); });
     document.querySelectorAll('#dialogBox input[data-schritt]').forEach(i => { i.checked = (t.schritte||[]).includes(i.dataset.schritt); });
-    document.querySelectorAll('#dialogBox input[data-taet]').forEach(i => { i.value = (t.sollJe||{})[i.dataset.taet] || ''; });
   }
-  if(!still) auOfenAktualisieren();
+  auKundeHinweis(); auSollInfo();
+}
+function auSollInfo(){
+  const t = D.teile[el('auPos').value], m = parseInt(el('auMenge').value,10)||0, box = el('auSollInfo'); if(!box) return;
+  box.textContent = (t && m) ? 'Soll leer lassen = automatisch: '+m+' × '+de(richtwertVon(t),2)+' h = '+de(Math.round(m*richtwertVon(t)*4)/4,2)+' h ('+(+t.richtwert > 0 ? 'Richtwert der Position' : 'Startwert, wird über Ist-Zeiten genauer')+')' : '';
 }
 function kundenOptionen(gew){
   const l = kunden().map(k => k.name); if(gew && !l.includes(gew)) l.push(gew);
@@ -1503,37 +1526,39 @@ function nummerVorschlag(){
   return 'A-'+j+'-'+String(max+1).padStart(3,'0');
 }
 function auftragSpeichern(id, neu){
-  const eingabe = el('auTeil').value.trim();
-  if(!eingabe) return alert('Bitte ein Teil auswählen oder eintippen.');
   const alt = D.auftraege[id] || {};
-  const mats = gewaehlteMaterialien(), schritte = [], sollJe = {};
+  const pos = D.teile[el('auPos').value]; if(!pos) return alert('Bitte eine Position wählen.');
+  const menge = parseInt(el('auMenge').value,10)||0;
+  if(menge < 1) return alert(pos.einheit === 'Tag' ? 'Bitte die Anzahl der Tage eingeben.' : 'Bitte die Stückzahl eingeben.');
+  const frei = el('auFrei') ? el('auFrei').value.trim() : '';
+  if(pos.sonstiges && !frei) return alert('Bitte kurz beschreiben, was bei „Sonstiges“ gemacht werden soll.');
+  const schritte = [], sollJe = {};
   document.querySelectorAll('#dialogBox input[data-schritt]').forEach(i => { if(i.checked) schritte.push(i.dataset.schritt); });
   document.querySelectorAll('#dialogBox input[data-taet]').forEach(i => { const v = parseFloat(String(i.value).replace(',','.')); if(v>0){ sollJe[i.dataset.taet] = v; if(!schritte.includes(i.dataset.taet)) schritte.push(i.dataset.taet); } });
-  const ofenId = el('auOfen').value;
+  if(!schritte.length) return alert('Bitte mindestens einen Arbeitsschritt anklicken.');
+  const hatMat = !!document.querySelector('#dialogBox input[data-mat]'), mats = hatMat ? gewaehlteMaterialien() : (alt.materialien||[]);
+  const ofenId = el('auOfen') ? el('auOfen').value : (alt.ofenId||'');
   if(ofenId){ const o = oefen().find(x => x.id === ofenId), k = ofenKonflikt(o, mats);
     if(k.length) return alert('Ofen-Schutz: '+o.name+' ist für '+k.join(', ')+' gesperrt.\n\nBitte einen anderen Ofen wählen.'); }
-  let teil = el('auTeilId').value ? D.teile[el('auTeilId').value] : null;
   const kunde = el('auKunde').value.trim();
-  if(!teil){
-    if(!schritte.length) return alert('Bitte mindestens einen Arbeitsschritt anklicken.');
-    if(!mats.length && !confirm('Es ist kein Material angehakt. Der Ofen-Schutz kann dann nichts prüfen.\n\nTrotzdem speichern?')) return;
-    if(el('nSpeichern').checked){
-      const nr = el('nNr').value.trim();
-      if(nr && Object.values(D.teile).some(x => String(x.nr).toLowerCase() === nr.toLowerCase())) return alert('Die Teilenummer '+nr+' gibt es schon im Katalog. Bitte das Teil aus der Liste wählen.');
-      teil = {id:neueId(), nr, name:eingabe, kunde, materialien:mats, schritte, sollJe, notiz:'', erstellt:new Date().toISOString(), erstelltVon:benutzerName()};
-      ablegen('teile', teil.id, teil); notiere('Katalog', teilText(teil), null, null, 'Teil angelegt (aus Auftrag)');
-    }
-  }
-  const menge = parseInt(el('auMenge').value,10)||0, name = teil ? teil.name : eingabe;
   const prios = Object.values(D.auftraege).map(x=>x.prio||0);
-  const a = {...alt, id, nummer: el('auNr').value.trim(), teilId: teil? teil.id : '', bezeichnung: name+(menge? ', '+menge+' Stück':''), kunde, menge,
-    start: el('auStart').value || '', endeKunde: el('auEnde').value || '', maxPersonen: parseInt(el('auMax').value,10)||0,
-    sollGesamt: parseFloat(String(el('auSoll').value).replace(',','.')) || 0, sollJe, schritte, materialien: mats, ofenId, notiz: el('auNotiz').value.trim(),
+  let soll = parseFloat(String(el('auSoll').value).replace(',','.')) || 0, sollAuto = false;
+  if(!(soll > 0) && !Object.keys(sollJe).length){ soll = Math.round(menge*richtwertVon(pos)*4)/4; sollAuto = true; }
+  const a = {...alt, id, nummer: el('auNr').value.trim(), teilId: pos.id, posNr: pos.nr, freitext: frei, kunde, menge,
+    bezeichnung: pos.nr+' · '+pos.name+(frei? ' – '+(frei.length>60? frei.slice(0,57)+'…' : frei) : '')+', '+menge+(pos.einheit==='Tag'? (menge===1?' Tag':' Tage') : ' Stück'),
+    start: el('auStart') ? (el('auStart').value || '') : (alt.start || heute()), endeKunde: el('auEnde').value || '', maxPersonen: el('auMax') ? (parseInt(el('auMax').value,10)||0) : (alt.maxPersonen||0),
+    sollGesamt: soll, sollAuto, sollJe, schritte, materialien: mats, ofenId, notiz: el('auNotiz').value.trim(),
     status: alt.status || 'offen', prio: alt.prio || (Math.max(0,...prios)+1), mengen: alt.mengen || {},
     erstellt: alt.erstellt || new Date().toISOString(), erstelltVon: alt.erstelltVon || benutzerName()};
   ablegen('auftraege', id, a);
   const of = oefen().find(o => o.id === ofenId);
   notiere('Auftrag', auName(id), neu? null : sollVon(alt), sollVon(a), neu? 'angelegt' : 'bearbeitet'+(alt.endeKunde!==a.endeKunde? ' · Kundentermin '+dmy(alt.endeKunde)+' → '+dmy(a.endeKunde):'')+(of? ' · Ofen '+of.name:''));
+  // Sonstiges: im Sonderfälle-Archiv festhalten (bei Änderung der Beschreibung wird der Eintrag nachgezogen)
+  if(pos.sonstiges){
+    const vorh = alleSonder().find(x => x.auftragId === id && x.typ === 'sonstiges');
+    if(vorh){ if(vorh.beschreibung !== frei || vorh.kunde !== kunde){ ablegen('sonderfaelle', vorh.id, {...vorh, beschreibung:frei, kunde}); } }
+    else sonderAnlegen({typ:'sonstiges', kunde, posNr:pos.nr, auftragId:id, beschreibung:frei});
+  }
   // Priorität im Hintergrund nach Kundenrang
   let hinweis = '';
   if(neu || (alt.kunde||'') !== kunde){
@@ -1541,6 +1566,8 @@ function auftragSpeichern(id, neu){
     if(!neu && kundenRang(kunde) > kundenRang(alt.kunde)) rangAnwenden();
     if(r){ notiere('Priorität', auName(id), null, r.pos, 'automatisch nach Kundenrang'+(kunde? ' ('+kunde+')':'')+(r.bewegt? ' vorgezogen':' am Ende der gleichrangigen')); hinweis = '„'+auName(id)+'“ steht jetzt auf Priorität '+r.pos+(kunde? ' (Rang von '+kunde+')':'')+'.'; }
   }
+  const sh = neu ? sonderOfenLetzter(kunde) : null;
+  if(sh) hinweis += (hinweis? ' ' : '')+'Achtung: Bei '+kunde+' gab es am '+dmy(sh.datum)+' einen Ofen-Sonderfall – bitte Material erfragen.';
   schliesse(); alles(); if(hinweis) toast(hinweis);
 }
 function auftragStatus(id, st){
@@ -1583,20 +1610,247 @@ function auftragDetails(id){
     '<div class="fuss">'+(darfSchreiben() && a.status!=='abgeschlossen'? '<button class="btn" onclick="zeitDialog(null,null,null,\''+id+'\')">+ Zeit buchen</button>':'')+'<span style="flex:1"></span><button class="btn sek" onclick="schliesse()">Schließen</button></div></div></div>';
 }
 
-/* ---------- Katalog: Teile, Materialien, Arbeitsschritte, Öfen ---------- */
+/* ---------- Positionen: Reinigungsleistungen 101-409 (Katalog) ---------- */
+/* [Nr, Bezeichnung, Kunde, Einheit, alte Verrechnungs-Einheit (Eht.), Sonstiges] - nach dem Verrechnungsblatt */
+const POS_GRUPPE = {'Indorama':'Faser', 'JM':'Spunbond', 'Perlon':'Monofil'};
+const POS_START = [
+  ['101','134 mm Pack mit Düse demontieren u. reinigen','Indorama','St',12.17],
+  ['102','134 mm Pack ohne Düse / Neue Packs reinigen','Indorama','St',8.16],
+  ['103','134 mm nur Düse / Neue Düsen reinigen','Indorama','St',4.01],
+  ['107','Düsenprüfung u. Reparatur von Düsenbohrungen','Indorama','Eht',1.00],
+  ['108','134 mm Pack (PLA) demontieren u. reinigen (2xSSO)','Indorama','St',19.05],
+  ['109','Biko Packs vorzerlegt reinigen (P.Teile, Schrauben)','Indorama','St',29.26],
+  ['110','Transport an Samstage u. Feiertage','Indorama','Tag',12.91],
+  ['111','Anblaskörper reinigen','Indorama','St',0.76],
+  ['112','Faser, Hills Pack reinigen','Indorama','St',77.80],
+  ['113','Faser Sonstiges (Schmelzefilter)','Indorama','St',5.00,true],
+  ['114','Faser Sonstiges','Indorama','St','',true],
+  ['115','Faser Sonstiges','Indorama','St','',true],
+  ['301','Bd. 1; 134 mm Pack m. Düse dem. u. reinigen','JM','St',12.29],
+  ['302','Bd. 6, 8, 9; 134 mm Pack m. Düse dem. u. reinigen','JM','St',12.29],
+  ['303','134 mm Pack ohne Düse / Neue Packs reinigen','JM','St',8.16],
+  ['304','134 mm nur Düse / Neue Düsen reinigen','JM','St',4.13],
+  ['305','Stützsieb reinigen','JM','St',2.50],
+  ['307','Transport an Samstage u. Feiertage','JM','Tag',12.91],
+  ['308','Bd. 7; 65 mm Pack m. Düse dem. u. reinigen','JM','St',7.12],
+  ['309','Bd. 7; Sonstiges (Düsenprüfung)','JM','Eht',1.00],
+  ['310','Bd. 1; Sonstiges','JM','St','',true],
+  ['311','Sonstiges','JM','St','',true],
+  ['312','Sonstiges','JM','St','',true],
+  ['401','134 mm Pack m. Düse demontieren u. reinigen (gestrahlt)','Perlon','St',13.38],
+  ['402','134 mm ohne Düse / Neue Packs reinigen','Perlon','St',7.85],
+  ['403','134 mm nur Düse / Neue Düsen reinigen','Perlon','St',4.14],
+  ['404','Siebkörbe gerade/gebogene reinigen','Perlon','St',3.09],
+  ['405','Extruderschnecke, kurz reinigen (gestrahlt)','Perlon','St',11.34],
+  ['406','Extruderschnecke lang, ausbrennen','Perlon','St',9.06],
+  ['407','Extruderschnecke ø 90 mm ausbrennen','Perlon','St',73.44],
+  ['408','Extruderkopf ausbrennen','Perlon','St',121.70],
+  ['409','Filtereinsatz reinigen (gestrahlt)','Perlon','St',9.42]
+];
+/* Vorschlag, welche Arbeitsschritte eine Position braucht (nur Vorbelegung, im Reiter "Positionen" änderbar) */
+function posVorbelegung(nr, sonstiges){
+  const n = +nr, pack = [101,102,103,108,109,112,301,302,303,304,308,401,402,403].includes(n), nurDuese = [103,304,403].includes(n);
+  const strahl = [109,401,402,403,405,409].includes(n);
+  if(sonstiges) return ['Sonstiges'];
+  if(pack){ const s = []; if(!nurDuese) s.push('Demontieren'); s.push(strahl ? 'Strahlen' : 'Waschen'); s.push('Ofen'); if(n < 200) s.push('Nachwaschen','Messen'); return s; }
+  if([111,305,404].includes(n)) return ['Waschen'];
+  if([405,409].includes(n)) return ['Strahlen'];
+  if([406,407,408].includes(n)) return ['Ofen'];
+  return ['Sonstiges'];
+}
+const richtwertStd = t => t.einheit === 'Tag' ? 2 : t.einheit === 'Eht' ? 1 : 0.5;
+const richtwertVon = t => (t && +t.richtwert > 0) ? +t.richtwert : richtwertStd(t || {});
+/* Die Kunden Indorama, JM, Perlon an die Plätze von Kunde A-C setzen (nur wenn dort noch die Platzhalter stehen) */
+function kundenSicherstellen(){
+  const l = kunden().map(k => ({...k})); let geaendert = false;
+  Object.keys(POS_GRUPPE).forEach((n, i) => {
+    if(l.some(k => k.name === n)) return;
+    if(l[i] && /^Kunde [A-F]$/.test(l[i].name)) l[i].name = n; else l.splice(Math.min(i, l.length), 0, {id:'k'+neueId(), name:n});
+    geaendert = true; });
+  if(geaendert) ablegen('einst','kunden',{liste:l});
+  return geaendert;
+}
+/* legt fehlende Standard-Positionen an (ohne Bündelung - Aufrufer bündelt) und gibt alle zurück */
+function posAnlegenIntern(){
+  kundenSicherstellen();
+  return POS_START.map(p => {
+    const alt = Object.values(D.teile).find(x => String(x.nr) === p[0]); if(alt) return alt;
+    const t = {id:'p'+p[0], nr:p[0], name:p[1], kunde:p[2], einheit:p[3], eht:p[4], sonstiges:!!p[5], schritte:posVorbelegung(p[0], p[5]), richtwert:'', materialien:[], sollJe:{}, notiz:'',
+      erstellt:new Date().toISOString(), erstelltVon:benutzerName()};
+    ablegen('teile', t.id, t); return t; });
+}
+function positionenStandard(){
+  if(!darfSchreiben()) return;
+  const vorher = Object.keys(D.teile).length;
+  sammelStart(); posAnlegenIntern(); sammelEnde();
+  const neu = Object.keys(D.teile).length - vorher;
+  notiere('Katalog', 'Positionen 101–409', null, neu, 'Standard-Positionen angelegt'); poPending = false; alles();
+  toast(neu ? neu+' Positionen angelegt. Bitte die Arbeitsschritte prüfen.' : 'Alle Standard-Positionen sind schon da.');
+}
+let poPending = false;
+function poMerken(){ poPending = true; const b = el('poLeiste'); if(b) b.style.display = ''; }
+function richtwertGelernt(){
+  const sum = {}; Object.values(D.zeiten).forEach(z => { sum[z.auftragId] = (sum[z.auftragId]||0) + (+z.stunden||0); });
+  const r = {};
+  Object.values(D.auftraege).filter(a => a.status === 'abgeschlossen' && a.teilId && +a.menge > 0 && sum[a.id] > 0).forEach(a => {
+    const x = r[a.teilId] = r[a.teilId] || {ist:0, menge:0, n:0}; x.ist += sum[a.id]; x.menge += +a.menge; x.n++; });
+  return r;
+}
+function zeichnePositionen(erzwingen){
+  if(poPending && erzwingen !== true) return;
+  const sw = darfSchreiben(), schr = taetigkeiten(), s = (el('poSuche').value||'').trim().toLowerCase();
+  const alle = alleTeile();
+  el('poKennzahlen').innerHTML = kz(alle.length,'Positionen')+kz(alle.filter(t => t.sonstiges).length,'Sonstiges (Freitext)')+kz(schr.length,'Arbeitsschritte');
+  el('poLeiste').style.display = poPending ? '' : 'none';
+  el('poStandardBtn').style.display = (sw && POS_START.some(p => !alle.some(t => String(t.nr) === p[0]))) ? '' : 'none';
+  if(!alle.length){ el('poTab').innerHTML = '<tbody><tr><td class="sub" style="padding:18px">Noch keine Positionen. Mit „Standard-Positionen 101–409 anlegen“ kommen alle Positionen vom Verrechnungsblatt hinein (die Arbeitsschritte sind vorbelegt und änderbar).</td></tr></tbody>'; return; }
+  const lern = richtwertGelernt();
+  const liste = alle.filter(t => !s || (t.nr+' '+t.name+' '+(t.kunde||'')).toLowerCase().includes(s));
+  const gruppen = []; kunden().forEach(k => gruppen.push(k.name)); liste.forEach(t => { if(!gruppen.includes(t.kunde||'')) gruppen.push(t.kunde||''); });
+  let h = '<thead><tr><th>Nr</th><th>Position</th>'+schr.map(x => '<th style="text-align:center;white-space:normal;min-width:58px;font-size:11px">'+esc(x)+'</th>').join('')+'<th class="num">Richtwert<br><span class="sub">h je Stück</span></th><th>aus Ist gelernt</th><th style="width:40px"></th></tr></thead><tbody>';
+  gruppen.forEach(g => {
+    const zeilen = liste.filter(t => (t.kunde||'') === g); if(!zeilen.length) return;
+    h += '<tr><td colspan="'+(schr.length+5)+'" style="background:var(--grau-hell,#EEF2F6);padding:8px 12px"><b>'+esc(g||'ohne Kunde')+'</b>'+(POS_GRUPPE[g]? ' <span class="sub">· '+POS_GRUPPE[g]+'</span>':'')+'</td></tr>';
+    zeilen.forEach(t => { const l = lern[t.id];
+      h += '<tr data-pid="'+esc(t.id)+'"><td><b>'+esc(t.nr||'–')+'</b></td><td>'+esc(t.name)+(t.sonstiges? ' <span class="pill warn">Sonstiges</span>':'')+(t.einheit==='Tag'||t.einheit==='Eht'? ' <span class="sub">('+(t.einheit==='Tag'?'je Tag':'Einheit')+')</span>':'')+'</td>'+
+        schr.map(x => '<td style="text-align:center"><input type="checkbox" data-ps="'+esc(x)+'" '+((t.schritte||[]).includes(x)?'checked':'')+' '+(sw?'':'disabled')+' onchange="poMerken()"></td>').join('')+
+        '<td class="num"><input type="number" step="0.05" min="0" data-pr value="'+esc(t.richtwert||'')+'" placeholder="'+de(richtwertStd(t),1)+'" '+(sw?'':'disabled')+' oninput="poMerken()" style="width:80px;text-align:right"></td>'+
+        '<td class="sub">'+(l? de(l.ist/l.menge,2)+' h · '+l.n+' Auftr.'+(sw? ' <a href="#" data-pid="'+esc(t.id)+'" onclick="poUebernehmen(this.dataset.pid);return false">übernehmen</a>':'') : '–')+'</td>'+
+        '<td>'+(sw? '<button class="mini" data-pid="'+esc(t.id)+'" onclick="posDialog(this.dataset.pid)">&#9998;</button>':'')+'</td></tr>'; });
+  });
+  el('poTab').innerHTML = h+'</tbody>';
+}
+function poUebernehmen(id){
+  const l = richtwertGelernt()[id], tr = document.querySelector('#poTab tr[data-pid="'+id+'"]'); if(!l || !tr) return;
+  tr.querySelector('input[data-pr]').value = (Math.round(l.ist/l.menge*100)/100); poMerken();
+}
+function poSpeichern(){
+  if(!darfSchreiben()) return;
+  let n = 0; sammelStart();
+  document.querySelectorAll('#poTab tr[data-pid]').forEach(tr => {
+    const id = tr.dataset.pid, t = D.teile[id]; if(!t) return;
+    const schr = [...tr.querySelectorAll('input[data-ps]')].filter(i => i.checked).map(i => i.dataset.ps);
+    const rw = parseFloat(String(tr.querySelector('input[data-pr]').value).replace(',','.')) || '';
+    const gleich = schr.slice().sort().join() === (t.schritte||[]).slice().sort().join() && String(rw) === String(t.richtwert||'');
+    if(gleich) return;
+    ablegen('teile', id, {...t, schritte:schr, richtwert:rw}); n++;
+    notiere('Position', teilText(t), (t.schritte||[]).join(' → ')||'–', schr.join(' → ')||'–', 'Arbeitsschritte/Richtwert geändert'); });
+  sammelEnde(); poPending = false; alles();
+  toast(n ? n+' Position'+(n>1?'en':'')+' gespeichert. Gilt für neue Aufträge.' : 'Nichts geändert.');
+}
+function poVerwerfen(){ poPending = false; zeichnePositionen(true); }
+function posDialog(id){
+  if(!darfSchreiben()) return;
+  const t = id ? D.teile[id] : {id:neueId(), nr:'', name:'', kunde:'', einheit:'St', eht:'', sonstiges:false, schritte:[], richtwert:''};
+  el('dialogBox').innerHTML =
+    '<div class="overlay" onclick="if(event.target===this)schliesse()"><div class="dialog" style="max-width:600px">'+
+    '<div class="kopf"><div><b>'+(id?'Position bearbeiten':'Neue Position')+'</b></div><button class="zu" onclick="schliesse()">&times;</button></div>'+
+    '<div class="rumpf"><div class="formgitter">'+
+      '<label>Nummer<input type="text" id="pNr" value="'+esc(t.nr)+'"></label>'+
+      '<label>Kunde<select id="pKunde">'+kundenOptionen(t.kunde||'')+'</select></label>'+
+      '<label class="breit">Bezeichnung<input type="text" id="pName" value="'+esc(t.name)+'"></label>'+
+      '<label>Einheit<select id="pEinheit">'+[['St','Stück'],['Tag','Tag (z. B. Transport)'],['Eht','Einheit (z. B. Prüfung)']].map(e => '<option value="'+e[0]+'"'+(t.einheit===e[0]?' selected':'')+'>'+e[1]+'</option>').join('')+'</select></label>'+
+      '<label>Alte Verrechnungs-Einheit (Eht.)<input type="number" step="0.01" min="0" id="pEht" value="'+esc(t.eht===undefined?'':t.eht)+'" placeholder="nur zur Info"></label>'+
+      '<label class="breit" style="text-transform:none;letter-spacing:0;font-size:13.5px"><input type="checkbox" id="pSonst" '+(t.sonstiges?'checked':'')+' style="width:auto;margin:0 6px 0 0">Sonstiges-Position: beim Auftrag wird eine Beschreibung verlangt und im Reiter „Sonderfälle“ festgehalten</label>'+
+    '</div></div><div class="fuss">'+(id? '<button class="btn rot" onclick="posLoeschen(\''+t.id+'\')">Löschen</button>':'')+'<span style="flex:1"></span>'+
+    '<button class="btn sek" onclick="schliesse()">Abbrechen</button><button class="btn" onclick="posSpeichern(\''+t.id+'\','+(id?'false':'true')+')">Speichern</button></div></div></div>';
+  setTimeout(()=>el('pName').focus(),60);
+}
+function posSpeichern(id, neu){
+  const name = el('pName').value.trim(); if(!name) return alert('Bitte eine Bezeichnung eingeben.');
+  const nr = el('pNr').value.trim(); if(!nr) return alert('Bitte eine Nummer eingeben.');
+  if(Object.values(D.teile).some(x => x.id !== id && String(x.nr).toLowerCase() === nr.toLowerCase())) return alert('Diese Nummer gibt es schon.');
+  const alt = D.teile[id] || {}, sonst = el('pSonst').checked;
+  const eht = parseFloat(String(el('pEht').value).replace(',','.')); 
+  const t = {...alt, id, nr, name, kunde: el('pKunde').value.trim(), einheit: el('pEinheit').value, eht: isNaN(eht) ? '' : eht, sonstiges: sonst,
+    schritte: alt.schritte && alt.schritte.length ? alt.schritte : posVorbelegung(nr.replace(/\D/g,''), sonst), richtwert: alt.richtwert||'', materialien: alt.materialien||[], sollJe: alt.sollJe||{}, notiz: alt.notiz||'',
+    erstellt: alt.erstellt || new Date().toISOString(), erstelltVon: alt.erstelltVon || benutzerName()};
+  ablegen('teile', id, t); notiere('Katalog', teilText(t), null, null, neu? 'Position angelegt' : 'Position geändert');
+  poPending = false; schliesse(); alles();
+}
+function posLoeschen(id){
+  const t = D.teile[id]; if(!t) return;
+  const n = Object.values(D.auftraege).filter(a => a.teilId === id).length;
+  if(!confirm('Position "'+teilText(t)+'" löschen?'+(n? '\n\n'+n+' Aufträge behalten ihre Angaben.':''))) return;
+  entfernen('teile', id); notiere('Katalog', teilText(t), null, null, 'Position gelöscht'); poPending = false; schliesse(); alles();
+}
+
+/* ---------- Sonderfälle: Sonstiges-Aufträge und Ofen-Notizen ---------- */
+const SONDER_FOLGEN = ['keine','Ofen abgeschaltet (Übertemperatur)','Mehr Wasser (Zusatzkühlung)','Ofen ausgefallen','Sonstiges'];
+const alleSonder = () => Object.values(D.sonderfaelle||{}).sort((a,b) => String(b.datum).localeCompare(String(a.datum)) || String(b.erstellt||'').localeCompare(String(a.erstellt||'')));
+/* letzter Ofen-Sonderfall (letzte 12 Monate) eines Kunden - als Warnung bei neuen Aufträgen */
+function sonderOfenLetzter(kunde){
+  if(!kunde) return null; const grenze = plusTage(heute(), -365);
+  return alleSonder().find(x => x.typ === 'ofen' && x.kunde === kunde && String(x.datum) >= grenze) || null;
+}
+function auKundeHinweis(){
+  const box = el('auSonderHinweis'); if(!box) return;
+  const s = sonderOfenLetzter(el('auKunde').value);
+  box.innerHTML = s ? '<div class="hinweis gelb"><b>Achtung Material:</b> Bei '+esc(s.kunde)+' gab es am '+dmy(s.datum)+' einen Ofen-Sonderfall'+(s.material? ' ('+esc(s.material)+')':'')+(s.folge && s.folge !== 'keine' ? ', Folge: '+esc(s.folge):'')+'. Bitte vorab nach dem Material fragen.</div>' : '';
+}
+function sonderAnlegen(r){
+  const x = {id:neueId(), datum:heute(), typ:'sonstiges', kunde:'', posNr:'', auftragId:'', beschreibung:'', material:'', folge:'keine', ofenId:'', ausfallH:'', kundeInformiert:false, notiz:'',
+    erstellt:new Date().toISOString(), erstelltVon:benutzerName(), ...r};
+  ablegen('sonderfaelle', x.id, x); return x;
+}
+function zeichneSonderfaelle(){
+  const s = (el('soSuche').value||'').trim().toLowerCase(), typ = el('soTyp').value, sw = darfSchreiben();
+  const alle = alleSonder();
+  const liste = alle.filter(x => (!typ || x.typ === typ) && (!s || [x.beschreibung, x.material, x.kunde, x.posNr, x.folge, x.notiz].join(' ').toLowerCase().includes(s)));
+  const jahr = plusTage(heute(), -365);
+  el('soKennzahlen').innerHTML = kz(alle.length,'Sonderfälle gesamt')+kz(alle.filter(x => x.typ==='sonstiges').length,'Sonstiges-Aufträge')+
+    kz(alle.filter(x => x.typ==='ofen').length,'Ofen-Notizen')+kz(de(alle.filter(x => String(x.datum) >= jahr).reduce((a,x) => a+(+x.ausfallH||0),0),1)+' h','Ofen-Ausfall, 12 Monate', alle.some(x => +x.ausfallH>0 && String(x.datum) >= jahr)?'warn':'gruen');
+  el('soBody').innerHTML = liste.map(x => {
+    const a = D.auftraege[x.auftragId], o = oefen().find(q => q.id === x.ofenId);
+    return '<tr><td>'+dmy(x.datum)+'</td><td><span class="pill '+(x.typ==='ofen'?'warn':'grau')+'">'+(x.typ==='ofen'?'Ofen-Notiz':'Sonstiges')+'</span></td><td>'+esc(x.kunde||'')+'</td>'+
+      '<td>'+esc((x.posNr? x.posNr+' ':'')+(a? '· '+(a.nummer||''):''))+'</td><td>'+esc(x.beschreibung)+(x.material? '<div class="sub">Material: '+esc(x.material)+'</div>':'')+(x.notiz? '<div class="sub">'+esc(x.notiz)+'</div>':'')+'</td>'+
+      '<td>'+(x.folge && x.folge !== 'keine' ? esc(x.folge)+(o? ' · '+esc(o.name):'')+(+x.ausfallH>0? ' · '+de(x.ausfallH,1)+' h':'') : '–')+(x.typ==='ofen'? '<div class="sub">'+(x.kundeInformiert? 'Kunde informiert':'Kunde noch nicht informiert')+'</div>':'')+'</td>'+
+      '<td>'+(sw? '<button class="mini" onclick="sonderDialog(\''+x.id+'\')">&#9998;</button>':'')+'</td></tr>'; }).join('')
+    || '<tr><td colspan="7" class="sub" style="padding:14px">'+(alle.length? 'Nichts gefunden.' : 'Noch keine Sonderfälle. Sie entstehen automatisch bei Aufträgen mit einer Sonstiges-Position oder über „+ Sonderfall“.')+'</td></tr>';
+}
+function sonderDialog(id){
+  if(!darfSchreiben()) return;
+  const x = id ? D.sonderfaelle[id] : {id:neueId(), datum:heute(), typ:'ofen', kunde:'', posNr:'', auftragId:'', beschreibung:'', material:'', folge:'keine', ofenId:'', ausfallH:'', kundeInformiert:false, notiz:''};
+  const offene = Object.values(D.auftraege).filter(a => a.status !== 'abgeschlossen' || a.id === x.auftragId).sort((a,b) => String(b.nummer).localeCompare(String(a.nummer)));
+  el('dialogBox').innerHTML =
+    '<div class="overlay" onclick="if(event.target===this)schliesse()"><div class="dialog" style="max-width:660px">'+
+    '<div class="kopf"><div><b>'+(id?'Sonderfall bearbeiten':'Neuer Sonderfall')+'</b></div><button class="zu" onclick="schliesse()">&times;</button></div>'+
+    '<div class="rumpf"><div class="formgitter">'+
+      '<label>Datum<input type="date" id="sDatum" value="'+x.datum+'"></label>'+
+      '<label>Art<select id="sTyp"><option value="ofen"'+(x.typ==='ofen'?' selected':'')+'>Ofen-Notiz (Material / Ofen)</option><option value="sonstiges"'+(x.typ==='sonstiges'?' selected':'')+'>Sonstiges</option></select></label>'+
+      '<label>Kunde<select id="sKunde">'+kundenOptionen(x.kunde)+'</select></label>'+
+      '<label>Zugehöriger Auftrag (optional)<select id="sAuftrag"><option value="">–</option>'+offene.map(a => '<option value="'+a.id+'"'+(a.id===x.auftragId?' selected':'')+'>'+esc((a.nummer||'')+' · '+a.bezeichnung)+'</option>').join('')+'</select></label>'+
+      '<label class="breit">Was ist passiert / worum geht es?<textarea id="sText" rows="3">'+esc(x.beschreibung)+'</textarea></label>'+
+      '<label>Material im Pack (nicht gemeldet / neu)<input type="text" id="sMat" value="'+esc(x.material)+'"></label>'+
+      '<label>Folge<select id="sFolge">'+SONDER_FOLGEN.map(f => '<option'+(f===x.folge?' selected':'')+'>'+esc(f)+'</option>').join('')+'</select></label>'+
+      '<label>Ofen<select id="sOfen"><option value="">–</option>'+oefen().map(o => '<option value="'+esc(o.id)+'"'+(o.id===x.ofenId?' selected':'')+'>'+esc(o.name)+'</option>').join('')+'</select></label>'+
+      '<label>Ausfall / Stillstand (h)<input type="number" step="0.5" min="0" id="sAusfall" value="'+esc(x.ausfallH)+'"></label>'+
+      '<label class="breit" style="text-transform:none;letter-spacing:0;font-size:13.5px"><input type="checkbox" id="sInfo" '+(x.kundeInformiert?'checked':'')+' style="width:auto;margin:0 6px 0 0">Kunde wurde informiert</label>'+
+      '<label class="breit">Notiz<textarea id="sNotiz" rows="2">'+esc(x.notiz)+'</textarea></label>'+
+    '</div></div><div class="fuss">'+(id? '<button class="btn rot" onclick="sonderLoeschen(\''+x.id+'\')">Löschen</button>':'')+'<span style="flex:1"></span>'+
+    '<button class="btn sek" onclick="schliesse()">Abbrechen</button><button class="btn" onclick="sonderSpeichern(\''+x.id+'\','+(id?'false':'true')+')">Speichern</button></div></div></div>';
+  setTimeout(()=>el('sText').focus(),60);
+}
+function sonderSpeichern(id, neu){
+  const text = el('sText').value.trim(); if(!text) return alert('Bitte kurz beschreiben, worum es geht.');
+  const alt = D.sonderfaelle[id] || {}, a = D.auftraege[el('sAuftrag').value];
+  const x = {...alt, id, datum: el('sDatum').value || heute(), typ: el('sTyp').value, kunde: el('sKunde').value.trim() || (a? a.kunde||'' : ''), auftragId: el('sAuftrag').value, posNr: a? (a.posNr||'') : (alt.posNr||''),
+    beschreibung: text, material: el('sMat').value.trim(), folge: el('sFolge').value, ofenId: el('sOfen').value, ausfallH: parseFloat(String(el('sAusfall').value).replace(',','.')) || '',
+    kundeInformiert: el('sInfo').checked, notiz: el('sNotiz').value.trim(), erstellt: alt.erstellt || new Date().toISOString(), erstelltVon: alt.erstelltVon || benutzerName()};
+  ablegen('sonderfaelle', id, x); notiere('Sonderfall', (x.kunde||'ohne Kunde')+' · '+text.slice(0,50), null, null, neu? 'angelegt ('+(x.typ==='ofen'?'Ofen-Notiz':'Sonstiges')+')' : 'geändert');
+  schliesse(); alles();
+}
+function sonderLoeschen(id){
+  const x = D.sonderfaelle[id]; if(!x || !confirm('Diesen Sonderfall löschen?')) return;
+  entfernen('sonderfaelle', id); notiere('Sonderfall', (x.kunde||'')+' · '+String(x.beschreibung).slice(0,50), null, null, 'gelöscht'); schliesse(); alles();
+}
+
+/* ---------- Katalog: Kunden, Materialien, Arbeitsschritte, Öfen ---------- */
 function zeichneKatalog(){
-  const s = (el('kaSuche').value||'').trim().toLowerCase();
-  const liste = alleTeile().filter(t => !s || (teilText(t)+' '+(t.kunde||'')+' '+(t.materialien||[]).join(' ')).toLowerCase().includes(s));
   const sw = darfSchreiben();
-  el('kaKennzahlen').innerHTML = kz(alleTeile().length,'Teile im Katalog')+kz(kunden().length,'Kunden')+kz(materialien().length,'Materialien')+kz(oefen().length,'Öfen')+kz(taetigkeiten().length,'Arbeitsschritte');
+  el('kaKennzahlen').innerHTML = kz(alleTeile().length,'Positionen')+kz(kunden().length,'Kunden')+kz(oefen().length,'Öfen')+kz(taetigkeiten().length,'Arbeitsschritte')+kz(materialien().length,'Materialien (optional)');
   el('kaProbleme').innerHTML = ofenHinweisHtml();
   zeichneKunden();
-  el('kaBody').innerHTML = liste.map(t =>
-    '<tr><td><b>'+esc(t.nr||'–')+'</b></td><td>'+esc(t.name)+'</td><td>'+esc(t.kunde||'')+'</td>'+
-    '<td>'+(t.materialien||[]).map(m=>'<span class="chip" style="padding:2px 9px;font-size:12px">'+esc(m)+'</span>').join(' ')+'</td>'+
-    '<td class="sub">'+esc((t.schritte||[]).join(' → '))+'</td>'+
-    '<td>'+(sw? '<button class="mini" onclick="teilDialog(\''+t.id+'\')">&#9998;</button>':'')+'</td></tr>').join('')
-    || '<tr><td colspan="6" class="sub" style="padding:14px">'+(alleTeile().length? 'Nichts gefunden.' : 'Noch keine Teile im Katalog. Teile entstehen beim Anlegen eines Auftrags oder über „Teile importieren“.')+'</td></tr>';
   el('matListe').innerHTML = materialien().map(m=>'<span class="chip">'+esc(m)+(sw?'<button data-m="'+esc(m)+'" onclick="matWeg(this.dataset.m)">&times;</button>':'')+'</span>').join('');
   const ms = materialien();
   el('ofenMatrix').innerHTML = '<thead><tr><th>Ofen</th>'+ms.map(m=>'<th style="text-align:center">'+esc(m)+'</th>').join('')+'<th style="width:40px"></th></tr></thead><tbody>'+
@@ -1604,46 +1858,6 @@ function zeichneKatalog(){
       return '<td style="text-align:center'+(g?';background:#FBEEED':'')+'"><input type="checkbox" '+(g?'checked':'')+' '+(sw?'':'disabled')+' data-o="'+esc(o.id)+'" data-m="'+esc(m)+'" onchange="ofenSperre(this.dataset.o,this.dataset.m,this.checked)" title="'+(g?'gesperrt':'erlaubt')+'"></td>'; }).join('')+
       '<td>'+(sw?'<button class="mini" data-o="'+esc(o.id)+'" onclick="ofenWeg(this.dataset.o)">&times;</button>':'')+'</td></tr>').join('')+'</tbody>';
   el('taetListe').innerHTML = taetigkeiten().map(t=>'<span class="chip">'+esc(t)+(sw?'<button data-t="'+esc(t)+'" onclick="taetWeg(this.dataset.t)">&times;</button>':'')+'</span>').join('');
-}
-function teilDialog(id){
-  if(!darfSchreiben()) return;
-  const t = id ? D.teile[id] : {id:neueId(), nr:'', name:'', kunde:'', materialien:[], schritte:[], sollJe:{}, notiz:''};
-  el('dialogBox').innerHTML =
-    '<div class="overlay" onclick="if(event.target===this)schliesse()"><div class="dialog" style="max-width:640px">'+
-    '<div class="kopf"><div><b>'+(id?'Teil bearbeiten':'Neues Teil')+'</b></div><button class="zu" onclick="schliesse()">&times;</button></div>'+
-    '<div class="rumpf"><div class="formgitter">'+
-      '<label>Teilenummer<input type="text" id="tNr" value="'+esc(t.nr)+'"></label>'+
-      '<label>Kunde<select id="tKunde">'+kundenOptionen(t.kunde||'')+'</select></label>'+
-      '<label class="breit">Bezeichnung<input type="text" id="tName" value="'+esc(t.name)+'"></label></div>'+
-    '<div class="formtitel">Material</div><div class="chips">'+materialien().map(m=>'<label class="chip" style="cursor:pointer"><input type="checkbox" data-tmat="'+esc(m)+'" '+((t.materialien||[]).includes(m)?'checked':'')+'> '+esc(m)+'</label>').join('')+'</div>'+
-    '<div class="formtitel">Arbeitsschritte (Standard-Soll in Stunden ist optional)</div>'+
-    '<table class="liste"><tbody>'+taetigkeiten().map(tt=>'<tr><td><label style="cursor:pointer"><input type="checkbox" data-tsch="'+esc(tt)+'" '+((t.schritte||[]).includes(tt)?'checked':'')+'> '+esc(tt)+'</label></td>'+
-      '<td class="num" style="width:130px"><input type="number" step="0.5" min="0" data-tstd="'+esc(tt)+'" value="'+((t.sollJe||{})[tt]||'')+'" style="width:100px;text-align:right"></td></tr>').join('')+'</tbody></table>'+
-    '</div><div class="fuss">'+(id? '<button class="btn rot" onclick="teilLoeschen(\''+t.id+'\')">Löschen</button>':'')+'<span style="flex:1"></span>'+
-    '<button class="btn sek" onclick="schliesse()">Abbrechen</button><button class="btn" onclick="teilSpeichern(\''+t.id+'\','+(id?'false':'true')+')">Speichern</button></div></div></div>';
-  setTimeout(()=>el('tName').focus(),60);
-}
-function teilSpeichern(id, neu){
-  const name = el('tName').value.trim(); if(!name) return alert('Bitte eine Bezeichnung eingeben.');
-  const nr = el('tNr').value.trim();
-  if(nr && Object.values(D.teile).some(x => x.id !== id && String(x.nr).toLowerCase() === nr.toLowerCase())) return alert('Diese Teilenummer gibt es schon.');
-  const mats = [...document.querySelectorAll('#dialogBox input[data-tmat]')].filter(i=>i.checked).map(i=>i.dataset.tmat);
-  const schritte = [], sollJe = {};
-  document.querySelectorAll('#dialogBox input[data-tsch]').forEach(i => { if(i.checked) schritte.push(i.dataset.tsch); });
-  document.querySelectorAll('#dialogBox input[data-tstd]').forEach(i => { const v = parseFloat(String(i.value).replace(',','.')); if(v>0){ sollJe[i.dataset.tstd] = v; if(!schritte.includes(i.dataset.tstd)) schritte.push(i.dataset.tstd); } });
-  if(!schritte.length) return alert('Bitte mindestens einen Arbeitsschritt anklicken.');
-  if(!mats.length && !confirm('Es ist kein Material angehakt. Der Ofen-Schutz kann dann nichts prüfen.\n\nTrotzdem speichern?')) return;
-  const alt = D.teile[id] || {};
-  const t = {...alt, id, nr, name, kunde: el('tKunde').value.trim(), materialien: mats, schritte, sollJe, notiz: alt.notiz||'', erstellt: alt.erstellt || new Date().toISOString(), erstelltVon: alt.erstelltVon || benutzerName()};
-  ablegen('teile', id, t);
-  notiere('Katalog', teilText(t), null, null, neu? 'Teil angelegt' : 'Teil geändert'+((alt.materialien||[]).join()!==mats.join()? ' · Material '+(alt.materialien||[]).join('/')+' → '+mats.join('/'):''));
-  schliesse(); alles();
-}
-function teilLoeschen(id){
-  const t = D.teile[id]; if(!t) return;
-  const n = Object.values(D.auftraege).filter(a => a.teilId === id).length;
-  if(!confirm('"'+teilText(t)+'" aus dem Katalog löschen?'+(n? '\n\n'+n+' Aufträge behalten ihre Angaben.':''))) return;
-  entfernen('teile', id); notiere('Katalog', teilText(t), null, null, 'Teil gelöscht'); schliesse(); alles();
 }
 function matHinzu(){
   const n = el('matNeu').value.trim(); if(!n) return;
@@ -1680,50 +1894,6 @@ function ofenSperre(id, m, an){
   alles();
   if(an && p.length) alert('Achtung: '+p.length+' offene(r) Auftrag/Aufträge sind diesem Ofen zugeordnet und enthalten '+m+'.\n\nBitte dort einen erlaubten Ofen wählen.');
 }
-/* Teile per CSV importieren: Nummer;Bezeichnung;Kunde;Material (mit | trennen);Arbeitsschritte (mit | trennen) */
-function teileImportDialog(){
-  if(!darfSchreiben()) return;
-  el('dialogBox').innerHTML = '<div class="overlay" onclick="if(event.target===this)schliesse()"><div class="dialog" style="max-width:720px">'+
-    '<div class="kopf"><div><b>Teile importieren</b></div><button class="zu" onclick="schliesse()">&times;</button></div>'+
-    '<div class="rumpf"><p class="formhinweis">Eine Zeile pro Teil, Spalten mit Semikolon getrennt:<br><b>Nummer;Bezeichnung;Kunde;Material;Arbeitsschritte</b><br>Mehrere Materialien oder Schritte mit | trennen, z. B. <i>Edelstahl|Messing</i>. Material und Arbeitsschritte müssen vorher in den Listen stehen – unbekannte Namen werden abgelehnt, damit der Ofen-Schutz nichts übersieht.</p>'+
-    '<textarea id="tiText" rows="9" style="width:100%" placeholder="DK-12;Düsenkörper DK-12;Maier Kunststofftechnik;Edelstahl;Rüsten|Drehen|Prüfung"></textarea>'+
-    '<div class="werkzeuge" style="margin-top:10px"><label class="btn sek" style="display:inline-block">CSV-Datei wählen<input type="file" accept=".csv,.txt" style="display:none" onchange="teileImportDatei(this)"></label></div>'+
-    '<div id="tiErgebnis" style="margin-top:12px"></div></div>'+
-    '<div class="fuss"><span style="flex:1"></span><button class="btn sek" onclick="schliesse()">Abbrechen</button><button class="btn sek" onclick="teileImportPruefen()">Prüfen</button><button class="btn" id="tiOk" onclick="teileImportUebernehmen()" disabled>Übernehmen</button></div></div></div>';
-}
-function teileImportDatei(f){ const d = f.files[0]; if(!d) return; const r = new FileReader(); r.onload = e => { el('tiText').value = String(e.target.result).replace(/^﻿/,''); teileImportPruefen(); }; r.readAsText(d, 'utf-8'); }
-let tiListe = [];
-function teileImportPruefen(){
-  const zeilen = el('tiText').value.split(/\r?\n/).map(z => z.trim()).filter(Boolean);
-  const mats = materialien(), schr = taetigkeiten(); tiListe = []; const fehler = [];
-  zeilen.forEach((z, i) => {
-    const c = z.split(';').map(x => x.trim());
-    if(i === 0 && /^nummer/i.test(c[0])) return;
-    const nr = c[0], name = c[1], kunde = c[2]||'';
-    const m = (c[3]||'').split('|').map(x=>x.trim()).filter(Boolean), s = (c[4]||'').split('|').map(x=>x.trim()).filter(Boolean);
-    const fm = m.filter(x => !mats.includes(x)), fs = s.filter(x => !schr.includes(x));
-    if(!name) fehler.push('Zeile '+(i+1)+': Bezeichnung fehlt.');
-    else if(fm.length) fehler.push('Zeile '+(i+1)+' ('+name+'): Material unbekannt: '+fm.join(', '));
-    else if(fs.length) fehler.push('Zeile '+(i+1)+' ('+name+'): Arbeitsschritt unbekannt: '+fs.join(', '));
-    else if(!s.length) fehler.push('Zeile '+(i+1)+' ('+name+'): kein Arbeitsschritt.');
-    else tiListe.push({nr, name, kunde, materialien:m, schritte:s});
-  });
-  const neu = tiListe.filter(t => !t.nr || !Object.values(D.teile).some(x => String(x.nr).toLowerCase() === t.nr.toLowerCase())).length;
-  el('tiErgebnis').innerHTML = '<div class="hinweis '+(fehler.length?'gelb':'gruen')+'"><b>'+tiListe.length+' Teile gültig</b> ('+neu+' neu, '+(tiListe.length-neu)+' bestehende werden aktualisiert)'+
-    (fehler.length? '<br><b>'+fehler.length+' abgelehnt:</b><br>'+fehler.map(esc).join('<br>') : '')+'</div>';
-  el('tiOk').disabled = !tiListe.length;
-  return tiListe;
-}
-function teileImportUebernehmen(){
-  if(!tiListe.length) return;
-  sammelStart();
-  tiListe.forEach(t => { const alt = t.nr ? Object.values(D.teile).find(x => String(x.nr).toLowerCase() === t.nr.toLowerCase()) : null;
-    const id = alt ? alt.id : neueId(); ablegen('teile', id, {...(alt||{}), id, nr:t.nr, name:t.name, kunde:t.kunde, materialien:t.materialien, schritte:t.schritte, sollJe:(alt&&alt.sollJe)||{}, notiz:(alt&&alt.notiz)||'', erstellt:(alt&&alt.erstellt)||new Date().toISOString(), erstelltVon:(alt&&alt.erstelltVon)||benutzerName()}); });
-  sammelEnde();
-  notiere('Katalog', 'Import', null, tiListe.length, 'Teile importiert');
-  tiListe = []; schliesse(); alles();
-}
-
 /* ---------- Planung ---------- */
 function zeichnePlanung(){
   const p = planen();
@@ -2679,7 +2849,7 @@ el('importDatei').addEventListener('change', e => {
   const f = e.target.files[0]; if(!f) return; const r = new FileReader();
   r.onload = ev => { try { const o = JSON.parse(ev.target.result); if(!o.D) throw 0;
     if(!confirm('Sicherung vom '+new Date(o.stand).toLocaleString('de-DE')+' laden?\n\nAlle Daten werden überschrieben bzw. ergänzt.')) return;
-    sammelStart(); ['mitarbeiter','auftraege','zeiten','urlaub','teile'].forEach(c => Object.values(o.D[c]||{}).forEach(x => ablegen(c, x.id, x)));
+    sammelStart(); ['mitarbeiter','auftraege','zeiten','urlaub','teile','sonderfaelle'].forEach(c => Object.values(o.D[c]||{}).forEach(x => ablegen(c, x.id, x)));
     Object.entries(o.D.einst||{}).forEach(([k,v]) => ablegen('einst', k, v)); sammelEnde();
     if(!cloudAktiv){ archiv = o.archiv||[]; lokalSpeichern(); }
     notiere('Backup', f.name, null, null, 'Sicherung geladen'); alles(); alert('Geladen.');
@@ -2687,9 +2857,9 @@ el('importDatei').addEventListener('change', e => {
   r.readAsText(f); e.target.value = '';
 });
 function allesLoeschen(){
-  if(!confirm('Wirklich ALLE Mitarbeiter, Aufträge, Zeiten, Abwesenheiten und Teile löschen?')) return;
+  if(!confirm('Wirklich ALLE Mitarbeiter, Aufträge, Zeiten, Abwesenheiten und Sonderfälle löschen? (Positionen bleiben.)')) return;
   if(prompt('Zur Sicherheit "LÖSCHEN" eintippen:') !== 'LÖSCHEN') return;
-  massenLoeschen(['mitarbeiter','auftraege','zeiten','urlaub','teile'].flatMap(c => Object.keys(D[c]).map(id => [c, id])));
+  massenLoeschen(['mitarbeiter','auftraege','zeiten','urlaub','sonderfaelle'].flatMap(c => Object.keys(D[c]).map(id => [c, id])));
   notiere('System','alles',null,null,'alle Daten gelöscht'); alles();
 }
 function demoLaden(){
@@ -2697,126 +2867,74 @@ function demoLaden(){
   sammelStart();
   const h = heute();
   let saat = 4711; const zuf = () => { saat = (saat*1103515245 + 12345) & 0x7fffffff; return saat/0x7fffffff; };
-  const leute = [['Anna Berger',8,['Drehen','Prüfung'],'fest'],['Markus Huber',8,['Fräsen','Rüsten'],'fest'],['Stefan Keller',8,[],'fest'],['Lisa Wagner',6,['Montage','Prüfung'],'fest'],['Tobias Reiter',8,['Montage','Sonstiges'],'neu'],['Daniel Schmid',8,['Montage','Rüsten'],'zeitarbeit']];
+  const leute = [['Anna Berger',8,['Demontieren','Nachwaschen','Messen'],'fest'],['Markus Huber',8,['Strahlen','Ofen','Demontieren'],'fest'],['Stefan Keller',8,[],'fest'],['Lisa Wagner',6,['Waschen','Nachwaschen','Messen'],'fest'],['Tobias Reiter',8,['Demontieren','Waschen'],'neu'],['Daniel Schmid',8,['Demontieren','Strahlen','Ofen'],'zeitarbeit']];
   const ids = leute.map(p => { const id = neueId(); ablegen('mitarbeiter', id, {id, name:p[0], stundenTag:p[1], aktiv:true, email:'', kann:p[2], typ:p[3]}); return id; });
-  const tae = taetigkeiten();
-  // Katalog: Materialien ergänzen, Öfen nur anlegen, wenn es noch keine gibt, Beispiel-Teile (bestehende Nummern werden wiederverwendet)
-  ablegen('einst','materialien',{liste: [...new Set(materialien().concat(MATERIAL_START))]});
   if(!D.einst.oefen) ablegen('einst','oefen',{liste: OEFEN_START});
-  const TEILE_DEMO = [
-    ['DK-12','Düsenkörper DK-12','Kunde A',['Edelstahl'],['Rüsten','Drehen','Fräsen','Prüfung']],
-    ['DK-10','Düsenkörper DK-10','Kunde A',['Edelstahl'],['Rüsten','Drehen','Fräsen','Prüfung']],
-    ['DP-8','Düsenplatte DP-8','Kunde C',['Stahl'],['Rüsten','Fräsen','Montage','Prüfung']],
-    ['PS-B','Packstück Serie B','Kunde F',['Aluminium'],['Fräsen','Montage','Prüfung']],
-    ['SK-3','Spritzkopf Linie 3','Kunde B',['Messing','Edelstahl'],['Montage','Prüfung']],
-    ['MK-5','Mischkopf MK-5','Kunde A',['Stahl','Messing'],['Rüsten','Drehen','Montage','Prüfung']],
-    ['VB-22','Verteilerblock VB-22','Kunde D',['Aluminium'],['Rüsten','Fräsen','Prüfung']],
-    ['DF-31','Dichtflansch DF-31','Kunde E',['Edelstahl','Kunststoff'],['Drehen','Montage','Prüfung']],
-    ['KD-15','Kalibrierdorn KD-15','Kunde D',['Stahl'],['Rüsten','Drehen','Prüfung']],
-    ['FE-40','Formeinsatz FE-40','Kunde F',['Titan'],['Rüsten','Fräsen','Drehen','Prüfung']],
-    ['SB-S3','Spannbacken Satz S3','Kunde B',['Stahl'],['Rüsten','Fräsen','Prüfung']],
-    ['VR-01','Vorrichtung Schweißtisch','Kunde F',['Stahl'],['Rüsten','Fräsen','Montage']]];
-  const teile = TEILE_DEMO.map(d => { const alt = Object.values(D.teile).find(x => x.nr === d[0]); if(alt) return alt;
-    const t = {id:neueId(), nr:d[0], name:d[1], kunde:d[2], materialien:d[3], schritte:d[4], sollJe:{}, notiz:'', erstellt:new Date().toISOString(), erstelltVon:'Demo'}; ablegen('teile', t.id, t); return t; });
-  const teilNr = nr => teile.find(t => t.nr === nr);
-  const ofenFuer = t => { const ok = erlaubteOefen(t.materialien); return ok.length ? ok[Math.floor(zuf()*ok.length)].id : ''; };
-  const mitTeil = (t, menge) => ({teilId:t.id, bezeichnung:t.name+(menge? ', '+menge+' Stück':''), kunde:t.kunde, menge:menge||0, materialien:[...t.materialien], schritte:[...t.schritte], ofenId: zuf() < 0.6 ? ofenFuer(t) : ''});
-  const verteile = (soll, steps) => { const w = steps.map(() => 0.5+zuf()), sum = w.reduce((x,y)=>x+y,0), r = {}; steps.forEach((st,i) => { r[st] = Math.max(1, Math.round(soll*w[i]/sum)); }); return r; };
-  // [Bezeichnung, Kunde, Soll gesamt, Kundentermin in Tagen ab heute, Soll je Arbeitsschritt, Status]
-  const au = [
-    ['Düsenkörper DK-12, 40 Stück', 'Kunde A', 0, 9, {'Rüsten':8,'Drehen':70,'Fräsen':48,'Prüfung':8}, 'offen'],
-    ['Packstück Serie B, Folgeauftrag', 'Kunde F', 48, 6, {}, 'offen'],
-    ['Reparatur Spritzkopf Linie 3', 'Kunde B', 24, 3, {}, 'offen'],
-    ['Vorrichtung Schweißtisch', 'Kunde F', 160, 30, {}, 'offen'],
-    ['Düsenplatte DP-8 Prototyp', 'Kunde C', 36, 14, {'Fräsen':24,'Montage':8,'Prüfung':4}, 'offen'],
-    ['Ersatzteile Mischkopf', 'Kunde A', 150, 12, {}, 'offen'],
-    ['Düsenkörper DK-10, 20 Stück', 'Kunde A', 70, -8, {}, 'abgeschlossen']
-  ];
-  const aids = au.map((a,i) => { const id = neueId();
-    ablegen('auftraege', id, {id, nummer:'A-'+h.slice(0,4)+'-0'+String(i+41), bezeichnung:a[0], kunde:a[1], start:plusTage(h, i===5? 10 : -20), endeKunde:a[3]!==null? plusTage(h,a[3]):'',
-      sollGesamt:a[2], sollJe:a[4], maxPersonen: i===3? 2 : 0, notiz: i===2? 'Kunde steht still – hat Vorrang' : '', status:a[5], prio:i+1, mengen:{},
-      abgeschlossenAm: a[5]==='abgeschlossen'? plusTage(h,-8):'', erstellt:new Date().toISOString(), erstelltVon:'Demo',
-      ...mitTeil(teilNr(['DK-12','PS-B','SK-3','VR-01','DP-8','MK-5','DK-10'][i]), [40,0,0,0,0,0,20][i])}); return id; });
+  const pos = posAnlegenIntern(), posNr = nr => pos.find(p => p.nr === nr);
+  const gaengig = ['101','101','102','108','112','112','301','301','302','303','308','401','402','109','111','305','404','405','103','304'].filter(n => posNr(n));
+  const frei = ['Ersatzteil nach Zeichnung reinigen','Pack mit Rissprüfung','Kundenmuster, Sonderreinigung','Schmelzefilter mit starker Verschmutzung'];
+  const tagesKap = leute.reduce((s,p)=>s+p[1],0);
+  let nrO = 41;
+  const wahl = () => { if(zuf() < 0.06){ const s = pos.filter(p => p.sonstiges); return s[Math.floor(zuf()*s.length)]; } return posNr(gaengig[Math.floor(zuf()*gaengig.length)]); };
+  const mk = (p, menge, o) => { const id = neueId(), fr = p.sonstiges ? frei[Math.floor(zuf()*frei.length)] : '', soll = Math.round(menge*richtwertVon(p)*(o.faktor||1)*4)/4;
+    const a = {id, nummer:o.nummer, teilId:p.id, posNr:p.nr, freitext:fr, kunde:p.kunde, menge, bezeichnung:p.nr+' · '+p.name+(fr? ' – '+fr:'')+', '+menge+' Stück',
+      start:o.start, endeKunde:o.ende||'', sollGesamt:Math.round(menge*richtwertVon(p)*4)/4, sollAuto:true, sollJe:{}, maxPersonen:0, notiz:'', status:o.status, prio:o.prio, schritte:[...p.schritte], materialien:[], ofenId:'', mengen:{},
+      abgeschlossenAm:o.abg||'', qmVermerk:o.qm||'', qmErledigt:!!o.qmOk, erstellt:new Date().toISOString(), erstelltVon:'Demo'};
+    ablegen('auftraege', id, a);
+    if(fr) ablegen('sonderfaelle', 's'+id, {id:'s'+id, datum:o.start < h ? o.start : h, typ:'sonstiges', kunde:p.kunde, posNr:p.nr, auftragId:id, beschreibung:fr, material:'', folge:'keine', ofenId:'', ausfallH:'', kundeInformiert:false, notiz:'', erstellt:new Date().toISOString(), erstelltVon:'Demo'});
+    return a; };
+  // Offene Aufträge: etwa 3 Wochen Arbeit, die meisten ohne Termin
+  const offen = []; let kumuliert = 0;
+  while(kumuliert < tagesKap * 15){
+    const p = wahl(), menge = [9,12,18,18,24,27,36,45,63][Math.floor(zuf()*9)];
+    const hatTermin = zuf() < 0.3; const dauer = Math.round(kumuliert / tagesKap * 1.25) + 2 + Math.floor(zuf()*6) - 2;
+    let termin = plusTage(h, Math.max(2, dauer)); while(!istArbeitstag(termin)) termin = plusTage(termin,1);
+    const a = mk(p, menge, {nummer:'A-'+h.slice(0,4)+'-0'+(nrO++), start: zuf() < 0.1 ? plusTage(h, 3+Math.floor(zuf()*10)) : h, ende: hatTermin ? termin : '', status:'offen', prio:nrO});
+    offen.push(a); kumuliert += sollVon(a);
+  }
   const urlaub = [[3,-2,4,'U'],[5,-4,-3,'K'],[1,7,18,'U'],[0,21,25,'U'],[4,35,46,'U'],[2,-15,-12,'U']];
   urlaub.forEach(u => { const id = neueId(); ablegen('urlaub', id, {id, mitarbeiterId:ids[u[0]], von:plusTage(h,u[1]), bis:plusTage(h,u[2]), art:u[3]}); });
-  // Buchungen: je Auftrag ein Stundenziel, auf Mitarbeiter und Tage verteilt (Tageskapazität wird nicht überschritten)
-  const frei = {};                                       // "mid|tag" -> noch freie Stunden
-  const kapLeer = (i, t, d) => { const k = ids[i]+'|'+t; if(frei[k] === undefined) frei[k] = (d===0 && i>2) ? 0 : (d===0 ? 4 : leute[i][1]); return frei[k]; };
-  const plan = [ // [Auftrag, Zielstunden, Mitarbeiter, von Tag, bis Tag, Arbeitsschritte]
-    [6, 72, [0,1,2], -22, -11, ['Rüsten','Drehen','Fräsen','Prüfung']],
-    [1, 53, [4,5],   -16,  -1, ['Fräsen','Montage']],
-    [0, 78, [0,1,2],  -9,   0, ['Rüsten','Drehen','Fräsen']],
-    [4, 20, [3],     -12,  -3, ['Fräsen','Montage']],
-    [2, 10, [5],      -2,   0, ['Montage','Prüfung']],
-    [3, 12, [2,4],    -3,  -1, ['Montage']]
-  ];
-  plan.forEach(p => {
-    let rest = p[1], n = 0;
-    for(let d = p[3]; d <= p[4] && rest > 0; d++){ const t = plusTage(h, d); if(!istArbeitstag(t)) continue;
-      p[2].forEach(i => { if(rest <= 0 || abwesend(ids[i], t)) return;
-        const k = kapLeer(i, t, d); const take = Math.min(k, rest); if(take <= 0) return;
-        frei[ids[i]+'|'+t] -= take; rest -= take;
-        const z = neueId(); ablegen('zeiten', z, {id:z, datum:t, mitarbeiterId:ids[i], auftragId:aids[p[0]], taetigkeit:p[5][(n++) % p[5].length], stunden:take,
-          art: 'normal', bemerkung:'', erfasstVon:'Demo', erfasstAm:new Date().toISOString()}); });
-    }
-  });
-  const abgA = D.auftraege[aids[6]]; abgA.endeKunde = plusTage(h,-10); abgA.qmVermerk = 'Drehen bei DK-Serie künftig mit 20 % Zuschlag kalkulieren, Spannmittel war Engpass.'; ablegen('auftraege', abgA.id, abgA);
-  // Auftragsbestand: offene Aufträge bis über das Jahresende hinaus (volle Bücher)
-  const tagesKapDemo = leute.reduce((s,p)=>s+p[1],0);
-  let kumuliert = 0, nrO = 50, terminTag = 14;
-  while(kumuliert < tagesKapDemo * 75){                 // ca. 75 Arbeitstage Arbeit = bis Mitte Januar
-    const soll = [40,60,80,100,120,160,200][Math.floor(zuf()*7)];
-    const dauer = Math.ceil(soll / tagesKapDemo);
-    terminTag += dauer + 3 + Math.floor(zuf()*6);
-    let termin = plusTage(h, terminTag); while(!istArbeitstag(termin)) termin = plusTage(termin,1);
-    const tp = teile[Math.floor(zuf()*teile.length)];
-    const jeT = zuf() < 0.5 ? verteile(soll, tp.schritte) : {};
-    const id = neueId();
-    ablegen('auftraege', id, {id, nummer:'A-'+h.slice(0,4)+'-0'+(nrO++),
-      start: zuf() < 0.2 ? plusTage(h, 5+Math.floor(zuf()*30)) : h, endeKunde: zuf() < 0.9 ? termin : '',
-      sollGesamt: Object.keys(jeT).length ? 0 : soll, sollJe: jeT, maxPersonen: zuf() < 0.3 ? 2+Math.floor(zuf()*2) : 0,
-      notiz: zuf() < 0.15 ? ['Material kommt per Spedition, Lieferschein prüfen','Erstmuster vor Serie freigeben lassen','Kunde will Zwischenbericht','Zeichnung Rev. C beachten'][Math.floor(zuf()*4)] : '',
-      status:'offen', prio: 10+nrO, mengen:{}, erstellt:new Date().toISOString(), erstelltVon:'Demo', ...mitTeil(tp, zuf() < 0.4 ? 5+Math.floor(zuf()*40) : 0)});
-    kumuliert += soll;
-  }
+  const fr = {};                                         // "mid|tag" -> noch freie Stunden
+  const kapLeer = (i, t, d) => { const k = ids[i]+'|'+t; if(fr[k] === undefined) fr[k] = (d===0 && i>2) ? 0 : (d===0 ? 4 : leute[i][1]); return fr[k]; };
+  const bucher = (a, ziel, team, von, bis, taets) => {
+    let rest = ziel, n = 0;
+    for(let d = von; d <= bis && rest > 0; d++){ const t = plusTage(h, d); if(!istArbeitstag(t)) continue;
+      team.forEach(i => { if(rest <= 0 || abwesend(ids[i], t)) return;
+        const k = kapLeer(i, t, d), take = Math.min(k, rest); if(take <= 0) return;
+        fr[ids[i]+'|'+t] -= take; rest -= take;
+        const z = neueId(); ablegen('zeiten', z, {id:z, datum:t, mitarbeiterId:ids[i], auftragId:a.id, taetigkeit:taets[(n++) % taets.length], ofenId:'', stunden:take, art:'normal', bemerkung:'', erfasstVon:'Demo', erfasstAm:new Date().toISOString()}); }); }
+  };
+  // Die ersten Aufträge sind schon angefangen
+  [[0,[0,1,2],-6,0],[1,[3,4],-4,-1],[2,[5],-2,0],[3,[2,4],-3,-1],[4,[0,5],-1,0]].forEach(p => { const a = offen[p[0]]; if(a) bucher(a, Math.round(sollVon(a)*(0.25+zuf()*0.45)*4)/4, p[1], p[2], p[3], a.schritte); });
   // Historie: 12 Monate abgeschlossene Aufträge
-  const kundenH = [['Kunde A',0.06],['Kunde B',0.14],['Kunde C',0.04],['Kunde F',0.09],['Kunde D',0.11],['Kunde E',0.03]];
-  const namenH = ['Düsenkörper DK-','Düsenplatte DP-','Packstück Serie ','Reparatur Spritzkopf ','Ersatzteile Mischkopf ','Vorrichtung ','Spannbacken Satz ','Verteilerblock VB-','Dichtflansch DF-','Nachbearbeitung Charge '];
-  const grH = ['Maßabweichung','Maßabweichung','Werkzeug / Maschine','Materialfehler','Bedienfehler','Zeichnung / Vorgabe unklar','Kundenänderung','Sonstiges'];
   const histUrlaub = [[0,-330,-320,'U'],[0,-200,-190,'U'],[1,-300,-296,'K'],[1,-150,-136,'U'],[2,-280,-270,'U'],[2,-90,-80,'U'],[3,-250,-240,'U'],[3,-120,-118,'K'],[4,-340,-330,'U'],[4,-180,-170,'U'],[5,-210,-200,'U'],[5,-60,-58,'K'],[0,-45,-44,'K'],[2,-160,-146,'U']];
   histUrlaub.forEach(u => { const id = neueId(); ablegen('urlaub', id, {id, mitarbeiterId:ids[u[0]], von:plusTage(h,u[1]), bis:plusTage(h,u[2]), art:u[3]}); });
+  const qmTexte = ['Packs kamen mit Restpolymer, Waschgang wiederholt.','Ofenlauf war nur zur Hälfte gefüllt, nächste Aufträge früher bündeln.','Sandstrahlen hat länger gedauert, Düsen stark verkrustet.','Kunde hat Termin kurzfristig vorgezogen.'];
   let nr = 1, tagStart = -365;
   while(tagStart < -30){
-    const kIx = Math.floor(zuf()*kundenH.length), kunde = kundenH[kIx][0], naRate = kundenH[kIx][1];
-    const tlH = teile.filter(t => t.kunde === kunde), tp = tlH[Math.floor(zuf()*tlH.length)];
-    const soll = [16,24,32,40,60,80,100,120][Math.floor(zuf()*8)];
+    const p = wahl(), menge = [9,12,18,18,24,27,36,45,63][Math.floor(zuf()*9)];
     const team = [[0,1],[2,4],[1,2,5],[3,5],[0,3,4],[4,5],[0,1,2,5]][Math.floor(zuf()*7)];
-    const faktor = 0.8 + zuf()*0.6;                        // Ist = 80 % … 140 % vom Soll
-    const zielH = Math.round(soll*faktor);
+    const faktor = 0.75 + zuf()*0.6, soll = Math.round(menge*richtwertVon(p)*4)/4, zielH = Math.max(1, Math.round(soll*faktor));
     const dauerAT = Math.ceil(zielH / (team.length*7));
-    const termin = plusTage(h, tagStart + Math.round(dauerAT*1.4*1.4) + 2 + Math.floor(zuf()*4));
-    const id = neueId(); const nummer = 'H-'+plusTage(h,tagStart).slice(0,4)+'-'+String(nr++).padStart(3,'0');
-    const jeT = zuf() < 0.4 ? verteile(soll, tp.schritte) : {};
+    const a0 = mk(p, menge, {nummer:'H-'+plusTage(h,tagStart).slice(0,4)+'-'+String(nr++).padStart(3,'0'), start:plusTage(h,tagStart), ende: zuf()<0.25 ? plusTage(h, tagStart + dauerAT + 2 + Math.floor(zuf()*4)) : '', status:'abgeschlossen', prio:100+nr,
+      abg:'', qm: zuf() < 0.12 ? qmTexte[Math.floor(zuf()*4)] : '', qmOk: zuf() < 0.6});
     let rest = zielH, n = 0, tag = tagStart, letzter = tagStart;
-    const taets = tp.schritte;
     while(rest > 0 && tag < -28){
       const t = plusTage(h, tag);
       if(istArbeitstag(t)) team.forEach(i => { if(rest <= 0 || abwesend(ids[i], t)) return;
-        const k = kapLeer(i, t, tag); const take = Math.min(k, rest); if(take <= 0) return;
-        frei[ids[i]+'|'+t] -= take; rest -= take; letzter = tag;
-        const z = neueId();
-        ablegen('zeiten', z, {id:z, datum:t, mitarbeiterId:ids[i], auftragId:id, taetigkeit: taets[Math.floor(n++/2) % taets.length], stunden:take,
-          art:'normal', bemerkung:'', erfasstVon:'Demo', erfasstAm:new Date().toISOString()}); });
+        const k = kapLeer(i, t, tag), take = Math.min(k, rest); if(take <= 0) return;
+        fr[ids[i]+'|'+t] -= take; rest -= take; letzter = tag;
+        const z = neueId(); ablegen('zeiten', z, {id:z, datum:t, mitarbeiterId:ids[i], auftragId:a0.id, taetigkeit:a0.schritte[Math.floor(n++/2) % a0.schritte.length], ofenId:'', stunden:take, art:'normal', bemerkung:'', erfasstVon:'Demo', erfasstAm:new Date().toISOString()}); });
       tag++;
     }
-    const abgAm = plusTage(h, letzter + 1 + Math.floor(zuf()*3));
-    ablegen('auftraege', id, {id, nummer, ...mitTeil(tp, zuf() < 0.4 ? 5+Math.floor(zuf()*40) : 0), start:plusTage(h,tagStart), endeKunde: zuf()<0.85 ? termin : '',
-      sollGesamt: Object.keys(jeT).length ? 0 : soll, sollJe: jeT, notiz:'', status:'abgeschlossen', prio: 100+nr, mengen:{},
-      abgeschlossenAm: abgAm, qmVermerk: zuf() < 0.15 ? ['Spannmittel war Engpass, beim nächsten Mal zweites Set bereitlegen.','Zeichnung hatte Toleranzfehler, mit Kunde geklärt.','Werkzeugbruch beim Fräsen, Standzeit prüfen.','Material kam mit Lunker, Lieferant reklamiert.'][Math.floor(zuf()*4)] : '',
-      qmErledigt: zuf() < 0.6, erstellt:new Date().toISOString(), erstelltVon:'Demo'});
-    tagStart += Math.max(3, Math.round(dauerAT*0.9)) + Math.floor(zuf()*3);
+    a0.abgeschlossenAm = plusTage(h, letzter + 1 + Math.floor(zuf()*2)); ablegen('auftraege', a0.id, a0);
+    tagStart += Math.max(1, Math.round(dauerAT*0.9)) + Math.floor(zuf()*3);
   }
-  ablegen('einst','kunden',{liste: KUNDEN_START});
+  // Ofen-Notizen (Beispiele)
+  [['JM',-40,'Packs mit anderem Polymer (nicht gemeldet)','Ofen abgeschaltet (Übertemperatur)','ofen1',6,'Kunde hatte anderes Material nicht gemeldet, Ofen hat bei Übertemperatur abgeschaltet.'],
+   ['Perlon',-120,'Hoher Restanteil, mehr Kühlung nötig','Mehr Wasser (Zusatzkühlung)','ofen2',0,'Während des Laufs musste zusätzlich gekühlt werden.']].forEach((s,i) =>
+    ablegen('sonderfaelle','so'+i,{id:'so'+i, datum:plusTage(h,s[1]), typ:'ofen', kunde:s[0], posNr:'', auftragId:'', beschreibung:s[6], material:s[2], folge:s[3], ofenId:s[4], ausfallH:s[5]||'', kundeInformiert:i===0, notiz:'', erstellt:new Date().toISOString(), erstelltVon:'Demo'}));
+  ablegen('einst','kunden',{liste: kunden()});
   const mon = {}; for(let k=1;k<=12;k++){ const d = new Date(); d.setMonth(d.getMonth()-k, 1); const key = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
     mon[key] = {strom: Math.round(5200+zuf()*1800), wasser: Math.round(80+zuf()*40), gas: Math.round(1800+zuf()*900)}; }
   ablegen('einst','energie',{monate: mon});
@@ -2922,7 +3040,7 @@ function datenLauschen(){
 }
 function abosStarten(){
   db.collection('benutzer').onSnapshot(s => { D.benutzer = {}; s.forEach(d => D.benutzer[d.id] = d.data()); alles(); }, e => cloudStatus('Benutzerliste nicht lesbar: '+e.code, '#B3261E'));
-  ['mitarbeiter','auftraege','zeiten','urlaub','teile','einst'].forEach(c => db.collection(c).onSnapshot(s => {
+  ['mitarbeiter','auftraege','zeiten','urlaub','teile','sonderfaelle','einst'].forEach(c => db.collection(c).onSnapshot(s => {
     D[c] = {}; s.forEach(d => D[c][d.id] = d.data()); alles(); if(c==='einst') backupPruefen();
   }, e => cloudStatus(c+' nicht lesbar: '+e.code, '#B3261E')));
   db.collection('archiv').orderBy('t','desc').limit(1500).onSnapshot(s => { const l = []; s.forEach(d => l.push(d.data())); archiv = l; if(!el('v-archiv').classList.contains('verstecke')) zeichneArchiv(); }, ()=>{});
@@ -3049,7 +3167,7 @@ function ansichtOeffnen(z){
 }
 function zeichneAnsicht(z){
   ({uebersicht:zeichneUebersicht, zeiten:zeichneWoche, auftraege:zeichneAuftraege, planung:zeichnePlanung, urlaub:zeichneUrlaub,
-    qm:zeichneQM, mitarbeiter:zeichneMitarbeiter, verwaltung:zeichneVerwaltung, archiv:zeichneArchiv, produktion:zeichneProduktion, kalender:zeichneKalender, katalog:zeichneKatalog}[z] || (()=>{}))();
+    qm:zeichneQM, mitarbeiter:zeichneMitarbeiter, verwaltung:zeichneVerwaltung, archiv:zeichneArchiv, produktion:zeichneProduktion, kalender:zeichneKalender, katalog:zeichneKatalog, positionen:zeichnePositionen, sonderfaelle:zeichneSonderfaelle}[z] || (()=>{}))();
 }
 function alles(){ energieCache = null; mobilKlasse(); if(mobilAn()){ zeichneMobil(); return; } const a = document.querySelector('nav button.aktiv'); if(a && rolle !== 'keine') zeichneAnsicht(a.dataset.ansicht); }
 function schliesse(){ el('dialogBox').innerHTML = ''; }
@@ -3057,7 +3175,8 @@ function menuUm(){ const auf = !document.querySelector('nav').classList.contains
 function menuZu(){ document.querySelector('nav').classList.remove('offen'); el('menuSchatten').classList.remove('offen'); }
 document.querySelectorAll('nav button').forEach(b => b.onclick = () => ansichtOeffnen(b.dataset.ansicht));
 ['auSuche','auStatus'].forEach(id => el(id).addEventListener('input', zeichneAuftraege));
-el('kaSuche').addEventListener('input', zeichneKatalog);
+el('poSuche').addEventListener('input', () => zeichnePositionen(true));
+['soSuche','soTyp'].forEach(id => el(id).addEventListener('input', zeichneSonderfaelle));
 ['aSuche','aBenutzer','aArt','aVon','aBis'].forEach(id => el(id).addEventListener('input', zeichneArchiv));
 ['qmZeit','qmKunde','qmNurAbg'].forEach(id => el(id).addEventListener('change', zeichneQM));
 document.addEventListener('keydown', ev => { if(ev.key === 'Escape') schliesse(); });
