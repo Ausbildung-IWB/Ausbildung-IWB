@@ -1795,12 +1795,6 @@ function kundenSicherstellen(){
 /* legt fehlende Standard-Positionen an, ergänzt bei älteren Positionen die neuen Felder (Schritte und Eingaben bleiben) und gibt alle zurück */
 function posAnlegenIntern(){
   kundenSicherstellen();
-  /* Altbestand ohne Nummer (z. B. frühere Test-Teile wie „DF-31“) entfernen, solange kein Auftrag daran hängt */
-  Object.values(D.teile).filter(x => !/^\d+[a-z]?$/.test(String(x.nr||''))).forEach(x => {
-    const au = Object.values(D.auftraege).filter(a => a.teilId === x.id);
-    if(au.some(a => a.erstelltVon !== 'Demo')) return;            // echte Aufträge hängen daran: stehen lassen
-    au.forEach(a => { Object.values(D.zeiten).filter(z => z.auftragId === a.id).forEach(z => entfernen('zeiten', z.id)); entfernen('auftraege', a.id); });
-    entfernen('teile', x.id); });
   return POS_START.map(p => {
     const alt = Object.values(D.teile).find(x => String(x.nr) === p[0]), neu = posBauen(p);
     if(!alt) { ablegen('teile', neu.id, neu); return neu; }
@@ -1808,14 +1802,23 @@ function posAnlegenIntern(){
     const t = {...alt, art:neu.art, proEinheit:neu.proEinheit, polymerG:neu.polymerG, eht: alt.eht === undefined || alt.eht === '' ? neu.eht : alt.eht, ofenLang:false, rwStueck:'', rwEinheit:''};
     delete t.richtwert; delete t.einheit; ablegen('teile', t.id, t); return t; });
 }
-const posUpdateNoetig = () => Object.values(D.teile).some(t => !/^\d+[a-z]?$/.test(String(t.nr||''))) || POS_START.some(p => !Object.values(D.teile).some(x => String(x.nr) === p[0])) || Object.values(D.teile).some(t => t.art === undefined);
+const posNrOk = t => /^\d+[a-z]?$/.test(String(t.nr||''));
+const altPositionen = () => Object.values(D.teile).filter(t => !posNrOk(t));
+function altPositionenEntfernen(){
+  const alt = altPositionen(); if(!alt.length) return 0;
+  const ids = new Set(alt.map(t => t.id)), au = Object.values(D.auftraege).filter(a => ids.has(a.teilId)), zt = Object.values(D.zeiten).filter(z => au.some(a => a.id === z.auftragId));
+  if(!confirm('Alte Test-Positionen ohne Nummer 101–1804 ('+alt.slice(0,6).map(t => t.nr||t.name).join(', ')+(alt.length>6?' …':'')+') entfernen?\n\nDabei werden '+alt.length+' Positionen, '+au.length+' dazugehörige Aufträge und '+zt.length+' Zeitbuchungen gelöscht.\n\nOK = löschen, Abbrechen = alles stehen lassen.')) return 0;
+  zt.forEach(z => entfernen('zeiten', z.id)); au.forEach(a => entfernen('auftraege', a.id)); alt.forEach(t => entfernen('teile', t.id));
+  return alt.length;
+}
+const posUpdateNoetig = () => altPositionen().length > 0 || POS_START.some(p => !Object.values(D.teile).some(x => String(x.nr) === p[0])) || Object.values(D.teile).some(t => t.art === undefined);
 function positionenStandard(){
   if(!darfSchreiben()) return;
   const vorher = Object.keys(D.teile).length, alteArt = Object.values(D.teile).filter(t => t.art === undefined).length;
-  sammelStart(); posAnlegenIntern(); sammelEnde();
-  const neu = Object.keys(D.teile).length - vorher;
+  sammelStart(); const weg = altPositionenEntfernen(); posAnlegenIntern(); sammelEnde();
+  const neu = Object.keys(D.teile).length - vorher + weg;
   notiere('Katalog', 'Standard-Positionen', null, neu, 'angelegt/aktualisiert'); poPending = false; alles();
-  toast((neu ? neu+' Positionen angelegt. ' : '')+(alteArt ? alteArt+' aktualisiert. ' : '')+(neu || alteArt ? 'Bitte Arbeitsschritte und Einheiten prüfen.' : 'Alles schon aktuell.'));
+  toast((weg ? weg+' alte Positionen entfernt. ' : '')+(neu>0 ? neu+' Positionen angelegt. ' : '')+(alteArt ? alteArt+' aktualisiert. ' : '')+(neu || alteArt ? 'Bitte Arbeitsschritte und Einheiten prüfen.' : 'Alles schon aktuell.'));
 }
 let poPending = false;
 function poMerken(){ poPending = true; const b = el('poLeiste'); if(b) b.style.display = ''; }
@@ -1843,6 +1846,7 @@ function zeichnePositionen(erzwingen){
   el('poKennzahlen').innerHTML = kz(alle.length,'Positionen')+kz(alle.filter(t => t.sonstiges).length,'Sonstiges (Freitext)')+kz(alle.filter(t => polymerGVon(t)).length,'mit Polymer-Angabe')+kz(schr.length,'Arbeitsschritte');
   el('poLeiste').style.display = poPending ? '' : 'none';
   el('poStandardBtn').style.display = (sw && posUpdateNoetig()) ? '' : 'none';
+  if(sw && altPositionen().length) el('poKennzahlen').innerHTML += '<div class="hinweis" style="flex:1 1 100%;background:#FFF4D6;border:1px solid #E4B23C;border-radius:8px;padding:10px 14px"><b>'+altPositionen().length+' alte Test-Positionen ohne Nummer</b> (z. B. '+esc(altPositionen().slice(0,3).map(t => t.nr||t.name).join(', '))+'). Mit „Standard-Positionen anlegen / aktualisieren“ werden sie entfernt und alle Nummern 101–1804 angelegt.</div>';
   if(!alle.length){ el('poTab').innerHTML = '<tbody><tr><td class="sub" style="padding:18px">Noch keine Positionen. Mit „Standard-Positionen anlegen“ kommen alle Positionen vom Verrechnungsblatt hinein (Arbeitsschritte, Einheiten und Polymer sind vorbelegt und änderbar).</td></tr></tbody>'; return; }
   const lern = richtwertGelernt();
   const liste = alle.filter(t => (!kf || t.kunde === kf) && (!s || (t.nr+' '+t.name+' '+(t.kunde||'')).toLowerCase().includes(s)));
