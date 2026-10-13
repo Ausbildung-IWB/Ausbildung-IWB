@@ -1501,7 +1501,7 @@ function auftragDialog(id){
     '<div id="auFreiBox" style="display:none"><div class="formgitter" style="margin-top:10px"><label class="breit">Sonstiges – was genau? <span class="sub" style="text-transform:none">(wird im Reiter „Sonderfälle“ festgehalten)</span><textarea id="auFrei" rows="2">'+esc(a.freitext||'')+'</textarea></label></div></div>'+
     '<div id="auSonderHinweis"></div>'+
     '<div class="formtitel">Weitere Angaben</div><div class="formgitter">'+
-      '<label>Kunde<select id="auKunde" onchange="auKundeHinweis()">'+kundenOptionen(a.kunde)+'</select></label>'+
+      '<label id="auKundeBox">Kunde<select id="auKunde" onchange="auKundeHinweis()">'+kundenOptionen(a.kunde)+'</select></label>'+
       '<label>Auftragsnummer<input type="text" id="auNr" value="'+esc(a.nummer)+'"></label>'+
       '<label'+(einfach?' style="display:none"':'')+'>Frühester Start<input type="date" id="auStart" value="'+(a.start||'')+'"></label>'+
       '<label'+(einfach?' style="display:none"':'')+'>Max. Personen gleichzeitig<input type="number" min="1" id="auMax" value="'+(a.maxPersonen||'')+'" placeholder="leer = beliebig"></label>'+
@@ -1532,6 +1532,7 @@ function auPosGewaehlt(still){
   el('auPosInfo').textContent = t ? (t.kunde? t.kunde+' · ':'')+'Arbeitsschritte: '+((t.schritte||[]).join(' → ')||'noch keine hinterlegt') : '';
   if(t && !still){
     if(t.kunde){ const sel = el('auKunde'); if(sel.options && ![...sel.options].some(o => o.value === t.kunde)) sel.innerHTML = kundenOptionen(t.kunde); sel.value = t.kunde; }
+    const kb = el('auKundeBox'); if(kb && kb.style) kb.style.display = t.kunde ? 'none' : '';
     document.querySelectorAll('#dialogBox input[data-schritt]').forEach(i => { i.checked = (t.schritte||[]).includes(i.dataset.schritt); });
   }
   auKundeHinweis(); auSollInfo();
@@ -1794,6 +1795,8 @@ function kundenSicherstellen(){
 /* legt fehlende Standard-Positionen an, ergänzt bei älteren Positionen die neuen Felder (Schritte und Eingaben bleiben) und gibt alle zurück */
 function posAnlegenIntern(){
   kundenSicherstellen();
+  /* Altbestand ohne Nummer (z. B. frühere Test-Teile wie „DF-31“) entfernen, solange kein Auftrag daran hängt */
+  Object.values(D.teile).filter(x => !x.nr && !Object.values(D.auftraege).some(a => a.teilId === x.id)).forEach(x => entfernen('teile', x.id));
   return POS_START.map(p => {
     const alt = Object.values(D.teile).find(x => String(x.nr) === p[0]), neu = posBauen(p);
     if(!alt) { ablegen('teile', neu.id, neu); return neu; }
@@ -1801,7 +1804,7 @@ function posAnlegenIntern(){
     const t = {...alt, art:neu.art, proEinheit:neu.proEinheit, polymerG:neu.polymerG, eht: alt.eht === undefined || alt.eht === '' ? neu.eht : alt.eht, ofenLang:false, rwStueck:'', rwEinheit:''};
     delete t.richtwert; delete t.einheit; ablegen('teile', t.id, t); return t; });
 }
-const posUpdateNoetig = () => POS_START.some(p => !Object.values(D.teile).some(x => String(x.nr) === p[0])) || Object.values(D.teile).some(t => t.art === undefined);
+const posUpdateNoetig = () => Object.values(D.teile).some(t => !t.nr) || POS_START.some(p => !Object.values(D.teile).some(x => String(x.nr) === p[0])) || Object.values(D.teile).some(t => t.art === undefined);
 function positionenStandard(){
   if(!darfSchreiben()) return;
   const vorher = Object.keys(D.teile).length, alteArt = Object.values(D.teile).filter(t => t.art === undefined).length;
