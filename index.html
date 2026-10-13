@@ -1655,15 +1655,32 @@ function auftragDetails(id){
 const POS_GRUPPE = {'Berlin JM':'Gossner, Leipa, Optipack'};
 const KUNDEN_POOL = ['Indorama','JM','Perlon','Berlin JM'];
 /* Aufbewahrungsart: Einzel, Korb, Baum, Ständer - oder abgerechnet je Charge, Tag, Satz */
-const ART = {einzel:'Einzel', korb:'Korb', baum:'Baum', staender:'Ständer', charge:'Charge', tag:'Tag', satz:'Satz'};
-const ART_PRO = {einzel:1, korb:9, baum:20, staender:11, charge:1, tag:1, satz:1};
-const ART_MENGE = {einzel:'Stückzahl', korb:'Stückzahl (Packs)', baum:'Stückzahl (Packs)', staender:'Stückzahl (Packs)', charge:'Anzahl Chargen', tag:'Anzahl Tage', satz:'Anzahl Sätze'};
-const ART_NAME = {einzel:['Stück','Stück'], korb:['Korb','Körbe'], baum:['Baum','Bäume'], staender:['Ständer','Ständer'], charge:['Charge','Chargen'], tag:['Tag','Tage'], satz:['Satz','Sätze']};
-const ART_GRUPPIERT = ['korb','baum','staender'];
-const RW_E_STD = {einzel:0.5, korb:0.75, baum:1, staender:0.75, charge:4, tag:2, satz:0.5}, RW_S_STD = 0.25;
+/* Arten (wie ein Auftrag abgerechnet/gepackt wird) – im Reiter Positionen änderbar und erweiterbar */
+const ART_START = [
+  {id:'einzel',   name:'Einzel',  einheit:'Stück',  mehrzahl:'Stück',  gruppiert:false, pro:1,  rw:0.5},
+  {id:'korb',     name:'Korb',    einheit:'Korb',   mehrzahl:'Körbe',  gruppiert:true,  pro:9,  rw:0.75},
+  {id:'baum',     name:'Baum',    einheit:'Baum',   mehrzahl:'Bäume',  gruppiert:true,  pro:20, rw:1},
+  {id:'staender', name:'Ständer', einheit:'Ständer',mehrzahl:'Ständer',gruppiert:true,  pro:11, rw:0.75},
+  {id:'charge',   name:'Charge',  einheit:'Charge', mehrzahl:'Chargen',gruppiert:false, pro:1,  rw:4},
+  {id:'tag',      name:'Tag',     einheit:'Tag',    mehrzahl:'Tage',   gruppiert:false, pro:1,  rw:2},
+  {id:'satz',     name:'Satz',    einheit:'Satz',   mehrzahl:'Sätze',  gruppiert:false, pro:1,  rw:0.5}];
+const ART_LEGACY_PRO = {korb:9, baum:20, staender:11};
+const ART = {}, ART_PRO = {}, ART_MENGE = {}, ART_NAME = {}, ART_GRUPPIERT = [], RW_E_STD = {}, RW_S_STD = 0.25;
+function artenListe(){
+  const l = D.einst && D.einst.arten && Array.isArray(D.einst.arten.liste) && D.einst.arten.liste.length ? D.einst.arten.liste : null;
+  if(l) return l;
+  const alt = (D.einst && D.einst.artGroesse && D.einst.artGroesse.liste) || {};
+  return ART_START.map(x => alt[x.id] >= 1 ? {...x, pro:Math.round(alt[x.id])} : x);
+}
+function artenAnwenden(){
+  [ART, ART_PRO, ART_MENGE, ART_NAME, RW_E_STD].forEach(o => Object.keys(o).forEach(k => delete o[k])); ART_GRUPPIERT.length = 0;
+  artenListe().forEach(x => { ART[x.id] = x.name; ART_PRO[x.id] = x.gruppiert ? Math.max(1, Math.round(+x.pro) || 1) : 1; ART_NAME[x.id] = [x.einheit || x.name, x.mehrzahl || x.einheit || x.name];
+    ART_MENGE[x.id] = x.gruppiert ? 'Stückzahl (Packs)' : (x.id === 'einzel' ? 'Stückzahl' : 'Anzahl '+(x.mehrzahl || x.name)); RW_E_STD[x.id] = +x.rw > 0 ? +x.rw : 0.5; if(x.gruppiert) ART_GRUPPIERT.push(x.id); });
+}
+artenAnwenden();
 const posArt = t => (t && ART[t.art]) ? t.art : 'einzel';
-const artPro = art => { const g = +((einst('artGroesse', {}) || {})[art]); return g >= 1 ? Math.round(g) : ART_PRO[art]; };
-const posProEigen = t => ART_GRUPPIERT.includes(posArt(t)) && (t||{}).proEigen !== undefined ? !!t.proEigen : (ART_GRUPPIERT.includes(posArt(t)) && +(t||{}).proEinheit > 0 && +t.proEinheit !== ART_PRO[posArt(t)]);
+const artPro = art => ART_PRO[art] || 1;
+const posProEigen = t => ART_GRUPPIERT.includes(posArt(t)) && (t||{}).proEigen !== undefined ? !!t.proEigen : (ART_GRUPPIERT.includes(posArt(t)) && +(t||{}).proEinheit > 0 && +t.proEinheit !== ART_LEGACY_PRO[posArt(t)]);
 const posPro = t => ART_GRUPPIERT.includes(posArt(t)) ? Math.max(1, posProEigen(t) ? +t.proEinheit : artPro(posArt(t))) : 1;
 const einheitenVon = (t, menge) => menge > 0 ? (ART_GRUPPIERT.includes(posArt(t)) ? Math.ceil(menge / posPro(t)) : menge) : 0;
 const posRw = t => ({s: +(t||{}).rwStueck > 0 ? +t.rwStueck : RW_S_STD, e: +(t||{}).rwEinheit > 0 ? +t.rwEinheit : RW_E_STD[posArt(t)]});
@@ -1825,13 +1842,40 @@ function positionenStandard(){
   toast((weg ? weg+' alte Positionen entfernt. ' : '')+(neu>0 ? neu+' Positionen angelegt. ' : '')+(alteArt ? alteArt+' aktualisiert. ' : '')+(neu || alteArt ? 'Bitte Arbeitsschritte und Einheiten prüfen.' : 'Alles schon aktuell.'));
 }
 let poPending = false;
-function artGroesseSpeichern(){
+function artZeile(x, sw, benutzt){
+  const dis = sw ? '' : ' disabled';
+  return '<tr data-aid="'+esc(x.id||'')+'"><td><input type="text" data-an value="'+esc(x.name)+'" style="width:110px"'+dis+'></td>'+
+    '<td><input type="text" data-ae value="'+esc(x.einheit)+'" style="width:90px"'+dis+'></td><td><input type="text" data-am value="'+esc(x.mehrzahl)+'" style="width:90px"'+dis+'></td>'+
+    '<td style="text-align:center"><input type="checkbox" data-ag '+(x.gruppiert?'checked':'')+dis+' onchange="this.closest(\'tr\').querySelector(\'[data-ap]\').disabled=!this.checked"></td>'+
+    '<td class="num"><input type="number" min="1" data-ap value="'+(x.gruppiert?x.pro:'')+'" '+(sw && x.gruppiert?'':'disabled')+' style="width:70px;text-align:right"></td>'+
+    '<td class="num"><input type="number" min="0.05" step="0.05" data-ar value="'+x.rw+'"'+dis+' style="width:70px;text-align:right"></td>'+
+    '<td>'+(sw ? '<button class="mini" '+(benutzt? 'disabled title="Wird von '+benutzt+' Positionen benutzt"' : 'title="Art entfernen"')+' onclick="this.closest(\'tr\').remove()">&times;</button>' : '')+'</td></tr>';
+}
+function artenZeichnen(){
+  const sw = darfSchreiben(), nutz = {}; Object.values(D.teile).forEach(t => nutz[t.art] = (nutz[t.art]||0)+1);
+  el('poGroesse').innerHTML = '<details><summary style="cursor:pointer"><b>Arten und Standardgr&ouml;&szlig;en</b> <span class="sub">&ndash; '+artenListe().map(x => esc(x.name)+(x.gruppiert? ' '+x.pro : '')).join(' &middot; ')+' &nbsp;(zum &Auml;ndern aufklappen)</span></summary>'+
+    '<p class="sub" style="margin:10px 0">Eine <b>Art</b> sagt, wie eine Position gepackt/abgerechnet wird. &bdquo;Gruppiert&ldquo; = die Packs werden zu Einheiten zusammengefasst und aufgerundet (z. B. 9 Packs je Korb). Nicht gruppierte Arten rechnen die Menge direkt. Neue Arten stehen danach bei jeder Position zur Auswahl. &Auml;nderungen gelten f&uuml;r neue Auftr&auml;ge.</p>'+
+    '<div style="overflow:auto"><table class="liste" id="artTab"><thead><tr><th>Name der Art</th><th>Einheit (1)</th><th>Einheit (mehrere)</th><th style="text-align:center">Gruppiert</th><th class="num">Stück je Einheit</th><th class="num">Start-Std. je Einheit</th><th style="width:36px"></th></tr></thead><tbody>'+
+    artenListe().map(x => artZeile(x, sw, nutz[x.id]||0)).join('')+'</tbody></table></div>'+
+    (sw ? '<div class="werkzeuge" style="margin-top:10px"><button class="btn sek" onclick="artNeu()">+ Art hinzuf&uuml;gen</button><button class="btn" onclick="artenSpeichern()">Speichern</button></div>' : '')+'</details>';
+}
+function artNeu(){ const tb = document.querySelector('#artTab tbody'); if(!tb) return; const tr = document.createElement('tbody'); tr.innerHTML = artZeile({id:'', name:'', einheit:'', mehrzahl:'', gruppiert:true, pro:10, rw:0.75}, true, 0); tb.appendChild(tr.firstChild); }
+function artenSpeichern(){
   if(!darfSchreiben()) return;
-  const g = {}; let bad = false;
-  document.querySelectorAll('#poGroesse input[data-ag]').forEach(i => { const v = Math.round(+i.value); if(!(v >= 1)) bad = true; g[i.dataset.ag] = v; });
-  if(bad) return alert('Bitte für jede Art eine Zahl ab 1 eintragen.');
-  ablegen('einst','artGroesse', {liste:g}); notiere('Katalog','Standardgröße je Art', null, ART_GRUPPIERT.map(k => ART_NAME[k][0]+' '+g[k]).join(', '), 'geändert'); alles();
-  toast('Gespeichert. Gilt für neue Aufträge.');
+  const alt = artenListe(), neu = [], namen = new Set();
+  for(const tr of document.querySelectorAll('#artTab tbody tr')){
+    const name = tr.querySelector('[data-an]').value.trim(); if(!name) continue;
+    if(namen.has(name.toLowerCase())) return alert('Den Namen „'+name+'“ gibt es doppelt.'); namen.add(name.toLowerCase());
+    const gr = tr.querySelector('[data-ag]').checked, pro = Math.round(+tr.querySelector('[data-ap]').value), rw = +String(tr.querySelector('[data-ar]').value).replace(',','.');
+    if(gr && !(pro >= 1)) return alert('Bei „'+name+'“ bitte „Stück je Einheit“ (ab 1) eintragen.');
+    const einheit = tr.querySelector('[data-ae]').value.trim() || name;
+    neu.push({id: tr.dataset.aid || 'a'+neueId(), name, einheit, mehrzahl: tr.querySelector('[data-am]').value.trim() || einheit, gruppiert:gr, pro: gr ? pro : 1, rw: rw > 0 ? rw : 0.5});
+  }
+  if(!neu.length) return alert('Es muss mindestens eine Art geben.');
+  const weg = alt.filter(x => !neu.some(n => n.id === x.id) && Object.values(D.teile).some(t => t.art === x.id));
+  if(weg.length) return alert('„'+weg[0].name+'“ wird noch von Positionen benutzt und kann nicht entfernt werden.');
+  ablegen('einst','arten', {liste:neu}); notiere('Katalog','Arten', alt.map(x => x.name+(x.gruppiert?' '+x.pro:'')).join(', '), neu.map(x => x.name+(x.gruppiert?' '+x.pro:'')).join(', '), 'geändert');
+  alles(); artenZeichnen(); { const d = el('poGroesse').querySelector('details'); if(d) d.open = true; } toast('Arten gespeichert. Gilt für neue Aufträge.');
 }
 /* gelernte Richtwerte: Demontieren je Stück, alle anderen Schritte je Einheit - aus abgeschlossenen Aufträgen */
 function richtwertGelernt(){
@@ -1855,9 +1899,7 @@ function zeichnePositionen(){
   const sel = el('poKunde'), kfAlt = sel.value || '';
   sel.innerHTML = '<option value="">alle Kunden</option>'+kunden().map(k => '<option>'+esc(k.name)+'</option>').join(''); sel.value = kfAlt;
   const kf = sel.value, alle = poSortiert(alleTeile());
-  el('poGroesse').innerHTML = '<b>Standardgr&ouml;&szlig;e je Art</b> <span class="sub">&ndash; so viele Packs passen in eine Einheit. Gilt f&uuml;r alle Positionen ohne eigenen Wert und f&uuml;r neue Auftr&auml;ge (bestehende Auftr&auml;ge behalten ihre Gr&ouml;&szlig;e).</span><div class="werkzeuge" style="margin-top:8px">'+
-    ART_GRUPPIERT.map(k => '<label style="display:flex;align-items:center;gap:6px">'+ART_NAME[k][0]+'<input type="number" min="1" data-ag="'+k+'" value="'+artPro(k)+'" '+(sw?'':'disabled')+' style="width:70px;text-align:right"></label>').join('')+
-    (sw ? '<button class="btn" onclick="artGroesseSpeichern()">Speichern</button>' : '')+'</div>';
+  if(!el('poGroesse').querySelector || !el('poGroesse').querySelector('details[open]')) artenZeichnen();
   el('poKennzahlen').innerHTML = kz(alle.length,'Positionen')+kz(alle.filter(t => t.sonstiges).length,'Sonstiges (Freitext)')+kz(alle.filter(t => polymerGVon(t)).length,'mit Polymer-Angabe')+kz(schr.length,'Arbeitsschritte');
   el('poStandardBtn').style.display = (sw && posUpdateNoetig()) ? '' : 'none';
   if(sw && altPositionen().length) el('poKennzahlen').innerHTML += '<div class="hinweis" style="flex:1 1 100%;background:#FFF4D6;border:1px solid #E4B23C;border-radius:8px;padding:10px 14px"><b>'+altPositionen().length+' alte Test-Positionen ohne Nummer</b> (z. B. '+esc(altPositionen().slice(0,3).map(t => t.nr||t.name).join(', '))+'). Mit „Standard-Positionen anlegen / aktualisieren“ werden sie entfernt und alle Nummern 101–1804 angelegt.</div>';
@@ -1880,7 +1922,7 @@ function positionenCsv(){
   const kopf = ['Nr','Position','Kunde','Art','Stück je Einheit (wirksam)','Stück je Einheit (eigener Wert)','Arbeitsschritte','Stunden je Stück (Demontieren)','Stunden je Einheit (übrige Schritte)','Polymer g je Stück','Langer Ofenlauf','Sonstiges','Eht. (alt, Info)'];
   const zeilen = poSortiert(alleTeile()).map(t => { const art = posArt(t); return [t.nr, t.name, t.kunde||'', ART[art], ART_GRUPPIERT.includes(art) ? posPro(t) : '', posProEigen(t) ? t.proEinheit : '', (t.schritte||[]).join(' > '),
     t.rwStueck||'', t.rwEinheit||'', t.polymerG === undefined ? '' : t.polymerG, t.ofenLang ? 'ja' : '', t.sonstiges ? 'ja' : '', t.eht === undefined ? '' : String(t.eht).replace('.',',')].map(q).join(';'); });
-  const gz = ['# Standardgröße je Art', 'Korb='+artPro('korb'), 'Baum='+artPro('baum'), 'Ständer='+artPro('staender'), 'Arbeitsschritte='+taetigkeiten().join(' > ')].join(';');
+  const gz = ['# Arten (Name:Stück je Einheit:Start-Std. je Einheit)'].concat(artenListe().map(x => x.name+':'+(x.gruppiert ? x.pro : 'direkt')+':'+x.rw), ['Arbeitsschritte='+taetigkeiten().join(' > ')]).join(';');
   lade(new Blob(['﻿'+[kopf.join(';')].concat(zeilen, [gz]).join('\n')], {type:'text/csv;charset=utf-8'}), 'PackDuese_Positionen_'+heute().replace(/-/g,'')+'.csv');
 }
 const zahlOderLeer = v => { const x = parseFloat(String(v).replace(',','.')); return x > 0 ? x : ''; };
@@ -1898,8 +1940,8 @@ function posDialog(id){
       '<label class="breit">Bezeichnung<input type="text" id="pName" value="'+esc(t.name)+'"'+dis+'></label>'+
       '<label class="breit">Arbeitsschritte (Reihenfolge wie im Ablauf)</label>'+
       '<div class="breit chips" id="pSchritte" style="margin-top:-6px">'+taetigkeiten().map(x => '<label class="chip" style="cursor:pointer;text-transform:none;letter-spacing:0"><input type="checkbox" data-ds="'+esc(x)+'" '+((t.schritte||[]).includes(x)?'checked':'')+dis+' style="width:auto;margin:0 6px 0 0">'+esc(x)+'</label>').join('')+'</div>'+
-      '<label>Art<select id="pArt"'+dis+'>'+Object.keys(ART).map(k => '<option value="'+k+'"'+(k===art?' selected':'')+'>'+ART[k]+(k==='charge'||k==='tag'||k==='satz'?' (Menge = Anzahl)':'')+'</option>').join('')+'</select></label>'+
-      '<label>Stück je Einheit (Korb/Baum/Ständer)<input type="number" min="1" id="pPro" value="'+(ART_GRUPPIERT.includes(art) && posProEigen(t) ? t.proEinheit : '')+'" placeholder="leer = Standard ('+artPro('korb')+' / '+artPro('baum')+' / '+artPro('staender')+')"'+dis+'></label>'+
+      '<label>Art<select id="pArt"'+dis+'>'+Object.keys(ART).map(k => '<option value="'+k+'"'+(k===art?' selected':'')+'>'+ART[k]+(!ART_GRUPPIERT.includes(k) && k!=='einzel' ? ' (Menge = Anzahl)':'')+'</option>').join('')+'</select></label>'+
+      '<label>Stück je Einheit (nur bei gruppierten Arten)<input type="number" min="1" id="pPro" value="'+(ART_GRUPPIERT.includes(art) && posProEigen(t) ? t.proEinheit : '')+'" placeholder="leer = Standard der Art ('+ART_GRUPPIERT.map(k => ART[k]+' '+artPro(k)).join(', ')+')"'+dis+'></label>'+
       '<label>Stunden je Stück (Demontieren)<input type="number" step="0.05" min="0" id="pRs" value="'+esc(t.rwStueck||'')+'" placeholder="Start: '+de(RW_S_STD,2)+'"'+dis+'></label>'+
       '<label>Stunden je Einheit (übrige Schritte)<input type="number" step="0.05" min="0" id="pRe" value="'+esc(t.rwEinheit||'')+'" placeholder="Start: '+de(RW_E_STD[art],2)+'"'+dis+'></label>'+
       (l ? '<div class="breit sub" style="margin-top:-4px">Aus Ist-Zeiten gelernt ('+l.n+' Aufträge): '+(l.s!==null? 'Demontieren '+de(l.s,2)+' h/Stück':'')+(l.s!==null && l.e!==null? ' · ':'')+(l.e!==null? 'übrige Schritte '+de(l.e,2)+' h/Einheit':'')+(ro?'':' <a href="#" onclick="posGelerntUebernehmen(\''+t.id+'\');return false">in die Felder übernehmen</a>')+'</div>' : '')+
@@ -3437,7 +3479,7 @@ function zeichneAnsicht(z){
   ({uebersicht:zeichneUebersicht, zeiten:zeichneWoche, auftraege:zeichneAuftraege, planung:zeichnePlanung, urlaub:zeichneUrlaub,
     qm:zeichneQM, mitarbeiter:zeichneMitarbeiter, verwaltung:zeichneVerwaltung, archiv:zeichneArchiv, produktion:zeichneProduktion, kalender:zeichneKalender, katalog:zeichneKatalog, positionen:zeichnePositionen, ofen:zeichneOfenplan, sonderfaelle:zeichneSonderfaelle}[z] || (()=>{}))();
 }
-function alles(){ energieCache = null; mobilKlasse(); if(mobilAn()){ zeichneMobil(); return; } const a = document.querySelector('nav button.aktiv'); if(a && rolle !== 'keine') zeichneAnsicht(a.dataset.ansicht); }
+function alles(){ energieCache = null; artenAnwenden(); mobilKlasse(); if(mobilAn()){ zeichneMobil(); return; } const a = document.querySelector('nav button.aktiv'); if(a && rolle !== 'keine') zeichneAnsicht(a.dataset.ansicht); }
 function schliesse(){ el('dialogBox').innerHTML = ''; }
 function menuUm(){ const auf = !document.querySelector('nav').classList.contains('offen'); document.querySelector('nav').classList.toggle('offen', auf); el('menuSchatten').classList.toggle('offen', auf); }
 function menuZu(){ document.querySelector('nav').classList.remove('offen'); el('menuSchatten').classList.remove('offen'); }
