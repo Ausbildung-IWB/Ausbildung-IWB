@@ -641,17 +641,18 @@ body.mobil #mobil{display:block;max-width:520px;margin:0 auto;padding:0 12px 90p
 <!-- ===== Positionen ===== -->
 <section id="v-positionen" class="verstecke">
   <h1>Positionen und Arbeitsschritte</h1>
-  <p class="sub">Alle Positionen vom Verrechnungsblatt, nach Nummer sortiert. Pro Position anhaken, welche Arbeitsschritte n&ouml;tig sind &ndash; meistens nur wenige. <b>Art</b> = wie die Packs aufbewahrt werden (Einzel, Korb, Baum, St&auml;nder) oder wie abgerechnet wird (Charge, Tag, Satz). Die Soll-Zeit rechnet automatisch: <b>Demontieren je St&uuml;ck</b>, alle &uuml;brigen Schritte <b>je Einheit</b> (Korb/Baum/St&auml;nder aufgerundet &ndash; 5 oder 9 Packs im Korb kosten gleich viel). <b>Polymer</b> (g je St&uuml;ck) braucht der Ofenplan. Leere Richtwerte = Startwerte, die &uuml;ber Ist-Zeiten genauer werden. &Auml;nderungen gelten f&uuml;r neue Auftr&auml;ge.</p>
+  <p class="sub">Alle Positionen vom Verrechnungsblatt, nach Nummer sortiert. <b>Klick auf eine Zeile</b> &ouml;ffnet die Position: Arbeitsschritte, Art, St&uuml;ck je Einheit, Stunden-Richtwerte und Polymer. &Auml;nderungen gelten f&uuml;r neue Auftr&auml;ge.</p>
   <div class="kennzahlen" id="poKennzahlen"></div>
+  <div class="karte" id="poGroesse" style="margin-bottom:14px"></div>
   <div class="werkzeuge">
     <input type="text" id="poSuche" placeholder="Suchen (Nummer, Name, Kunde)" style="width:260px">
     <select id="poKunde"><option value="">alle Kunden</option></select>
+    <select id="poFilter"><option value="">alle Positionen</option><option value="poly">Polymer fehlt</option><option value="sonst">nur Sonstiges</option><option value="lang">langer Ofenlauf</option><option value="leer">ohne Arbeitsschritte</option></select>
     <span style="margin-left:auto"></span>
     <button class="btn sek nurSchreiben" id="poStandardBtn" onclick="positionenStandard()">Standard-Positionen anlegen / aktualisieren</button>
     <button class="btn nurSchreiben" onclick="posDialog()">+ Position</button>
   </div>
-  <div class="hinweis gelb" id="poLeiste" style="display:none"><b>Ungespeicherte &Auml;nderungen.</b> <button class="btn gruen" style="padding:6px 14px;margin-left:10px" onclick="poSpeichern()">Speichern</button> <button class="btn sek" style="padding:6px 14px" onclick="poVerwerfen()">Verwerfen</button></div>
-  <div class="karte" style="padding:0;overflow:auto;max-height:68vh"><table class="liste matrix" id="poTab"></table></div>
+  <div class="karte" style="padding:0;overflow:auto;max-height:68vh"><table class="liste" id="poTab"></table></div>
 </section>
 
 <!-- ===== Ofenplan ===== -->
@@ -1660,7 +1661,9 @@ const ART_NAME = {einzel:['Stück','Stück'], korb:['Korb','Körbe'], baum:['Bau
 const ART_GRUPPIERT = ['korb','baum','staender'];
 const RW_E_STD = {einzel:0.5, korb:0.75, baum:1, staender:0.75, charge:4, tag:2, satz:0.5}, RW_S_STD = 0.25;
 const posArt = t => (t && ART[t.art]) ? t.art : 'einzel';
-const posPro = t => ART_GRUPPIERT.includes(posArt(t)) ? Math.max(1, +(t||{}).proEinheit || ART_PRO[posArt(t)]) : 1;
+const artPro = art => { const g = +((einst('artGroesse', {}) || {})[art]); return g >= 1 ? Math.round(g) : ART_PRO[art]; };
+const posProEigen = t => ART_GRUPPIERT.includes(posArt(t)) && (t||{}).proEigen !== undefined ? !!t.proEigen : (ART_GRUPPIERT.includes(posArt(t)) && +(t||{}).proEinheit > 0 && +t.proEinheit !== ART_PRO[posArt(t)]);
+const posPro = t => ART_GRUPPIERT.includes(posArt(t)) ? Math.max(1, posProEigen(t) ? +t.proEinheit : artPro(posArt(t))) : 1;
 const einheitenVon = (t, menge) => menge > 0 ? (ART_GRUPPIERT.includes(posArt(t)) ? Math.ceil(menge / posPro(t)) : menge) : 0;
 const posRw = t => ({s: +(t||{}).rwStueck > 0 ? +t.rwStueck : RW_S_STD, e: +(t||{}).rwEinheit > 0 ? +t.rwEinheit : RW_E_STD[posArt(t)]});
 const polymerGVon = o => { const g = (o && o.polymerG !== '' && o.polymerG != null) ? +o.polymerG : null; return g > 0 ? g : null; };
@@ -1821,7 +1824,14 @@ function positionenStandard(){
   toast((weg ? weg+' alte Positionen entfernt. ' : '')+(neu>0 ? neu+' Positionen angelegt. ' : '')+(alteArt ? alteArt+' aktualisiert. ' : '')+(neu || alteArt ? 'Bitte Arbeitsschritte und Einheiten prüfen.' : 'Alles schon aktuell.'));
 }
 let poPending = false;
-function poMerken(){ poPending = true; const b = el('poLeiste'); if(b) b.style.display = ''; }
+function artGroesseSpeichern(){
+  if(!darfSchreiben()) return;
+  const g = {}; let bad = false;
+  document.querySelectorAll('#poGroesse input[data-ag]').forEach(i => { const v = Math.round(+i.value); if(!(v >= 1)) bad = true; g[i.dataset.ag] = v; });
+  if(bad) return alert('Bitte für jede Art eine Zahl ab 1 eintragen.');
+  ablegen('einst','artGroesse', {liste:g}); notiere('Katalog','Standardgröße je Art', null, ART_GRUPPIERT.map(k => ART_NAME[k][0]+' '+g[k]).join(', '), 'geändert'); alles();
+  toast('Gespeichert. Gilt für neue Aufträge.');
+}
 /* gelernte Richtwerte: Demontieren je Stück, alle anderen Schritte je Einheit - aus abgeschlossenen Aufträgen */
 function richtwertGelernt(){
   const dem = {}, rest = {};
@@ -1837,89 +1847,82 @@ function richtwertGelernt(){
   return r;
 }
 const poSortiert = l => l.slice().sort((a,b) => (parseInt(a.nr,10)||0) - (parseInt(b.nr,10)||0) || String(a.nr).localeCompare(String(b.nr),'de',{numeric:true}));
-function zeichnePositionen(erzwingen){
-  if(poPending && erzwingen !== true) return;
-  const sw = darfSchreiben(), schr = taetigkeiten(), s = (el('poSuche').value||'').trim().toLowerCase();
+const SCHRITT_KURZ = {Demontieren:'Dem', Ofen:'Ofen', Waschen:'Wasch', Strahlen:'Strahl', Nachwaschen:'Nachw', Messen:'Mess', Sonstiges:'Sonst'};
+const schrittKurz = x => SCHRITT_KURZ[x] || String(x).slice(0,5);
+function zeichnePositionen(){
+  const sw = darfSchreiben(), schr = taetigkeiten(), s = (el('poSuche').value||'').trim().toLowerCase(), ff = el('poFilter').value;
   const sel = el('poKunde'), kfAlt = sel.value || '';
   sel.innerHTML = '<option value="">alle Kunden</option>'+kunden().map(k => '<option>'+esc(k.name)+'</option>').join(''); sel.value = kfAlt;
   const kf = sel.value, alle = poSortiert(alleTeile());
+  el('poGroesse').innerHTML = '<b>Standardgr&ouml;&szlig;e je Art</b> <span class="sub">&ndash; so viele Packs passen in eine Einheit. Gilt f&uuml;r alle Positionen ohne eigenen Wert und f&uuml;r neue Auftr&auml;ge (bestehende Auftr&auml;ge behalten ihre Gr&ouml;&szlig;e).</span><div class="werkzeuge" style="margin-top:8px">'+
+    ART_GRUPPIERT.map(k => '<label style="display:flex;align-items:center;gap:6px">'+ART_NAME[k][0]+'<input type="number" min="1" data-ag="'+k+'" value="'+artPro(k)+'" '+(sw?'':'disabled')+' style="width:70px;text-align:right"></label>').join('')+
+    (sw ? '<button class="btn" onclick="artGroesseSpeichern()">Speichern</button>' : '')+'</div>';
   el('poKennzahlen').innerHTML = kz(alle.length,'Positionen')+kz(alle.filter(t => t.sonstiges).length,'Sonstiges (Freitext)')+kz(alle.filter(t => polymerGVon(t)).length,'mit Polymer-Angabe')+kz(schr.length,'Arbeitsschritte');
-  el('poLeiste').style.display = poPending ? '' : 'none';
   el('poStandardBtn').style.display = (sw && posUpdateNoetig()) ? '' : 'none';
   if(sw && altPositionen().length) el('poKennzahlen').innerHTML += '<div class="hinweis" style="flex:1 1 100%;background:#FFF4D6;border:1px solid #E4B23C;border-radius:8px;padding:10px 14px"><b>'+altPositionen().length+' alte Test-Positionen ohne Nummer</b> (z. B. '+esc(altPositionen().slice(0,3).map(t => t.nr||t.name).join(', '))+'). Mit „Standard-Positionen anlegen / aktualisieren“ werden sie entfernt und alle Nummern 101–1804 angelegt.</div>';
   if(!alle.length){ el('poTab').innerHTML = '<tbody><tr><td class="sub" style="padding:18px">Noch keine Positionen. Mit „Standard-Positionen anlegen“ kommen alle Positionen vom Verrechnungsblatt hinein (Arbeitsschritte, Einheiten und Polymer sind vorbelegt und änderbar).</td></tr></tbody>'; return; }
-  const lern = richtwertGelernt();
-  const liste = alle.filter(t => (!kf || t.kunde === kf) && (!s || (t.nr+' '+t.name+' '+(t.kunde||'')).toLowerCase().includes(s)));
-  let h = '<thead><tr><th>Nr</th><th>Position</th><th>Kunde</th><th>Art</th><th class="num">Stück je<br>Einheit</th>'+schr.map(x => '<th style="text-align:center;white-space:normal;min-width:58px;font-size:11px">'+esc(x)+'</th>').join('')+
-    '<th class="num">h je Stück<br><span class="sub">Demontieren</span></th><th class="num">h je Einheit<br><span class="sub">übrige Schritte</span></th><th class="num">Polymer<br><span class="sub">g je Stück</span></th><th>aus Ist gelernt</th><th style="width:40px"></th></tr></thead><tbody>';
-  liste.forEach(t => { const l = lern[t.id], rw = posRw(t), art = posArt(t), grp = ART_GRUPPIERT.includes(art);
-    h += '<tr data-pid="'+esc(t.id)+'"><td><b>'+esc(t.nr||'–')+'</b></td><td>'+esc(t.name)+(t.sonstiges? ' <span class="pill warn">Sonstiges</span>':'')+(t.ofenLang? ' <span class="pill grau">langer Ofenlauf</span>':'')+'</td><td>'+esc(t.kunde||'')+'</td>'+
-      '<td><select data-pa '+(sw?'':'disabled')+' onchange="poMerken()">'+Object.keys(ART).map(k => '<option value="'+k+'"'+(k===art?' selected':'')+'>'+ART[k]+'</option>').join('')+'</select></td>'+
-      '<td class="num"><input type="number" min="1" data-pp value="'+(grp? posPro(t) : '')+'" '+(sw && grp?'':'disabled')+' oninput="poMerken()" style="width:64px;text-align:right"></td>'+
-      schr.map(x => '<td style="text-align:center"><input type="checkbox" data-ps="'+esc(x)+'" '+((t.schritte||[]).includes(x)?'checked':'')+' '+(sw?'':'disabled')+' onchange="poMerken()"></td>').join('')+
-      '<td class="num"><input type="number" step="0.05" min="0" data-pr value="'+esc(t.rwStueck||'')+'" placeholder="'+de(RW_S_STD,2)+'" '+(sw?'':'disabled')+' oninput="poMerken()" style="width:72px;text-align:right"></td>'+
-      '<td class="num"><input type="number" step="0.05" min="0" data-pe value="'+esc(t.rwEinheit||'')+'" placeholder="'+de(RW_E_STD[art],2)+'" '+(sw?'':'disabled')+' oninput="poMerken()" style="width:72px;text-align:right"></td>'+
-      '<td class="num"><input type="number" min="0" data-pg value="'+esc(t.polymerG===undefined?'':t.polymerG)+'" placeholder="–" '+(sw?'':'disabled')+' oninput="poMerken()" style="width:72px;text-align:right"></td>'+
-      '<td class="sub">'+(l? (l.s!==null? 'Demont. '+de(l.s,2)+' h/Stück':'')+(l.s!==null && l.e!==null? ' · ':'')+(l.e!==null? 'Rest '+de(l.e,2)+' h/Einheit':'')+' · '+l.n+' Auftr.'+(sw? ' <a href="#" data-pid="'+esc(t.id)+'" onclick="poUebernehmen(this.dataset.pid);return false">übernehmen</a>':'') : '–')+'</td>'+
-      '<td>'+(sw? '<button class="mini" data-pid="'+esc(t.id)+'" onclick="posDialog(this.dataset.pid)">&#9998;</button>':'')+'</td></tr>'; });
+  const liste = alle.filter(t => (!kf || t.kunde === kf) && (!s || (t.nr+' '+t.name+' '+(t.kunde||'')).toLowerCase().includes(s)) &&
+    (!ff || (ff === 'poly' && !polymerGVon(t) && !t.sonstiges) || (ff === 'sonst' && t.sonstiges) || (ff === 'lang' && t.ofenLang) || (ff === 'leer' && !(t.schritte||[]).length)));
+  let h = '<thead><tr><th style="width:64px">Nr</th><th>Position</th><th>Kunde</th><th>Art</th><th>Arbeitsschritte</th><th class="num">Polymer</th><th style="width:44px"></th></tr></thead><tbody>';
+  liste.forEach(t => { const art = posArt(t), grp = ART_GRUPPIERT.includes(art), pg = polymerGVon(t);
+    h += '<tr class="klick" data-pid="'+esc(t.id)+'" onclick="posDialog(this.dataset.pid)" style="cursor:pointer"><td><b>'+esc(t.nr||'–')+'</b></td><td>'+esc(t.name)+(t.sonstiges? ' <span class="pill warn">Sonstiges</span>':'')+(t.ofenLang? ' <span class="pill grau">langer Ofenlauf</span>':'')+'</td><td>'+esc(t.kunde||'')+'</td>'+
+      '<td style="white-space:nowrap">'+ART[art]+(grp? ' <span class="sub">à '+posPro(t)+'</span>' : '')+'</td>'+
+      '<td>'+((t.schritte||[]).length ? schr.filter(x => (t.schritte||[]).includes(x)).map(x => '<span class="pill grau" title="'+esc(x)+'" style="margin:1px 3px 1px 0">'+esc(schrittKurz(x))+'</span>').join('') : '<span class="sub">keine</span>')+'</td>'+
+      '<td class="num">'+(pg ? de(pg,0)+' g' : '<span class="sub">–</span>')+'</td>'+
+      '<td><button class="mini" data-pid="'+esc(t.id)+'" onclick="event.stopPropagation();posDialog(this.dataset.pid)">&#9998;</button></td></tr>'; });
+  if(!liste.length) h += '<tr><td colspan="7" class="sub" style="padding:18px">Keine Position passt zum Filter.</td></tr>';
   el('poTab').innerHTML = h+'</tbody>';
 }
-function poUebernehmen(id){
-  const l = richtwertGelernt()[id], tr = document.querySelector('#poTab tr[data-pid="'+id+'"]'); if(!l || !tr) return;
-  if(l.s !== null) tr.querySelector('input[data-pr]').value = Math.round(l.s*100)/100;
-  if(l.e !== null) tr.querySelector('input[data-pe]').value = Math.round(l.e*100)/100;
-  poMerken();
-}
 const zahlOderLeer = v => { const x = parseFloat(String(v).replace(',','.')); return x > 0 ? x : ''; };
-function poSpeichern(){
-  if(!darfSchreiben()) return;
-  let n = 0; sammelStart();
-  document.querySelectorAll('#poTab tr[data-pid]').forEach(tr => {
-    const id = tr.dataset.pid, t = D.teile[id]; if(!t) return;
-    const schr = [...tr.querySelectorAll('input[data-ps]')].filter(i => i.checked).map(i => i.dataset.ps);
-    const art = tr.querySelector('select[data-pa]').value, pro = ART_GRUPPIERT.includes(art) ? (zahlOderLeer(tr.querySelector('input[data-pp]').value) || ART_PRO[art]) : 1;
-    const rs = zahlOderLeer(tr.querySelector('input[data-pr]').value), re = zahlOderLeer(tr.querySelector('input[data-pe]').value), pg = zahlOderLeer(tr.querySelector('input[data-pg]').value);
-    const gleich = schr.slice().sort().join() === (t.schritte||[]).slice().sort().join() && art === posArt(t) && pro === posPro(t) && String(rs) === String(t.rwStueck||'') && String(re) === String(t.rwEinheit||'') && String(pg) === String(t.polymerG===undefined?'':t.polymerG);
-    if(gleich) return;
-    ablegen('teile', id, {...t, schritte:schr, art, proEinheit:pro, rwStueck:rs, rwEinheit:re, polymerG:pg}); n++;
-    notiere('Position', teilText(t), (t.schritte||[]).join(' → ')||'–', schr.join(' → ')||'–', 'geändert'+(art !== posArt(t)? ' · Art '+ART[posArt(t)]+' → '+ART[art] : '')); });
-  sammelEnde(); poPending = false; alles();
-  toast(n ? n+' Position'+(n>1?'en':'')+' gespeichert. Gilt für neue Aufträge.' : 'Nichts geändert.');
-}
-function poVerwerfen(){ poPending = false; zeichnePositionen(true); }
 function posDialog(id){
-  if(!darfSchreiben()) return;
-  const t = id ? D.teile[id] : {id:neueId(), nr:'', name:'', kunde:'', art:'einzel', proEinheit:1, polymerG:'', eht:'', sonstiges:false, ofenLang:false, schritte:[]};
-  const art = posArt(t);
+  const ro = !darfSchreiben();
+  const t = id ? D.teile[id] : {id:neueId(), nr:'', name:'', kunde:'', art:'einzel', proEinheit:'', polymerG:'', eht:'', sonstiges:false, ofenLang:false, schritte:[]};
+  if(!t) return;
+  const art = posArt(t), dis = ro ? ' disabled' : '', l = id ? richtwertGelernt()[id] : null, rw = posRw(t);
   el('dialogBox').innerHTML =
-    '<div class="overlay" onclick="if(event.target===this)schliesse()"><div class="dialog" style="max-width:620px">'+
-    '<div class="kopf"><div><b>'+(id?'Position bearbeiten':'Neue Position')+'</b></div><button class="zu" onclick="schliesse()">&times;</button></div>'+
+    '<div class="overlay" onclick="if(event.target===this)schliesse()"><div class="dialog" style="max-width:680px">'+
+    '<div class="kopf"><div><b>'+(id?(ro?'Position ':'Position bearbeiten: ')+esc(t.nr||''):'Neue Position')+'</b></div><button class="zu" onclick="schliesse()">&times;</button></div>'+
     '<div class="rumpf"><div class="formgitter">'+
-      '<label>Nummer<input type="text" id="pNr" value="'+esc(t.nr)+'"></label>'+
-      '<label>Kunde<select id="pKunde">'+kundenOptionen(t.kunde||'')+'</select></label>'+
-      '<label class="breit">Bezeichnung<input type="text" id="pName" value="'+esc(t.name)+'"></label>'+
-      '<label>Art<select id="pArt">'+Object.keys(ART).map(k => '<option value="'+k+'"'+(k===art?' selected':'')+'>'+ART[k]+(k==='charge'||k==='tag'||k==='satz'?' (Menge = Anzahl)':'')+'</option>').join('')+'</select></label>'+
-      '<label>Stück je Einheit (Korb/Baum/Ständer)<input type="number" min="1" id="pPro" value="'+(ART_GRUPPIERT.includes(art)? posPro(t) : '')+'" placeholder="Korb 9, Baum 20, Ständer 11"></label>'+
-      '<label>Polymer (g je Stück)<input type="number" min="0" id="pPoly" value="'+esc(t.polymerG===undefined?'':t.polymerG)+'" placeholder="leer = unbekannt"></label>'+
-      '<label>Alte Verrechnungs-Einheit (Eht.)<input type="number" step="0.01" min="0" id="pEht" value="'+esc(t.eht===undefined?'':t.eht)+'" placeholder="nur zur Info"></label>'+
-      '<label class="breit" style="text-transform:none;letter-spacing:0;font-size:13.5px"><input type="checkbox" id="pLang" '+(t.ofenLang?'checked':'')+' style="width:auto;margin:0 6px 0 0">Braucht den langen Ofenlauf (bis 6 h, Nachtlauf)</label>'+
-      '<label class="breit" style="text-transform:none;letter-spacing:0;font-size:13.5px"><input type="checkbox" id="pSonst" '+(t.sonstiges?'checked':'')+' style="width:auto;margin:0 6px 0 0">Sonstiges-Position: beim Auftrag wird eine Beschreibung verlangt und im Reiter „Sonderfälle“ festgehalten</label>'+
-    '</div></div><div class="fuss">'+(id? '<button class="btn rot" onclick="posLoeschen(\''+t.id+'\')">Löschen</button>':'')+'<span style="flex:1"></span>'+
-    '<button class="btn sek" onclick="schliesse()">Abbrechen</button><button class="btn" onclick="posSpeichern(\''+t.id+'\','+(id?'false':'true')+')">Speichern</button></div></div></div>';
-  setTimeout(()=>el('pName').focus(),60);
+      '<label>Nummer<input type="text" id="pNr" value="'+esc(t.nr)+'"'+dis+'></label>'+
+      '<label>Kunde<select id="pKunde"'+dis+'>'+kundenOptionen(t.kunde||'')+'</select></label>'+
+      '<label class="breit">Bezeichnung<input type="text" id="pName" value="'+esc(t.name)+'"'+dis+'></label>'+
+      '<label class="breit">Arbeitsschritte (Reihenfolge wie im Ablauf)</label>'+
+      '<div class="breit chips" id="pSchritte" style="margin-top:-6px">'+taetigkeiten().map(x => '<label class="chip" style="cursor:pointer;text-transform:none;letter-spacing:0"><input type="checkbox" data-ds="'+esc(x)+'" '+((t.schritte||[]).includes(x)?'checked':'')+dis+' style="width:auto;margin:0 6px 0 0">'+esc(x)+'</label>').join('')+'</div>'+
+      '<label>Art<select id="pArt"'+dis+'>'+Object.keys(ART).map(k => '<option value="'+k+'"'+(k===art?' selected':'')+'>'+ART[k]+(k==='charge'||k==='tag'||k==='satz'?' (Menge = Anzahl)':'')+'</option>').join('')+'</select></label>'+
+      '<label>Stück je Einheit (Korb/Baum/Ständer)<input type="number" min="1" id="pPro" value="'+(ART_GRUPPIERT.includes(art) && posProEigen(t) ? t.proEinheit : '')+'" placeholder="leer = Standard ('+artPro('korb')+' / '+artPro('baum')+' / '+artPro('staender')+')"'+dis+'></label>'+
+      '<label>Stunden je Stück (Demontieren)<input type="number" step="0.05" min="0" id="pRs" value="'+esc(t.rwStueck||'')+'" placeholder="Start: '+de(RW_S_STD,2)+'"'+dis+'></label>'+
+      '<label>Stunden je Einheit (übrige Schritte)<input type="number" step="0.05" min="0" id="pRe" value="'+esc(t.rwEinheit||'')+'" placeholder="Start: '+de(RW_E_STD[art],2)+'"'+dis+'></label>'+
+      (l ? '<div class="breit sub" style="margin-top:-4px">Aus Ist-Zeiten gelernt ('+l.n+' Aufträge): '+(l.s!==null? 'Demontieren '+de(l.s,2)+' h/Stück':'')+(l.s!==null && l.e!==null? ' · ':'')+(l.e!==null? 'übrige Schritte '+de(l.e,2)+' h/Einheit':'')+(ro?'':' <a href="#" onclick="posGelerntUebernehmen(\''+t.id+'\');return false">in die Felder übernehmen</a>')+'</div>' : '')+
+      '<label>Polymer (g je Stück)<input type="number" min="0" id="pPoly" value="'+esc(t.polymerG===undefined?'':t.polymerG)+'" placeholder="leer = unbekannt"'+dis+'></label>'+
+      '<label>Alte Verrechnungs-Einheit (Eht.)<input type="number" step="0.01" min="0" id="pEht" value="'+esc(t.eht===undefined?'':t.eht)+'" placeholder="nur zur Info"'+dis+'></label>'+
+      '<label class="breit" style="text-transform:none;letter-spacing:0;font-size:13.5px"><input type="checkbox" id="pLang" '+(t.ofenLang?'checked':'')+dis+' style="width:auto;margin:0 6px 0 0">Braucht den langen Ofenlauf (bis 6 h, Nachtlauf)</label>'+
+      '<label class="breit" style="text-transform:none;letter-spacing:0;font-size:13.5px"><input type="checkbox" id="pSonst" '+(t.sonstiges?'checked':'')+dis+' style="width:auto;margin:0 6px 0 0">Sonstiges-Position: beim Auftrag wird eine Beschreibung verlangt und im Reiter „Sonderfälle“ festgehalten</label>'+
+    '</div></div><div class="fuss">'+(id && !ro? '<button class="btn rot" onclick="posLoeschen(\''+t.id+'\')">Löschen</button>':'')+'<span style="flex:1"></span>'+
+    '<button class="btn sek" onclick="schliesse()">'+(ro?'Schließen':'Abbrechen')+'</button>'+(ro?'':'<button class="btn" onclick="posSpeichern(\''+t.id+'\','+(id?'false':'true')+')">Speichern</button>')+'</div></div></div>';
+  if(!id) setTimeout(()=>el('pName').focus(),60);
+}
+function posGelerntUebernehmen(id){
+  const l = richtwertGelernt()[id]; if(!l) return;
+  if(l.s !== null) el('pRs').value = Math.round(l.s*100)/100;
+  if(l.e !== null) el('pRe').value = Math.round(l.e*100)/100;
 }
 function posSpeichern(id, neu){
+  if(!darfSchreiben()) return;
   const name = el('pName').value.trim(); if(!name) return alert('Bitte eine Bezeichnung eingeben.');
   const nr = el('pNr').value.trim(); if(!nr) return alert('Bitte eine Nummer eingeben.');
   if(Object.values(D.teile).some(x => x.id !== id && String(x.nr).toLowerCase() === nr.toLowerCase())) return alert('Diese Nummer gibt es schon.');
   const alt = D.teile[id] || {}, sonst = el('pSonst').checked, art = el('pArt').value, eht = parseFloat(String(el('pEht').value).replace(',','.'));
-  const pro = ART_GRUPPIERT.includes(art) ? (zahlOderLeer(el('pPro').value) || ART_PRO[art]) : 1;
-  const t = {...alt, id, nr, name, kunde: el('pKunde').value.trim(), art, proEinheit:pro, polymerG: zahlOderLeer(el('pPoly').value), eht: isNaN(eht) ? '' : eht, sonstiges: sonst, ofenLang: el('pLang').checked,
-    schritte: alt.schritte && alt.schritte.length ? alt.schritte : posVorbelegung({name, kunde:el('pKunde').value.trim(), sonstiges:sonst}), rwStueck: alt.rwStueck||'', rwEinheit: alt.rwEinheit||'', materialien: alt.materialien||[], sollJe: alt.sollJe||{}, notiz: alt.notiz||'',
+  const pv = zahlOderLeer(el('pPro').value), eig = ART_GRUPPIERT.includes(art) && +pv >= 1 && +pv !== artPro(art), pro = eig ? +pv : '';
+  const gewaehlt = [...document.querySelectorAll('#pSchritte input[data-ds]')].filter(i => i.checked).map(i => i.dataset.ds);
+  const kunde = el('pKunde').value.trim();
+  const schritte = gewaehlt.length || !neu ? taetigkeiten().filter(x => gewaehlt.includes(x)) : posVorbelegung({name, kunde, sonstiges:sonst});
+  const t = {...alt, id, nr, name, kunde, art, proEinheit:pro, proEigen:eig, polymerG: zahlOderLeer(el('pPoly').value), eht: isNaN(eht) ? '' : eht, sonstiges: sonst, ofenLang: el('pLang').checked,
+    schritte, rwStueck: zahlOderLeer(el('pRs').value), rwEinheit: zahlOderLeer(el('pRe').value), materialien: alt.materialien||[], sollJe: alt.sollJe||{}, notiz: alt.notiz||'',
     erstellt: alt.erstellt || new Date().toISOString(), erstelltVon: alt.erstelltVon || benutzerName()};
   delete t.richtwert; delete t.einheit;
-  ablegen('teile', id, t); notiere('Katalog', teilText(t), null, null, neu? 'Position angelegt' : 'Position geändert');
-  poPending = false; schliesse(); alles();
+  ablegen('teile', id, t);
+  notiere('Katalog', teilText(t), neu ? null : (alt.schritte||[]).join(' → ')||'–', neu ? null : schritte.join(' → ')||'–', neu? 'Position angelegt' : 'Position geändert');
+  poPending = false; schliesse(); alles(); toast('Position '+nr+' gespeichert. Gilt für neue Aufträge.');
 }
 function posLoeschen(id){
   const t = D.teile[id]; if(!t) return;
@@ -3432,6 +3435,7 @@ document.querySelectorAll('nav button').forEach(b => b.onclick = () => ansichtOe
 ['auSuche','auStatus'].forEach(id => el(id).addEventListener('input', zeichneAuftraege));
 el('poSuche').addEventListener('input', () => zeichnePositionen(true));
 el('poKunde').addEventListener('change', () => zeichnePositionen(true));
+el('poFilter').addEventListener('change', () => zeichnePositionen(true));
 ['soSuche','soTyp'].forEach(id => el(id).addEventListener('input', zeichneSonderfaelle));
 ['aSuche','aBenutzer','aArt','aVon','aBis'].forEach(id => el(id).addEventListener('input', zeichneArchiv));
 ['qmZeit','qmKunde','qmNurAbg'].forEach(id => el(id).addEventListener('change', zeichneQM));
