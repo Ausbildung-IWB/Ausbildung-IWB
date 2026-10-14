@@ -964,6 +964,9 @@ body.vollbild .karte{margin-bottom:12px}
     <div class="rollenbox">
       <div><b>Voller Zugriff</b><span>Alle Reiter, Fächer bearbeiten, Bestellanforderung,
         Verwaltung. F&uuml;r dich und Kollegen im B&uuml;ro.</span></div>
+      <div><b>Ausbilder</b><span>Wie voller Zugriff &ndash; buchen, F&auml;cher bearbeiten, Artikel anlegen,
+        Inventur, Bestell&shy;anforderung, Preise. <b>Ohne Verwaltung und ohne Daten</b>, kann also
+        keine Rollen &auml;ndern, keinen Sperrcode setzen und keine Sicherung wiederherstellen.</span></div>
       <div><b>Einkauf</b><span>Sieht Best&auml;nde, Preise, Verbrauch und schreibt Bestell&shy;anforderungen
         &ndash; standort&uuml;bergreifend. Bucht keine Entnahmen.</span></div>
       <div><b>Nur Einsicht</b><span>Sieht Lagerplan, Best&auml;nde, St&uuml;cklistenpr&uuml;fung,
@@ -987,6 +990,7 @@ body.vollbild .karte{margin-bottom:12px}
       <label>Rolle<select id="rRolle" style="width:190px">
         <option value="ansicht">Nur Einsicht</option>
         <option value="einkauf">Einkauf</option>
+        <option value="ausbilder">Ausbilder</option>
         <option value="tablet-stahl">Tablet Stahllager</option>
         <option value="tablet-keller">Tablet Keller</option>
         <option value="admin">Voller Zugriff</option>
@@ -2667,7 +2671,7 @@ function rollenZeichnen(){
         '<tr><td><b>'+mail+'</b>'+(mail === (angemeldet? (angemeldet.email||'').toLowerCase():'')
           ? ' <span class="pill neu">das bist du</span>':'')+'</td>'+
         '<td><select onchange="rolleSetzen(\''+mail+'\',this.value)" style="width:100%">'+
-          ['admin','einkauf','ansicht','tablet-stahl','tablet-keller'].map(o =>
+          ['admin','ausbilder','einkauf','ansicht','tablet-stahl','tablet-keller'].map(o =>
             '<option value="'+o+'"'+(o===r?' selected':'')+'>'+rollenName(o)+'</option>').join('')+
         '</select></td>'+
         '<td>'+ortKnoepfe(mail)+'</td>'+
@@ -2675,7 +2679,8 @@ function rollenZeichnen(){
     : '<tr><td colspan="4" style="padding:16px;color:var(--text-hell)">Noch keine Zuordnung. '+
       'Alle Konten haben vollen Zugriff.</td></tr>';
 }
-const rollenName = r => ({'admin':'Voller Zugriff','einkauf':'Einkauf','ansicht':'Nur Einsicht',
+const rollenName = r => ({'admin':'Voller Zugriff','ausbilder':'Ausbilder','einkauf':'Einkauf',
+                          'ansicht':'Nur Einsicht',
                           'tablet-stahl':'Tablet Stahllager',
                           'tablet-keller':'Tablet Keller'}[r] || r);
 
@@ -3366,6 +3371,9 @@ function erlaubteAnsichten(){
   if(rolle === 'ansicht')       return ['plan','bestand','stueck','banf','verbrauch',
                                         'artikel','abanf','averbrauch'];
   if(rolle === 'einkauf')       return ['artikel','abanf','averbrauch','plan','bestand','archiv'];
+  /* Ausbilder: wie voller Zugriff, nur ohne Verwaltung und ohne Daten */
+  if(rolle === 'ausbilder')     return ['plan','bestand','stueck','zaehlen','banf','verbrauch',
+                                        'archiv','artikel','abanf','averbrauch'];
   return null;   // admin: alles
 }
 
@@ -3545,7 +3553,7 @@ let korbErinnert = '';
 const ortName = id => (ORTE[id] || {}).name || id;
 const artFind = nr => artikel.find(a => a.nr === nr);
 const ortBestand = (ort, nr) => ((bestand[ort]||{})[nr]) || null;
-const darfPreise = () => rolle === 'admin' || rolle === 'einkauf';
+const darfPreise = () => rolle === 'admin' || rolle === 'einkauf' || rolle === 'ausbilder';
 
 /* Preis, der an einem bestimmten Tag galt */
 function preisAm(nr, datumIso){
