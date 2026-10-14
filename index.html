@@ -780,6 +780,7 @@ body.mobil #mobil{display:block;max-width:520px;margin:0 auto;padding:0 12px 90p
     <div class="werkzeuge">
       <button class="btn" onclick="exportJson()">Alles sichern (.json)</button>
       <button class="btn sek" onclick="zeitenCsv()">Alle Zeiten als CSV</button>
+      <button class="btn sek" onclick="gesamtCsv()">Alles als eine CSV (für neue Version)</button>
       <label class="btn sek" style="display:inline-block">Sicherung laden<input type="file" id="importDatei" accept=".json" style="display:none"></label>
       <button class="btn sek" onclick="passwortAendern()" id="btnPass" style="display:none">Passwort ändern</button>
       <button class="btn rot" onclick="abmelden()" id="btnAbmelden" style="display:none">Abmelden</button>
@@ -3154,6 +3155,24 @@ function archivCsv(){ lade(new Blob([archivCsvText(archivGefiltert())],{type:'te
 /* ---------- Daten ---------- */
 function lade(blob, name){ const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); URL.revokeObjectURL(a.href); }
 function exportJson(){ lade(new Blob([JSON.stringify({stand:new Date().toISOString(), D, archiv},null,2)],{type:'application/json'}), 'PackDuese_Backup_'+heute().replace(/-/g,'')+'.json'); notiere('Backup','Datei',null,null,'als JSON gesichert'); }
+/* Gesamtexport: ALLE Daten in einer CSV-Datei (Semikolon). Jede Tabelle beginnt mit einer Zeile „#TABELLE;name“, danach Kopfzeile und Datenzeilen.
+   Verschachtelte Werte (Listen, Einstellungen) stehen als JSON in der Zelle – nichts geht verloren. Dient als Vorlage für eine neue Version der Seite. */
+function gesamtCsv(){
+  const q = v => { const s = v === undefined || v === null ? '' : (typeof v === 'object' ? JSON.stringify(v) : String(v)); return /[;"\n\r]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s; };
+  const tabellen = {};
+  ['mitarbeiter','auftraege','zeiten','urlaub','teile','sonderfaelle','benutzer'].forEach(c => { tabellen[c] = Object.entries(D[c]||{}).map(([id,o]) => ({id, ...o})); });
+  tabellen.einst = Object.entries(D.einst||{}).map(([id,o]) => ({id, daten:o}));
+  tabellen.archiv = (archiv||[]).map(e => ({...e}));
+  const teile = ['#PackDuese Gesamtexport;Stand;'+new Date().toISOString()+';Version;1'];
+  Object.entries(tabellen).forEach(([name, zeilen]) => {
+    const spalten = []; zeilen.forEach(z => Object.keys(z).forEach(k => { if(!spalten.includes(k)) spalten.push(k); }));
+    teile.push('', '#TABELLE;'+name+';'+zeilen.length+' Zeilen');
+    if(!zeilen.length) return;
+    teile.push(spalten.map(q).join(';')); zeilen.forEach(z => teile.push(spalten.map(k => q(z[k])).join(';')));
+  });
+  lade(new Blob(['﻿'+teile.join('\n')], {type:'text/csv;charset=utf-8'}), 'PackDuese_Gesamt_'+heute().replace(/-/g,'')+'.csv');
+  notiere('Backup','Datei',null,null,'als Gesamt-CSV exportiert');
+}
 function zeitenCsv(){
   const l = Object.values(D.zeiten).sort((a,b)=>a.datum.localeCompare(b.datum));
   const t = '\ufeffDatum;Mitarbeiter;Auftragsnummer;Auftrag;Arbeitsschritt;Ofen;Stunden;Bemerkung;Erfasst von\n'+l.map(z=>[dmy(z.datum), maName(z.mitarbeiterId), (D.auftraege[z.auftragId]||{}).nummer||'', (D.auftraege[z.auftragId]||{}).bezeichnung||'', z.taetigkeit, (oefen().find(o=>o.id===z.ofenId)||{}).name||'', de(z.stunden,2), String(z.bemerkung||'').replace(/;/g,','), z.erfasstVon||''].join(';')).join('\n');
