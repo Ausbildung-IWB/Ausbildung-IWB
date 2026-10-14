@@ -37,6 +37,8 @@ nav button::after{content:"";position:absolute;left:13px;right:13px;bottom:2px;h
   transform:scaleX(0);transition:transform var(--weich)}
 nav button:hover{color:var(--blau);background:var(--blau-hell)}
 nav button.aktiv{color:var(--blau);font-weight:600}
+table.kal .wb{border-left:2px solid #9DB9D6}
+table.kal th.heut{background:#FDF6E3;color:#7A5A00}
 .stammNav{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px;padding:8px 10px;background:var(--blau-hell,#E6EEF7);border-radius:10px}
 .stammNav button{border:1px solid transparent;background:#fff;color:var(--blau,#0F4C81);padding:7px 16px;border-radius:999px;font:inherit;font-size:13.5px;cursor:pointer}
 .stammNav button.aktiv{background:var(--blau,#0F4C81);color:#fff}
@@ -262,6 +264,8 @@ tr.klick{cursor:pointer} tr.klick:hover td{background:#E8F0F7 !important}
 .menuschatten.offen{display:block}
 @media(max-width:900px){
   .menuknopf{display:flex}
+  header{backdrop-filter:none;-webkit-backdrop-filter:none;background:#fff}  /* sonst wird das Menü am Kopfbereich statt am Bildschirm verankert */
+  body.menuoffen #kopfbereich{z-index:120}
   nav{position:fixed;top:0;left:0;bottom:0;width:255px;max-width:82vw;background:#fff;
     flex-direction:column;gap:0;transform:translateX(-102%);transition:transform .24s ease;
     z-index:100;padding-top:14px;overflow-y:auto;box-shadow:4px 0 22px rgba(10,35,60,.28);margin-left:0}
@@ -449,6 +453,9 @@ body.mobil #mobil{display:block;max-width:520px;margin:0 auto;padding:0 12px 90p
   <h1>Kalender &ndash; wann wird was fertig?</h1>
   <p class="sub">Dunkler Balken = Plan nach Soll-Zeit. Heller Balken = realistische Erwartung aus den Erfahrungswerten (Ist/Soll der letzten Auftr&auml;ge). Raute = Kundentermin.</p>
   <div class="werkzeuge">
+    <button class="btn sek" onclick="kalWoche(-1)" title="eine Woche zur&uuml;ck">&larr; Woche</button>
+    <button class="btn sek" onclick="kalWoche(0)">Heute</button>
+    <button class="btn sek" onclick="kalWoche(1)" title="eine Woche vor">Woche &rarr;</button>
     <label>Zeitraum <select id="kalWochen"><option value="4">4 Wochen</option><option value="8" selected>8 Wochen</option><option value="12">12 Wochen</option></select></label>
     <label><input type="checkbox" id="kalReal" checked> realistische Erwartung einblenden</label>
     <span style="margin-left:auto"></span>
@@ -473,9 +480,11 @@ body.mobil #mobil{display:block;max-width:520px;margin:0 auto;padding:0 12px 90p
   <h1>Abwesenheiten</h1>
   <p class="sub">Auf einen Tag klicken, um ihn zu setzen oder zu l&ouml;schen. Auf den Namen klicken f&uuml;r die Jahres&uuml;bersicht der Person.</p>
   <div class="werkzeuge">
-    <button class="btn sek" onclick="monatWechsel(-1)">&larr;</button>
-    <b id="monatTitel" style="min-width:150px;text-align:center"></b>
-    <button class="btn sek" onclick="monatWechsel(1)">&rarr;</button>
+    <button class="btn sek" onclick="urWoche(-1)" title="eine Woche zur&uuml;ck">&larr; Woche</button>
+    <button class="btn sek" onclick="urWoche(0)">Heute</button>
+    <button class="btn sek" onclick="urWoche(1)" title="eine Woche vor">Woche &rarr;</button>
+    <b id="monatTitel" style="min-width:220px;text-align:center"></b>
+    <label>Zeitraum <select id="urWochen"><option value="2">2 Wochen</option><option value="4" selected>4 Wochen</option><option value="6">6 Wochen</option><option value="8">8 Wochen</option></select></label>
     <label style="margin-left:10px">Klick setzt <select id="urArt"><option value="U">Urlaub</option><option value="K">Krank</option><option value="S">Sonstiges</option></select></label>
     <span style="margin-left:auto"></span>
     <button class="btn sek nurSchreiben" onclick="urlaubDialog()">+ Zeitraum eintragen</button>
@@ -875,7 +884,7 @@ let archiv = [];
 let rolle = 'admin';
 let db = null, fbAuth = null, cloudAktiv = false, angemeldet = null;
 const clientId = Math.random().toString(36).slice(2,10);
-let wocheStart = null, kalMonat = null;
+let wocheStart = null, kalMonat = null, urStart = null, kalOffset = 0;
 
 /* ---------- Helfer ---------- */
 const el = id => document.getElementById(id);
@@ -2279,12 +2288,13 @@ function realismus(x, xr, kf){
   punkte = Math.max(0, Math.min(100, punkte));
   return {wert:punkte, text: punkte >= 75 ? 'realistisch' : punkte >= 50 ? 'mit Risiko' : punkte >= 25 ? 'unwahrscheinlich' : 'nicht haltbar', gruende};
 }
+function kalWoche(n){ kalOffset = n === 0 ? 0 : kalOffset + n; zeichneKalender(); }
 function zeichneKalender(){
   const wochen = +el('kalWochen').value, mitReal = el('kalReal').checked;
   const p = planen(), pr = planen({kalibriert:true}), kf = kalibFaktoren();
   const realMap = {}; pr.plan.forEach(x => realMap[x.a.id] = x);
   let vorher = 0; p.plan.forEach(x => { x.vorher = vorher; vorher += x.rest; });
-  const start = montag(heute()); const tage = []; for(let i = 0; i < wochen*7; i++) tage.push(plusTage(start, i));
+  const start = plusTage(montag(heute()), kalOffset*7); const tage = []; for(let i = 0; i < wochen*7; i++) tage.push(plusTage(start, i));
   const h = heute(), ma = mitarbeiterAktiv();
   const col = s => tage.indexOf(s);
   let g = '<div class="gantt" style="grid-template-columns:230px repeat('+tage.length+',minmax(26px,1fr))">';
@@ -2339,29 +2349,32 @@ function zeichneKalender(){
 ['kalWochen','kalReal'].forEach(id => el(id).addEventListener('change', zeichneKalender));
 
 /* ---------- Urlaub ---------- */
-function monatWechsel(n){ const d = vonIso(kalMonat); d.setMonth(d.getMonth()+n); kalMonat = iso(new Date(d.getFullYear(), d.getMonth(), 1)); zeichneUrlaub(); }
+function urWoche(n){ urStart = n === 0 ? montag(heute()) : plusTage(urStart || montag(heute()), n*7); zeichneUrlaub(); }
 function zeichneUrlaub(){
-  if(!kalMonat) kalMonat = heute().slice(0,7)+'-01';
-  const d = vonIso(kalMonat), j = d.getFullYear(), m = d.getMonth();
-  const tageImMonat = new Date(j, m+1, 0).getDate();
-  el('monatTitel').textContent = MON[m]+' '+j;
-  const ma = mitarbeiterAktiv();
-  let h = '<thead><tr><th style="text-align:left;padding-left:8px">Mitarbeiter</th>';
-  for(let t=1;t<=tageImMonat;t++){ const s = iso(new Date(j,m,t)); h += '<th class="'+(istWochenende(s)?'we':'')+'">'+WT[vonIso(s).getDay()].slice(0,2)+'<br>'+t+'</th>'; }
+  if(!urStart) urStart = montag(heute());
+  const wochen = +el('urWochen').value || 4, tage = []; for(let i = 0; i < wochen*7; i++) tage.push(plusTage(urStart, i));
+  kalMonat = tage[0].slice(0,7)+'-01';
+  el('monatTitel').textContent = 'KW '+kalenderwoche(tage[0])+' – KW '+kalenderwoche(tage[tage.length-1])+' · '+dmy(tage[0]).slice(0,6)+' – '+dmy(tage[tage.length-1]);
+  const ma = mitarbeiterAktiv(), heut = heute();
+  let h = '<thead><tr><th></th>';
+  for(let w = 0; w < wochen; w++) h += '<th colspan="7" class="wb" style="text-align:left;padding-left:6px">KW '+kalenderwoche(tage[w*7])+' · '+dmy(tage[w*7]).slice(0,6)+'</th>';
+  h += '<th></th></tr><tr><th style="text-align:left;padding-left:8px">Mitarbeiter</th>';
+  tage.forEach(s => { h += '<th class="'+(istWochenende(s)?'we':'')+(vonIso(s).getDay()===1?' wb':'')+(s===heut?' heut':'')+'">'+WT[vonIso(s).getDay()].slice(0,2)+'<br>'+vonIso(s).getDate()+'</th>'; });
   h += '<th>Σ</th></tr></thead><tbody>';
   ma.forEach(mi => {
     let n = 0;
-    h += '<tr><td class="name" onclick="jahresDialog(\''+mi.id+'\')" title="Jahresübersicht anzeigen">'+esc(mi.name)+'</td>';
-    for(let t=1;t<=tageImMonat;t++){
-      const s = iso(new Date(j,m,t)); const ab = abwesend(mi.id, s);
-      const kl = ab ? ab.art : (istFeiertag(s)? 'ft' : istWochenende(s)? 'we' : '');
+    h += '<tr><td class="name" onclick="jahresDialog(\''+mi.id+'\', '+vonIso(tage[0]).getFullYear()+')" title="Jahresübersicht anzeigen">'+esc(mi.name)+'</td>';
+    tage.forEach(s => {
+      const ab = abwesend(mi.id, s);
+      const kl = (ab ? ab.art : (istFeiertag(s)? 'ft' : istWochenende(s)? 'we' : ''))+(vonIso(s).getDay()===1?' wb':'');
       if(ab && istArbeitstag(s)) n++;
       h += '<td class="'+kl+'" onclick="tagKlick(\''+mi.id+'\',\''+s+'\')" title="'+dmy(s)+(ab? ' · '+artName(ab.art):'')+'">'+(ab? ab.art : '')+'</td>';
-    }
+    });
     h += '<td class="name" style="text-align:right">'+n+'</td></tr>';
   });
   el('kalTab').innerHTML = h+'</tbody>';
 }
+el('urWochen').addEventListener('change', zeichneUrlaub);
 
 function jahresDialog(mid, jahr){
   const m = D.mitarbeiter[mid]; if(!m) return;
@@ -3516,8 +3529,8 @@ function zeichneAnsicht(z){
 }
 function alles(){ energieCache = null; artenAnwenden(); mobilKlasse(); if(mobilAn()){ zeichneMobil(); return; } if(rolle !== 'keine') zeichneAnsicht(aktAns); }
 function schliesse(){ el('dialogBox').innerHTML = ''; }
-function menuUm(){ const auf = !document.querySelector('nav').classList.contains('offen'); document.querySelector('nav').classList.toggle('offen', auf); el('menuSchatten').classList.toggle('offen', auf); }
-function menuZu(){ document.querySelector('nav').classList.remove('offen'); el('menuSchatten').classList.remove('offen'); }
+function menuUm(){ const auf = !document.querySelector('nav').classList.contains('offen'); document.querySelector('nav').classList.toggle('offen', auf); el('menuSchatten').classList.toggle('offen', auf); document.body.classList.toggle('menuoffen', auf); }
+function menuZu(){ document.querySelector('nav').classList.remove('offen'); el('menuSchatten').classList.remove('offen'); document.body.classList.remove('menuoffen'); }
 document.querySelectorAll('nav button').forEach(b => b.onclick = () => ansichtOeffnen(b.dataset.ansicht));
 ['auSuche','auStatus'].forEach(id => el(id).addEventListener('input', zeichneAuftraege));
 el('poSuche').addEventListener('input', () => zeichnePositionen(true));
