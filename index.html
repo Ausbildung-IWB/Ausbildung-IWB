@@ -37,6 +37,9 @@ nav button::after{content:"";position:absolute;left:13px;right:13px;bottom:2px;h
   transform:scaleX(0);transition:transform var(--weich)}
 nav button:hover{color:var(--blau);background:var(--blau-hell)}
 nav button.aktiv{color:var(--blau);font-weight:600}
+.stammNav{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px;padding:8px 10px;background:var(--blau-hell,#E6EEF7);border-radius:10px}
+.stammNav button{border:1px solid transparent;background:#fff;color:var(--blau,#0F4C81);padding:7px 16px;border-radius:999px;font:inherit;font-size:13.5px;cursor:pointer}
+.stammNav button.aktiv{background:var(--blau,#0F4C81);color:#fff}
 nav button.aktiv::after{transform:scaleX(1)}
 #kopfbereich{position:sticky;top:0;z-index:60;box-shadow:0 2px 12px rgba(10,40,70,.08)}
 main{padding:14px 20px 40px;max-width:1700px;margin:0 auto}
@@ -323,17 +326,16 @@ body.mobil #mobil{display:block;max-width:520px;margin:0 auto;padding:0 12px 90p
   <div class="logo"><div class="txt"><strong>Pack &amp; D&uuml;se</strong><span>Planung &amp; Zeiterfassung</span></div></div>
   <nav>
     <button data-ansicht="uebersicht" class="aktiv">&Uuml;bersicht</button>
-    <button data-ansicht="zeiten">Wochenblatt</button>
     <button data-ansicht="auftraege">Auftr&auml;ge</button>
     <button data-ansicht="katalog">Katalog</button>
     <button data-ansicht="positionen">Positionen</button>
-    <button data-ansicht="ofen">Ofenplan</button>
     <button data-ansicht="sonderfaelle">Sonderf&auml;lle</button>
     <button data-ansicht="planung">Planung</button>
     <button data-ansicht="kalender">Kalender</button>
     <button data-ansicht="urlaub">Abwesenheiten</button>
     <button data-ansicht="qm">QM</button>
     <button data-ansicht="mitarbeiter">Mitarbeiter</button>
+    <button data-ansicht="stamm">Stammdaten</button>
     <button data-ansicht="verwaltung">Verwaltung</button>
     <button data-ansicht="archiv">Archiv</button>
     <button data-ansicht="daten">Daten</button>
@@ -346,6 +348,7 @@ body.mobil #mobil{display:block;max-width:520px;margin:0 auto;padding:0 12px 90p
 <main>
 
 <!-- ===== Übersicht ===== -->
+<div id="stammNav" class="stammNav" style="display:none"></div>
 <section id="v-uebersicht">
   <h1>&Uuml;bersicht</h1>
   <p class="sub" id="ueDatum"></p>
@@ -607,7 +610,7 @@ body.mobil #mobil{display:block;max-width:520px;margin:0 auto;padding:0 12px 90p
 <!-- ===== Katalog ===== -->
 <section id="v-katalog" class="verstecke">
   <h1>Katalog</h1>
-  <p class="sub">Feste Auswahllisten: Kunden mit Rangfolge, Arbeitsschritte und Öfen. Die Positionen 101&ndash;409 stehen im Reiter &bdquo;Positionen&ldquo;. Material und Ofen-Schutz sind optional.</p>
+  <p class="sub">Feste Auswahllisten: Kunden mit Rangfolge, Arbeitsschritte und Öfen. Die Positionen 101&ndash;1804 stehen im Reiter &bdquo;Positionen&ldquo;. Material und Ofen-Schutz sind optional.</p>
   <div class="kennzahlen" id="kaKennzahlen"></div>
   <div id="kaProbleme"></div>
   <div class="karte">
@@ -840,14 +843,14 @@ const LOGO = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAWgAAABrCAYAAABaBhjP
 
 /* ---------- Grunddaten ---------- */
 const ANSICHTEN = [
-  ['uebersicht','Übersicht'],['zeiten','Wochenblatt'],['auftraege','Aufträge'],['planung','Planung'],
+  ['uebersicht','Übersicht'],['auftraege','Aufträge'],['planung','Planung'],
   ['urlaub','Abwesenheiten'],['qm','QM'],['mitarbeiter','Mitarbeiter'],['verwaltung','Verwaltung'],
-  ['kalender','Kalender'],['katalog','Katalog'],['positionen','Positionen'],['ofen','Ofenplan'],['sonderfaelle','Sonderfälle'],['archiv','Archiv'],['daten','Daten'],['produktion','Produktion']];
+  ['kalender','Kalender'],['katalog','Katalog'],['positionen','Positionen'],['sonderfaelle','Sonderfälle'],['archiv','Archiv'],['daten','Daten'],['produktion','Produktion']];
 const ROLLEN_START = [
   {id:'admin', name:'Admin', schreiben:true, ansichten:ANSICHTEN.map(a=>a[0])},
   {id:'vorgesetzter', name:'Vorgesetzter', schreiben:true,
-   ansichten:['auftraege','positionen','ofen','sonderfaelle','katalog','kalender','urlaub','mitarbeiter','produktion']},
-  {id:'qm', name:'QM', schreiben:true, ansichten:['uebersicht','auftraege','katalog','ofen','sonderfaelle','planung','kalender','qm','archiv']},
+   ansichten:['auftraege','positionen','sonderfaelle','katalog','kalender','urlaub','mitarbeiter','produktion']},
+  {id:'qm', name:'QM', schreiben:true, ansichten:['uebersicht','auftraege','katalog','sonderfaelle','planung','kalender','qm','archiv']},
   {id:'produktion', name:'Produktion (Bildschirm)', schreiben:false, ansichten:['produktion']}
 ];
 /* BEISPIEL-LISTEN: werden durch die echten Listen ersetzt (Katalog-Reiter bzw. Import) */
@@ -3463,23 +3466,36 @@ function rolleAnwenden(){
   testleisteAnwenden();
   const r = rolleObj();
   el('wer').textContent = (angemeldet ? angemeldet.email : 'lokal')+' · '+(r.name || 'kein Zugang')+(rollenTest ? ' (Testansicht)' : '');
-  document.querySelectorAll('nav button').forEach(b => b.style.display = r.ansichten.includes(b.dataset.ansicht) ? '' : 'none');
+  document.querySelectorAll('nav button').forEach(b => b.style.display = b.dataset.ansicht === 'stamm' ? (stammErlaubt(r).length ? '' : 'none') : (STAMM.includes(b.dataset.ansicht) || NICHT_MEHR.includes(b.dataset.ansicht) ? 'none' : (r.ansichten.includes(b.dataset.ansicht) ? '' : 'none')));
   document.querySelectorAll('.nurSchreiben').forEach(e => e.style.display = r.schreiben ? '' : 'none');
   if(rolle === 'keine'){ zugangSperre(); return; }
   el('sperreBox').innerHTML = '';
-  const offen = document.querySelector('nav button.aktiv');
-  if(offen && !r.ansichten.includes(offen.dataset.ansicht) && r.ansichten.length) ansichtOeffnen(r.ansichten[0]);
+  const erlaubt = r.ansichten.filter(a => !STAMM.includes(a) && !NICHT_MEHR.includes(a)).concat(stammErlaubt(r).length ? ['stamm'] : []);
+  if(!(STAMM.includes(aktAns) ? stammErlaubt(r).includes(aktAns) : r.ansichten.includes(aktAns)) && erlaubt.length) ansichtOeffnen(erlaubt[0]);
+}
+/* Katalog, Positionen, Sonderfälle und Mitarbeiter liegen hinter dem einen Reiter „Stammdaten“, damit sie nicht dauernd im Menü stehen */
+const STAMM = ['katalog','positionen','sonderfaelle','mitarbeiter'], STAMM_NAME = {katalog:'Katalog', positionen:'Positionen', sonderfaelle:'Sonderfälle', mitarbeiter:'Mitarbeiter'};
+const NICHT_MEHR = ['zeiten','ofen'];   /* Wochenblatt und Ofenplan sind aus der Navigation genommen */
+const stammErlaubt = r => STAMM.filter(x => (r || rolleObj()).ansichten.includes(x));
+let aktAns = 'uebersicht', stammLetzte = '';
+function stammNavZeichnen(){
+  const n = el('stammNav'), erl = stammErlaubt();
+  if(!STAMM.includes(aktAns) || !erl.length){ n.style.display = 'none'; n.innerHTML = ''; return; }
+  n.style.display = ''; n.innerHTML = erl.map(x => '<button class="'+(x===aktAns?'aktiv':'')+'" data-s="'+x+'" onclick="ansichtOeffnen(this.dataset.s)">'+STAMM_NAME[x]+'</button>').join('');
 }
 function ansichtOeffnen(z){
-  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('aktiv', b.dataset.ansicht === z));
+  if(z === 'stamm'){ const erl = stammErlaubt(); z = erl.includes(stammLetzte) ? stammLetzte : (erl[0] || 'uebersicht'); }
+  if(STAMM.includes(z)) stammLetzte = z;
+  aktAns = z;
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('aktiv', b.dataset.ansicht === (STAMM.includes(z) ? 'stamm' : z)));
   ANSICHTEN.forEach(a => { const e = el('v-'+a[0]); if(e) e.classList.toggle('verstecke', a[0] !== z); });
-  menuZu(); zeichneAnsicht(z); window.scrollTo(0,0);
+  stammNavZeichnen(); menuZu(); zeichneAnsicht(z); window.scrollTo(0,0);
 }
 function zeichneAnsicht(z){
   ({uebersicht:zeichneUebersicht, zeiten:zeichneWoche, auftraege:zeichneAuftraege, planung:zeichnePlanung, urlaub:zeichneUrlaub,
     qm:zeichneQM, mitarbeiter:zeichneMitarbeiter, verwaltung:zeichneVerwaltung, archiv:zeichneArchiv, produktion:zeichneProduktion, kalender:zeichneKalender, katalog:zeichneKatalog, positionen:zeichnePositionen, ofen:zeichneOfenplan, sonderfaelle:zeichneSonderfaelle}[z] || (()=>{}))();
 }
-function alles(){ energieCache = null; artenAnwenden(); mobilKlasse(); if(mobilAn()){ zeichneMobil(); return; } const a = document.querySelector('nav button.aktiv'); if(a && rolle !== 'keine') zeichneAnsicht(a.dataset.ansicht); }
+function alles(){ energieCache = null; artenAnwenden(); mobilKlasse(); if(mobilAn()){ zeichneMobil(); return; } if(rolle !== 'keine') zeichneAnsicht(aktAns); }
 function schliesse(){ el('dialogBox').innerHTML = ''; }
 function menuUm(){ const auf = !document.querySelector('nav').classList.contains('offen'); document.querySelector('nav').classList.toggle('offen', auf); el('menuSchatten').classList.toggle('offen', auf); }
 function menuZu(){ document.querySelector('nav').classList.remove('offen'); el('menuSchatten').classList.remove('offen'); }
