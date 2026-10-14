@@ -1055,7 +1055,13 @@ body.vollbild .karte{margin-bottom:12px}
         <input type="text" id="mailAn" placeholder="d.omowanile@iwb-is.de, lager.backup@gmail.com"></label>
       <label>Einkauf &ndash; Meldungen bei Unterschreitung
         <input type="text" id="mailEinkauf" placeholder="einkauf@iwb-is.de"></label>
+      <label>Zugangswort (wie im Script)
+        <input type="text" id="mailSchluessel" placeholder="wie bei KENNWORT im Script"></label>
     </div>
+    <p class="sub" style="margin:8px 0 0">Das Zugangswort ist das, was im Google-Script oben bei
+      <code>KENNWORT</code> steht. Es wird beim Senden angeh&auml;ngt &ndash; Sonderzeichen werden
+      dabei richtig umgesetzt. Die Adresse oben bleibt also so, wie Google sie anzeigt,
+      ohne <code>?schluessel=</code> dahinter.</p>
     <div class="werkzeuge" style="margin-top:12px">
       <label><input type="checkbox" id="mailAuto"> t&auml;glich automatisch senden</label>
       <button class="btn" onclick="tagesberichtSenden(false)">Jetzt senden</button>
@@ -2902,13 +2908,24 @@ function backupsZeichnen(){
 const SLOT_ART = {1:'Tag', 2:'Tag', 3:'Tag', 4:'Woche', 5:'Monat'};
 
 /* ---------- Tagesbericht ---------- */
-let mailEinst = {url:'', an:'', einkauf:'', auto:false, zuletzt:''};
+let mailEinst = {url:'', an:'', einkauf:'', schluessel:'', auto:false, zuletzt:''};
+
+/* Adresse fuers Senden: Zugangswort anhaengen, richtig umgesetzt.
+   Steht es schon in der Adresse, bleibt sie unveraendert. */
+function versandUrl(){
+  const url = (mailEinst.url || '').trim();
+  const wort = (mailEinst.schluessel || '').trim();
+  if(!url || !wort) return url;
+  if(/[?&]schluessel=/.test(url)) return url;
+  return url + (url.includes('?') ? '&' : '?') + 'schluessel=' + encodeURIComponent(wort);
+}
 
 function mailEinstellungenZeichnen(){
   if(!el('mailUrl')) return;
   el('mailUrl').value = mailEinst.url || '';
   el('mailAn').value  = mailEinst.an || '';
   if(el('mailEinkauf')) el('mailEinkauf').value = mailEinst.einkauf || '';
+  if(el('mailSchluessel')) el('mailSchluessel').value = mailEinst.schluessel || '';
   el('mailAuto').checked = !!mailEinst.auto;
   el('mailStatus').innerHTML = mailEinst.zuletzt
     ? '<div class="hinweis gruen" style="margin:12px 0 0">Zuletzt gesendet: '+
@@ -2920,7 +2937,15 @@ function mailEinstellungenSpeichern(){
   mailEinst.url = el('mailUrl').value.trim();
   mailEinst.an  = el('mailAn').value.trim();
   mailEinst.einkauf = el('mailEinkauf') ? el('mailEinkauf').value.trim() : '';
+  mailEinst.schluessel = el('mailSchluessel') ? el('mailSchluessel').value.trim() : '';
   mailEinst.auto = el('mailAuto').checked;
+  /* Wer das Wort frueher von Hand angehaengt hat: aus der Adresse herausloesen */
+  const treffer = mailEinst.url.match(/[?&]schluessel=([^&]*)/);
+  if(treffer && !mailEinst.schluessel){
+    try { mailEinst.schluessel = decodeURIComponent(treffer[1]); }
+    catch(e){ mailEinst.schluessel = treffer[1]; }
+    mailEinst.url = mailEinst.url.replace(/[?&]schluessel=[^&]*/, '').replace(/[?&]$/, '');
+  }
   if(cloudAktiv && angemeldet)
     db.collection('stahllager').doc('mail').set({...mailEinst, clientId}).catch(()=>{});
   logge('Einstellungen für den Tagesbericht gespeichert');
@@ -2978,7 +3003,7 @@ function tagesberichtSenden(automatisch){
   };
   if(el('mailStatus')) el('mailStatus').innerHTML =
     '<div class="hinweis" style="margin:12px 0 0">Bericht wird gesendet …</div>';
-  fetch(mailEinst.url, {method:'POST', mode:'no-cors',
+  fetch(versandUrl(), {method:'POST', mode:'no-cors',
     headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(nutzlast)})
     .then(() => {
       mailEinst.zuletzt = new Date().toISOString();
@@ -4904,7 +4929,7 @@ function freigabeAnfragen(){
       return '  · '+a.name+' ('+k.nr+') – '+k.menge+' '+(a.einheit||'')+
              (b? ', aktueller Bestand bei uns: '+b.q+' von '+b.min : '');
     }).join('\n');
-    fetch(mailEinst.url, {method:'POST', mode:'no-cors',
+    fetch(versandUrl(), {method:'POST', mode:'no-cors',
       headers:{'Content-Type':'text/plain;charset=utf-8'},
       body: JSON.stringify({
         an: firma.mail,
@@ -5006,7 +5031,7 @@ function abAbsenden(){
     ).join('\n\n')+
     (darfPreise() && ges? '\n\nGeschätzte Gesamtsumme: '+de(ges,2)+' EUR' : '')+
     '\n\nDiese Anforderung wurde aus der Lagerverwaltung erstellt.';
-  fetch(mailEinst.url, {method:'POST', mode:'no-cors',
+  fetch(versandUrl(), {method:'POST', mode:'no-cors',
     headers:{'Content-Type':'text/plain;charset=utf-8'},
     body: JSON.stringify({
       an: mailEinst.einkauf,
@@ -5070,7 +5095,7 @@ function korbErinnerungPruefen(){
     return '  · '+a.name+' ('+k.nr+') – '+k.menge+' '+(a.einheit||'')+
            ', '+(ORTE[k.ort]||{}).kurz+(b? ', Bestand '+b.q+' von '+b.min : '');
   }).join('\n');
-  fetch(mailEinst.url, {method:'POST', mode:'no-cors',
+  fetch(versandUrl(), {method:'POST', mode:'no-cors',
     headers:{'Content-Type':'text/plain;charset=utf-8'},
     body: JSON.stringify({
       an: empfaenger,
