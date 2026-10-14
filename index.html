@@ -335,7 +335,7 @@ body.mobil #mobil{display:block;max-width:520px;margin:0 auto;padding:0 12px 90p
     <button data-ansicht="urlaub">Abwesenheiten</button>
     <button data-ansicht="qm">QM</button>
     <button data-ansicht="mitarbeiter">Mitarbeiter</button>
-    <button data-ansicht="stamm">Stammdaten</button>
+    <button data-ansicht="stamm">Einstellungen</button>
     <button data-ansicht="verwaltung">Verwaltung</button>
     <button data-ansicht="archiv">Archiv</button>
     <button data-ansicht="daten">Daten</button>
@@ -3473,7 +3473,7 @@ function rolleAnwenden(){
   const erlaubt = r.ansichten.filter(a => !STAMM.includes(a) && !NICHT_MEHR.includes(a)).concat(stammErlaubt(r).length ? ['stamm'] : []);
   if(!(STAMM.includes(aktAns) ? stammErlaubt(r).includes(aktAns) : r.ansichten.includes(aktAns)) && erlaubt.length) ansichtOeffnen(erlaubt[0]);
 }
-/* Katalog, Positionen, Sonderfälle und Mitarbeiter liegen hinter dem einen Reiter „Stammdaten“, damit sie nicht dauernd im Menü stehen */
+/* Katalog, Positionen, Sonderfälle und Mitarbeiter liegen hinter dem einen Reiter „Einstellungen“, damit sie nicht dauernd im Menü stehen */
 const STAMM = ['katalog','positionen','sonderfaelle','mitarbeiter'], STAMM_NAME = {katalog:'Katalog', positionen:'Positionen', sonderfaelle:'Sonderfälle', mitarbeiter:'Mitarbeiter'};
 const NICHT_MEHR = ['zeiten','ofen'];   /* Wochenblatt und Ofenplan sind aus der Navigation genommen */
 const stammErlaubt = r => STAMM.filter(x => (r || rolleObj()).ansichten.includes(x));
