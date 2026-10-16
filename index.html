@@ -964,16 +964,17 @@ body.vollbild .karte{margin-bottom:12px}
     <div class="rollenbox">
       <div><b>Voller Zugriff</b><span>Alle Reiter, Fächer bearbeiten, Bestellanforderung,
         Verwaltung. F&uuml;r dich und Kollegen im B&uuml;ro.</span></div>
-      <div><b>Ausbilder</b><span>Wie voller Zugriff &ndash; buchen, F&auml;cher bearbeiten, Artikel anlegen,
-        Inventur, Bestell&shy;anforderung, Preise. <b>Ohne Verwaltung und ohne Daten</b>, kann also
-        keine Rollen &auml;ndern, keinen Sperrcode setzen und keine Sicherung wiederherstellen.</span></div>
+      <div><b>Ausbilder</b><span>Lagerplan, Bestandsliste, St&uuml;cklisten&shy;pr&uuml;fung, Inventur,
+        Bestell&shy;anforderung und Verbrauch &ndash; buchen, F&auml;cher bearbeiten, Artikel anlegen,
+        Preise. <b>Ohne Verwaltung, Daten und Archiv</b>: keine Rollen &auml;ndern, kein Sperrcode,
+        keine Sicherungen, kein Einblick ins Protokoll.</span></div>
       <div><b>Einkauf</b><span>Sieht Best&auml;nde, Preise, Verbrauch und schreibt Bestell&shy;anforderungen
         &ndash; standort&uuml;bergreifend. Bucht keine Entnahmen.</span></div>
       <div><b>Nur Einsicht</b><span>Sieht Lagerplan, Best&auml;nde, St&uuml;cklistenpr&uuml;fung,
         Verbrauch und Keller &ndash; und kann eine BANF schreiben. Kann nichts buchen.
         F&uuml;r B&uuml;ro, Arbeitsvorbereitung und unterwegs.</span></div>
-      <div><b>Tablet Stahllager</b><span>Nur Lagerplan, Bestandsliste und Inventur.
-        Kein Bearbeiten von F&auml;chern, kein Archiv, kein Abmelden ohne Code.</span></div>
+      <div><b>Tablet Stahllager</b><span>Lagerplan, Bestandsliste, St&uuml;cklisten&shy;pr&uuml;fung
+        und Inventur. Kein Bearbeiten von F&auml;chern, kein Archiv, kein Abmelden ohne Code.</span></div>
       <div><b>Tablet Keller</b><span>Nur das Kellerlager mit Hinzuf&uuml;gen und Entnehmen.
         Kein Anlegen oder L&ouml;schen von Artikeln.</span></div>
     </div>
@@ -3391,14 +3392,15 @@ function rolleAnwenden(){
 
 /* Welche Reiter darf diese Rolle sehen? */
 function erlaubteAnsichten(){
-  if(rolle === 'tablet-stahl')  return ['plan','bestand','zaehlen'];
+  if(rolle === 'tablet-stahl')  return ['plan','bestand','stueck','zaehlen'];
   if(rolle === 'tablet-keller') return ['artikel'];
   if(rolle === 'ansicht')       return ['plan','bestand','stueck','banf','verbrauch',
                                         'artikel','abanf','averbrauch'];
   if(rolle === 'einkauf')       return ['artikel','abanf','averbrauch','plan','bestand','archiv'];
-  /* Ausbilder: wie voller Zugriff, nur ohne Verwaltung und ohne Daten */
-  if(rolle === 'ausbilder')     return ['plan','bestand','stueck','zaehlen','banf','verbrauch',
-                                        'archiv','artikel','abanf','averbrauch'];
+  /* Ausbilder: wie voller Zugriff, nur ohne Verwaltung, Daten und Archiv.
+     Bewusst als "alles ausser" geschrieben - kommt spaeter ein Reiter dazu,
+     sieht der Ausbilder ihn automatisch mit. */
+  if(rolle === 'ausbilder')     return ALLE_ANSICHTEN.filter(v => !AUSBILDER_TABU.includes(v));
   return null;   // admin: alles
 }
 
@@ -5350,6 +5352,9 @@ function standortWaehlen(){
 
 const ALLE_ANSICHTEN = ['plan','bestand','stueck','zaehlen','banf','verbrauch',
                         'archiv','keller','artikel','abanf','averbrauch','verwaltung','daten'];
+
+/* Was ein Ausbilder nicht sehen darf */
+const AUSBILDER_TABU = ['verwaltung','daten','archiv'];
 
 function ansichtOeffnen(ziel){
   document.querySelectorAll('nav button').forEach(b =>
